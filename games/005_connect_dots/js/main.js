@@ -36,7 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function updateSynth(progress) {
         if (!oscillator) return;
-        // 330Hz (E4) から 660Hz (E5) まで上昇
         const freq = 330 + (330 * progress);
         oscillator.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.05);
         gainNode.gain.setTargetAtTime(0.15, audioCtx.currentTime, 0.05);
@@ -50,35 +49,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 形状データ定義
     const SHAPES = [
-        {
-            name: 'おうち',
-            dots: [{x:20,y:80}, {x:20,y:45}, {x:50,y:15}, {x:80,y:45}, {x:80,y:80}, {x:20,y:80}]
-        },
-        {
-            name: 'おほしさま',
-            dots: [{x:50,y:10}, {x:61,y:35}, {x:88,y:35}, {x:66,y:52}, {x:75,y:77}, {x:50,y:60}, {x:25,y:77}, {x:34,y:52}, {x:12,y:35}, {x:39,y:35}, {x:50,y:10}]
-        },
-        {
-            name: 'しかく',
-            dots: [{x:20,y:20}, {x:80,y:20}, {x:80,y:80}, {x:20,y:80}, {x:20,y:20}]
-        },
-        {
-            name: 'さんかく',
-            dots: [{x:50,y:15}, {x:85,y:85}, {x:15,y:85}, {x:50,y:15}]
-        },
-        {
-            name: 'ダイヤモンド',
-            dots: [{x:50,y:10}, {x:90,y:50}, {x:50,y:90}, {x:10,y:50}, {x:50,y:10}]
-        }
+        { name: 'おうち', dots: [{x:20,y:80}, {x:20,y:45}, {x:50,y:15}, {x:80,y:45}, {x:80,y:80}, {x:20,y:80}] },
+        { name: 'おほしさま', dots: [{x:50,y:10}, {x:61,y:35}, {x:88,y:35}, {x:66,y:52}, {x:75,y:77}, {x:50,y:60}, {x:25,y:77}, {x:34,y:52}, {x:12,y:35}, {x:39,y:35}, {x:50,y:10}] },
+        { name: 'しかく', dots: [{x:20,y:20}, {x:80,y:20}, {x:80,y:80}, {x:20,y:80}, {x:20,y:20}] },
+        { name: 'さんかく', dots: [{x:50,y:15}, {x:85,y:85}, {x:15,y:85}, {x:50,y:15}] },
+        { name: 'ダイヤモンド', dots: [{x:50,y:10}, {x:90,y:50}, {x:50,y:90}, {x:10,y:50}, {x:50,y:10}] }
     ];
 
     let sessionShapes = [];
     let currentShapeIndex = 0;
     let currentTargetIndex = 0;
     let pathData = "";
-    let isDragging = false;
+    let isDrawing = false;
+    let samplingPoints = [];
+    let lastReachedIndexInSegment = -1;
 
     function initGame() {
         sessionShapes = SHAPES.sort(() => Math.random() - 0.5).slice(0, 3);
@@ -94,41 +79,48 @@ document.addEventListener('DOMContentLoaded', () => {
         activeLine.classList.add('hidden');
         goalIllustration.classList.remove('illustration-fadein');
         goalIllustration.setAttribute('d', "M " + shape.dots.map(d => `${d.x} ${d.y}`).join(" L ") + " Z");
-        
-        instruction.textContent = `${shape.name}を つくろう！ (${currentShapeIndex + 1}/3)`;
+        instruction.textContent = `${shape.name}を なぞろう！ (${currentShapeIndex + 1}/3)`;
 
-        // 点を描画
+        renderDots();
+        initSegmentSampling();
+    }
+
+    function renderDots() {
+        const shape = sessionShapes[currentShapeIndex];
         dotsGroup.innerHTML = '';
         shape.dots.forEach((dot, index) => {
-            // 最後の点は開始点と同じなのでラベルは出さない
             if (index > 0 && dot.x === shape.dots[0].x && dot.y === shape.dots[0].y) return;
-
             const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
             g.setAttribute('class', 'dot-marker');
-            
             const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            circle.setAttribute('cx', dot.x);
-            circle.setAttribute('cy', dot.y);
-            circle.setAttribute('r', 4);
-            circle.setAttribute('fill', 'white');
-            circle.setAttribute('stroke', '#4caf50');
-            circle.setAttribute('stroke-width', 1);
-            
+            circle.setAttribute('cx', dot.x); circle.setAttribute('cy', dot.y); circle.setAttribute('r', 4);
+            circle.setAttribute('fill', 'white'); circle.setAttribute('stroke', '#4caf50'); circle.setAttribute('stroke-width', 1);
             const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-            text.setAttribute('x', dot.x);
-            text.setAttribute('y', dot.y + 1);
-            text.setAttribute('text-anchor', 'middle');
-            text.setAttribute('dominant-baseline', 'middle');
-            text.setAttribute('font-size', '4');
-            text.setAttribute('class', 'dot-label');
+            text.setAttribute('x', dot.x); text.setAttribute('y', dot.y + 1);
+            text.setAttribute('text-anchor', 'middle'); text.setAttribute('dominant-baseline', 'middle');
+            text.setAttribute('font-size', '4'); text.setAttribute('class', 'dot-label');
             text.textContent = index + 1;
-
-            g.appendChild(circle);
-            g.appendChild(text);
+            g.appendChild(circle); g.appendChild(text);
             dotsGroup.appendChild(g);
         });
-
         updateDotsStatus();
+    }
+
+    function initSegmentSampling() {
+        const shape = sessionShapes[currentShapeIndex];
+        const p1 = shape.dots[currentTargetIndex];
+        const p2 = shape.dots[currentTargetIndex + 1];
+        if (!p2) return;
+
+        samplingPoints = [];
+        const steps = 20; // 点と点の間を20分割
+        for (let i = 0; i <= steps; i++) {
+            samplingPoints.push({
+                x: p1.x + (p2.x - p1.x) * (i / steps),
+                y: p1.y + (p2.y - p1.y) * (i / steps)
+            });
+        }
+        lastReachedIndexInSegment = -1;
     }
 
     function updateDotsStatus() {
@@ -137,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const circle = m.querySelector('circle');
             if (i < currentTargetIndex) {
                 circle.setAttribute('class', 'dot-reached');
+                m.classList.remove('dot-active');
             } else if (i === currentTargetIndex) {
                 m.classList.add('dot-active');
                 circle.setAttribute('fill', '#fff9c4');
@@ -157,61 +150,71 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     svg.addEventListener('pointerdown', (e) => {
+        if (finishOverlay.classList.contains('hidden') === false) return;
         const pos = getMousePos(e);
         const shape = sessionShapes[currentShapeIndex];
         const startDot = shape.dots[currentTargetIndex];
-        
-        // ターゲット点の近くから開始したか
         const dist = Math.hypot(startDot.x - pos.x, startDot.y - pos.y);
-        if (dist < 10) {
-            isDragging = true;
-            activeLine.setAttribute('x1', startDot.x);
-            activeLine.setAttribute('y1', startDot.y);
-            activeLine.setAttribute('x2', pos.x);
-            activeLine.setAttribute('y2', pos.y);
-            activeLine.classList.remove('hidden');
+        if (dist < 12) {
+            isDrawing = true;
             startSynth();
         }
     });
 
     window.addEventListener('pointermove', (e) => {
-        if (!isDragging) return;
+        if (!isDrawing) return;
         const pos = getMousePos(e);
-        const shape = sessionShapes[currentShapeIndex];
-        const nextDot = shape.dots[currentTargetIndex + 1];
-        const startDot = shape.dots[currentTargetIndex];
-
-        activeLine.setAttribute('x2', pos.x);
-        activeLine.setAttribute('y2', pos.y);
-
-        // 次の点に近づいたか
-        const distToNext = Math.hypot(nextDot.x - pos.x, nextDot.y - pos.y);
         
-        // 進捗計算（音程用）
-        const segmentTotal = Math.hypot(nextDot.x - startDot.x, nextDot.y - startDot.y);
-        const progress = Math.max(0, Math.min(1, 1 - (distToNext / segmentTotal)));
-        updateSynth(progress);
+        let foundNewPoint = false;
+        const searchRange = 5;
+        const startSearch = lastReachedIndexInSegment + 1;
+        const endSearch = Math.min(startSearch + searchRange, samplingPoints.length);
 
-        if (distToNext < 8) {
-            completeSegment();
+        for (let i = startSearch; i < endSearch; i++) {
+            const p = samplingPoints[i];
+            const dist = Math.hypot(p.x - pos.x, p.y - pos.y);
+            if (dist < 12) {
+                lastReachedIndexInSegment = i;
+                foundNewPoint = true;
+            }
+        }
+
+        if (foundNewPoint) {
+            const progress = lastReachedIndexInSegment / (samplingPoints.length - 1);
+            updateSynth(progress);
+            renderCurrentProgress();
+
+            if (lastReachedIndexInSegment >= samplingPoints.length - 1) {
+                completeSegment();
+            }
         }
     });
 
     window.addEventListener('pointerup', () => {
-        isDragging = false;
-        activeLine.classList.add('hidden');
+        isDrawing = false;
         stopSynth();
     });
 
+    function renderCurrentProgress() {
+        const shape = sessionShapes[currentShapeIndex];
+        const currentP = samplingPoints[lastReachedIndexInSegment];
+        let d = pathData;
+        if (currentTargetIndex === 0) {
+            d = `M ${shape.dots[0].x} ${shape.dots[0].y} L ${currentP.x} ${currentP.y}`;
+        } else {
+            d += ` L ${currentP.x} ${currentP.y}`;
+        }
+        linesPath.setAttribute('d', d);
+    }
+
     function completeSegment() {
         const shape = sessionShapes[currentShapeIndex];
-        const startDot = shape.dots[currentTargetIndex];
-        const nextDot = shape.dots[currentTargetIndex + 1];
-
+        const p2 = shape.dots[currentTargetIndex + 1];
+        
         if (currentTargetIndex === 0) {
-            pathData = `M ${startDot.x} ${startDot.y} L ${nextDot.x} ${nextDot.y}`;
+            pathData = `M ${shape.dots[0].x} ${shape.dots[0].y} L ${p2.x} ${p2.y}`;
         } else {
-            pathData += ` L ${nextDot.x} ${nextDot.y}`;
+            pathData += ` L ${p2.x} ${p2.y}`;
         }
         linesPath.setAttribute('d', pathData);
         
@@ -224,20 +227,15 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentTargetIndex >= shape.dots.length - 1) {
             finishSingleShape();
         } else {
-            // 次のセグメントの準備
-            activeLine.setAttribute('x1', nextDot.x);
-            activeLine.setAttribute('y1', nextDot.y);
+            initSegmentSampling();
         }
     }
 
     function finishSingleShape() {
-        isDragging = false;
-        activeLine.classList.add('hidden');
+        isDrawing = false;
         stopSynth();
-
         goalIllustration.classList.add('illustration-fadein');
         GameUtils.showHanamaru();
-
         setTimeout(() => {
             currentShapeIndex++;
             if (currentShapeIndex < sessionShapes.length) {
@@ -253,7 +251,6 @@ document.addEventListener('DOMContentLoaded', () => {
             soundClear.play().catch(e=>{});
             soundClearVoice.play().catch(e=>{});
         }, 300);
-
         setTimeout(() => {
             finishOverlay.classList.remove('hidden');
             setupStickers();
@@ -265,8 +262,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const choices = document.getElementById('sticker-choices');
         choices.innerHTML = '';
         StickerSystem.drawThree().forEach(sticker => {
-            const btn = document.createElementNS ? document.createElement('button') : null;
-            if(!btn) return;
+            const btn = document.createElement('button');
             btn.className = `flex flex-col items-center justify-center p-6 rounded-2xl border-4 ${sticker.data.color} shadow-md hover:scale-110 transition-transform bg-white`;
             btn.innerHTML = `<div class="text-6xl mb-2">${sticker.item}</div><div class="text-sm font-bold">${sticker.data.label}</div>`;
             btn.addEventListener('click', () => {
