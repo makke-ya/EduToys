@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const targetDot = document.getElementById('target-dot');
     const resultChar = document.getElementById('result-char');
     const finishOverlay = document.getElementById('finish-overlay');
+    const instruction = document.getElementById('instruction');
 
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
@@ -17,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const soundIntro = new Audio('../../static/sounds/voice/004_intro.mp3');
     const soundClearVoice = new Audio('../../static/sounds/voice/clear.mp3');
 
-    // なぞる音のシンセサイザー (AudioContext)
     let audioCtx = null;
     let oscillator = null;
     let gainNode = null;
@@ -25,20 +25,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function startSynth() {
         if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         if (oscillator) return;
-
         oscillator = audioCtx.createOscillator();
         gainNode = audioCtx.createGain();
-        oscillator.type = 'triangle'; // 柔らかい「うにゅ」感
+        oscillator.type = 'triangle';
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
-        
         gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
         oscillator.start();
     }
 
     function updateSynth(progress) {
         if (!oscillator) return;
-        // 周波数を 220Hz (A3) から 880Hz (A5) までスライド
         const freq = 220 + (880 - 220) * progress;
         oscillator.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.05);
         gainNode.gain.setTargetAtTime(0.2, audioCtx.currentTime, 0.05);
@@ -52,26 +49,52 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // 数字のパス定義
+    // 0-9 全てのパスデータ定義
     const NUMBER_DATA = {
-        '1': { paths: ['M 50 15 L 50 85'], char: '1' },
-        '2': { paths: ['M 25 35 C 25 10, 75 10, 75 35 C 75 55, 25 85, 25 85 L 75 85'], char: '2' },
-        '3': { paths: ['M 30 20 C 70 20, 70 45, 50 45 C 70 45, 70 80, 30 80'], char: '3' }
+        '0': { paths: ['M 50 15 C 75 15, 80 35, 80 50 C 80 65, 75 85, 50 85 C 25 85, 20 65, 20 50 C 20 35, 25 15, 50 15'] },
+        '1': { paths: ['M 50 15 L 50 85'] },
+        '2': { paths: ['M 25 35 C 25 10, 75 10, 75 35 C 75 55, 25 85, 25 85 L 75 85'] },
+        '3': { paths: ['M 30 20 C 70 20, 70 45, 50 45 C 70 45, 70 80, 30 80'] },
+        '4': { paths: ['M 65 15 L 65 85', 'M 65 15 L 25 65 L 80 65'] },
+        '5': { paths: ['M 70 15 L 35 15 L 35 45 C 35 45, 75 40, 75 65 C 75 90, 30 90, 30 75'] },
+        '6': { paths: ['M 65 15 C 30 20, 25 50, 25 60 C 25 85, 75 85, 75 60 C 75 40, 30 45, 30 60'] },
+        '7': { paths: ['M 25 20 L 75 20 L 40 85'] },
+        '8': { paths: ['M 50 50 C 20 50, 20 15, 50 15 C 80 15, 80 50, 50 50 C 20 50, 20 85, 50 85 C 80 85, 80 50, 50 50'] },
+        '9': { paths: ['M 35 85 C 70 80, 75 50, 75 40 C 75 15, 25 15, 25 40 C 25 60, 70 55, 70 40'] }
     };
 
-    let currentNumber = '1';
+    let selectedNumbers = []; // 今回書く3つの数字
+    let currentIndexInSession = 0; // 3つのうち何番目か
     let currentStrokeIndex = 0;
     let isDrawing = false;
     let samplingPoints = [];
     let lastReachedIndex = -1;
 
-    const nums = Object.keys(NUMBER_DATA);
-    currentNumber = nums[Math.floor(Math.random() * nums.length)];
-    resultChar.textContent = currentNumber;
+    function initGame() {
+        // 0-9から重複なしで3つ選ぶ
+        const allNums = Object.keys(NUMBER_DATA);
+        selectedNumbers = allNums.sort(() => Math.random() - 0.5).slice(0, 3);
+        currentIndexInSession = 0;
+        initNumber();
+    }
+
+    function initNumber() {
+        const num = selectedNumbers[currentIndexInSession];
+        currentStrokeIndex = 0;
+        resultChar.textContent = num;
+        resultChar.classList.add('hidden');
+        resultChar.classList.remove('success-bounce');
+        svg.classList.remove('hidden');
+        
+        instruction.textContent = `すうじを なぞろう！ (${currentIndexInSession + 1}/3)`;
+        initStroke();
+    }
 
     function initStroke() {
-        const data = NUMBER_DATA[currentNumber];
+        const num = selectedNumbers[currentIndexInSession];
+        const data = NUMBER_DATA[num];
         const d = data.paths[currentStrokeIndex];
+        
         bgPath.setAttribute('d', data.paths.join(' '));
         guidePath.setAttribute('d', d);
         tracedPath.setAttribute('d', '');
@@ -130,17 +153,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const pos = getMousePos(e);
         
         let foundNewPoint = false;
-        // 詰まりを解消するため、直近の到達点から前方の一定範囲を探索
-        const searchRange = 15; 
+        const searchRange = 20; // 探索範囲をさらに広げてスムーズに
         const startSearch = lastReachedIndex + 1;
         const endSearch = Math.min(startSearch + searchRange, samplingPoints.length);
 
         for (let i = startSearch; i < endSearch; i++) {
             const p = samplingPoints[i];
             const dist = Math.hypot(p.x - pos.x, p.y - pos.y);
-            
-            // 判定距離を 15 に拡大 (少しルーズにして遊びやすくする)
-            if (dist < 15) {
+            if (dist < 18) { // 判定距離をさらに拡大
                 lastReachedIndex = i;
                 foundNewPoint = true;
             }
@@ -149,7 +169,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (foundNewPoint) {
             renderTracedPath();
             updateTargetDot();
-            
             const progress = lastReachedIndex / (samplingPoints.length - 1);
             updateSynth(progress);
 
@@ -157,7 +176,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 completeStroke();
             }
         } else {
-            // パスから離れすぎた場合は音量を下げる
             if (gainNode) gainNode.gain.setTargetAtTime(0.02, audioCtx.currentTime, 0.1);
         }
     }
@@ -168,28 +186,43 @@ document.addEventListener('DOMContentLoaded', () => {
         currentStrokeIndex++;
         soundTap.play().catch(e=>{});
 
-        const data = NUMBER_DATA[currentNumber];
+        const num = selectedNumbers[currentIndexInSession];
+        const data = NUMBER_DATA[num];
         if (currentStrokeIndex < data.paths.length) {
             initStroke();
         } else {
-            finishTracing();
+            finishSingleNumber();
         }
     }
 
-    function finishTracing() {
+    function finishSingleNumber() {
         svg.classList.add('hidden');
         resultChar.classList.remove('hidden');
         resultChar.classList.add('success-bounce');
         
-        const voice = new Audio(`../../static/sounds/voice/num_${currentNumber}.mp3`);
+        const num = selectedNumbers[currentIndexInSession];
+        const voice = new Audio(`../../static/sounds/voice/num_${num}.mp3`);
         voice.play().catch(e=>{});
 
         GameUtils.showHanamaru();
         
         setTimeout(() => {
+            currentIndexInSession++;
+            if (currentIndexInSession < selectedNumbers.length) {
+                // 次の数字へ
+                initNumber();
+            } else {
+                // 全て完了
+                showFinalFinish();
+            }
+        }, 1500);
+    }
+
+    function showFinalFinish() {
+        setTimeout(() => {
             soundClear.play().catch(e=>{});
             soundClearVoice.play().catch(e=>{});
-        }, 500);
+        }, 300);
 
         setTimeout(() => {
             finishOverlay.classList.remove('hidden');
@@ -200,6 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupStickers() {
         if (!window.StickerSystem) return;
         const choices = document.getElementById('sticker-choices');
+        choices.innerHTML = '';
         StickerSystem.drawThree().forEach(sticker => {
             const btn = document.createElement('button');
             btn.className = `flex flex-col items-center justify-center p-6 rounded-2xl border-4 ${sticker.data.color} shadow-md hover:scale-110 transition-transform bg-white`;
@@ -221,6 +255,6 @@ document.addEventListener('DOMContentLoaded', () => {
         stopSynth();
     });
 
-    initStroke();
+    initGame();
     soundIntro.play().catch(e=>{});
 });
