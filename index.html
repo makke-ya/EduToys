@@ -94,8 +94,8 @@
             window.openInIframe = (url) => {
                 gameFrame.src = url;
                 gameOverlay.classList.remove('hidden');
-                // ゲーム画面が開いている間は親のBGMを少し下げるか止める
-                bgm.volume = 0.1;
+                // ゲーム画面が開いている間は親のBGMを一時停止する
+                bgm.pause();
             };
 
             // 子画面（Iframe）からのメッセージを受け取る
@@ -103,7 +103,8 @@
                 if (event.data === 'closeGame') {
                     gameOverlay.classList.add('hidden');
                     gameFrame.src = 'about:blank';
-                    bgm.volume = 0.4; // BGMの音量を戻す
+                    // 親画面のBGMを再開する
+                    bgm.play().catch(e => console.log('BGM resume failed:', e));
                 }
             });
         });
