@@ -11,14 +11,6 @@
 </head>
 <body class="bg-yellow-50 min-h-screen p-4 md:p-8 flex flex-col items-center relative">
     
-    <!-- スタートオーバーレイ -->
-    <div id="start-overlay" class="fixed inset-0 bg-yellow-50 z-[100] flex flex-col items-center justify-center transition-opacity duration-300">
-        <h1 class="text-5xl font-black text-orange-500 mb-8 drop-shadow-md">📕 シールちょう</h1>
-        <button id="btn-start" class="px-10 py-6 bg-orange-400 hover:bg-orange-500 text-white text-3xl font-bold rounded-full shadow-xl transition-transform active:scale-95 border-4 border-orange-200">
-            ひらく！
-        </button>
-    </div>
-
     <header class="w-full max-w-4xl flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <a href="index.html" class="bg-white text-gray-700 px-6 py-3 rounded-full font-bold shadow-md hover:bg-gray-100 transition-colors">
             ◀ もどる
@@ -50,15 +42,29 @@
             const bgm = new Audio('static/sounds/bgm/Pops_02.mp3');
             bgm.loop = true;
             bgm.volume = 0.3;
-            
-            const startOverlay = document.getElementById('start-overlay');
-            const btnStart = document.getElementById('btn-start');
+            let bgmStarted = false;
 
-            btnStart.addEventListener('click', () => {
-                bgm.play().catch(e => console.log('BGM play failed:', e));
-                startOverlay.style.opacity = '0';
-                setTimeout(() => startOverlay.classList.add('hidden'), 300);
-            });
+            const tryPlayBgm = () => {
+                if (!bgmStarted) {
+                    bgm.play().then(() => {
+                        bgmStarted = true;
+                        document.body.removeEventListener('click', tryPlayBgm);
+                        document.body.removeEventListener('touchstart', tryPlayBgm);
+                    }).catch(e => {
+                        console.log('Autoplay prevented. Waiting for user interaction.', e);
+                    });
+                }
+            };
+
+            // URLパラメータに autoplay=1 があれば即時再生を試みる
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('autoplay') === '1') {
+                tryPlayBgm();
+            }
+
+            // ブロックされた場合のフォールバックとしてタップイベントも残す
+            document.body.addEventListener('click', tryPlayBgm);
+            document.body.addEventListener('touchstart', tryPlayBgm, { passive: true });
 
             const grid = document.getElementById('sticker-grid');
             const emptyMessage = document.getElementById('empty-message');

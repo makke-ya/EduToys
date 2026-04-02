@@ -19,19 +19,29 @@ document.addEventListener('DOMContentLoaded', () => {
     const TOTAL_APPLES = 5; // 幼児向けに5個程度から開始
     let tappedCount = 0;
     let isFinished = false;
+    let bgmStarted = false;
 
-    // スタート画面の処理
-    const startOverlay = document.getElementById('start-overlay');
-    const btnStart = document.getElementById('btn-start');
+    const tryPlayBgm = () => {
+        if (!bgmStarted && !isFinished) {
+            bgm.play().then(() => {
+                bgmStarted = true;
+                document.body.removeEventListener('click', tryPlayBgm);
+                document.body.removeEventListener('touchstart', tryPlayBgm);
+            }).catch(e => {
+                console.log('Autoplay prevented. Waiting for user interaction.', e);
+            });
+        }
+    };
 
-    btnStart.addEventListener('click', () => {
-        bgm.play().catch(e => console.log('BGM play failed:', e));
-        startOverlay.style.opacity = '0';
-        setTimeout(() => {
-            startOverlay.classList.add('hidden');
-            init(); // スタートボタンを押してからリンゴを配置する
-        }, 300);
-    });
+    // URLパラメータに autoplay=1 があれば即時再生を試みる
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('autoplay') === '1') {
+        tryPlayBgm();
+    }
+
+    // フォールバック: 画面のどこかを触ったら再生
+    document.body.addEventListener('click', tryPlayBgm);
+    document.body.addEventListener('touchstart', tryPlayBgm, { passive: true });
 
     // リンゴの生成と配置
     function init() {
@@ -140,4 +150,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    init();
 });
