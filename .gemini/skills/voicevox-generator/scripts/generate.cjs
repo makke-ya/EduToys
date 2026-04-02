@@ -31,30 +31,36 @@ async function downloadMp3(url, filePath) {
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
 async function generateVoice(text, speaker, filePath) {
-    const url = `https://api.tts.quest/v3/voicevox/synthesis?text=${encodeURIComponent(text)}&speaker=${speaker}`;
+    const baseUrl = `https://api.tts.quest/v3/voicevox/synthesis?text=${encodeURIComponent(text)}&speaker=${speaker}`;
     
+    // 1. まず最初のリクエストを投げて生成を開始させる
+    console.log(`Starting synthesis for: "${text}"...`);
+    await fetchUrl(baseUrl);
+    
+    // 2. 生成には時間がかかるので、15秒待機する
+    console.log(`Waiting 15 seconds for server to generate...`);
+    await sleep(15000);
+
+    // 3. ダウンロードURLを取得するまでリトライ
     let retries = 5;
     while (retries > 0) {
-        process.stdout.write(`Requesting synthesis for: "${text}"... `);
-        const data = await fetchUrl(url);
+        process.stdout.write(`Checking status... `);
+        const data = await fetchUrl(baseUrl);
         try {
             const json = JSON.parse(data);
-            if (json.success && json.mp3DownloadUrl) {
-                console.log(`Downloading...`);
+            if (json.success && json.isAudioReady) {
+                console.log(`Ready! Downloading...`);
                 await downloadMp3(json.mp3DownloadUrl, filePath);
                 console.log(`✅ Saved to: ${filePath}`);
+                await sleep(5000); // 次のリクエストまで間隔を空ける
                 return true;
-            } else if (json.errorMessage === 429) {
-                const waitTime = (json.retryAfter || 5) * 1000;
-                console.log(`Rate limited. Waiting ${waitTime}ms...`);
-                await sleep(waitTime + 1000);
             } else {
-                console.error(`\n❌ API Error:`, json);
-                return false;
+                console.log(`Not ready. Waiting 10 more seconds...`);
+                await sleep(10000);
             }
         } catch (e) {
             console.error(`\n❌ Parse Error:`, e, data);
-            return false;
+            await sleep(5000);
         }
         retries--;
     }
@@ -76,5 +82,8 @@ if (!fs.existsSync(dir)) {
 }
 
 generateVoice(text, speaker, absoluteOutputPath).then(success => {
-    if (!success) process.exit(1);
+    if (!success) {
+        console.error("Failed finally.");
+        process.exit(1);
+    }
 });
