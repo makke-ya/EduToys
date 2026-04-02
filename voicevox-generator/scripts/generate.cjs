@@ -1,64 +1,45 @@
 const fs = require('fs');
 const path = require('path');
-const https = require('https');
-
-async function fetchUrl(url) {
-    return new Promise((resolve, reject) => {
-        https.get(url, (res) => {
-            let data = '';
-            res.on('data', chunk => data += chunk);
-            res.on('end', () => resolve(data));
-        }).on('error', reject);
-    });
-}
-
-async function downloadMp3(url, filePath) {
-    return new Promise((resolve, reject) => {
-        const file = fs.createWriteStream(filePath);
-        https.get(url, (res) => {
-            res.pipe(file);
-            file.on('finish', () => {
-                file.close();
-                resolve();
-            });
-        }).on('error', (err) => {
-            fs.unlink(filePath, () => {});
-            reject(err);
-        });
-    });
-}
-
-const sleep = ms => new Promise(r => setTimeout(r, ms));
+const { spawnSync } = require('child_process');
 
 async function generateVoice(text, speaker, filePath) {
-    const url = `https://api.tts.quest/v3/voicevox/synthesis?text=${encodeURIComponent(text)}&speaker=${speaker}`;
+    console.log(`Generating voice for: "${text}"...`);
     
-    let retries = 5;
-    while (retries > 0) {
-        process.stdout.write(`Requesting synthesis for: "${text}"... `);
-        const data = await fetchUrl(url);
-        try {
-            const json = JSON.parse(data);
-            if (json.success && json.mp3DownloadUrl) {
-                console.log(`Downloading...`);
-                await downloadMp3(json.mp3DownloadUrl, filePath);
-                console.log(`✅ Saved to: ${filePath}`);
-                return true;
-            } else if (json.errorMessage === 429) {
-                const waitTime = (json.retryAfter || 5) * 1000;
-                console.log(`Rate limited. Waiting ${waitTime}ms...`);
-                await sleep(waitTime + 1000);
-            } else {
-                console.error(`\n❌ API Error:`, json);
-                return false;
-            }
-        } catch (e) {
-            console.error(`\n❌ Parse Error:`, e, data);
-            return false;
-        }
-        retries--;
+    const scriptPath = '/workspace/VOICEVOX/vv-speak.sh';
+    const tempWav = path.join(path.dirname(filePath), `temp_${Date.now()}.wav`);
+    
+    // 1. Generate WAV using the local shell script
+    const result = spawnSync('bash', [scriptPath, text, speaker, tempWav], {
+        encoding: 'utf-8',
+        stdio: 'inherit'
+    });
+
+    if (result.status !== 0) {
+        console.error(`\n❌ Error: VOICEVOX synthesis failed.`);
+        if (fs.existsSync(tempWav)) fs.unlinkSync(tempWav);
+        return false;
     }
-    return false;
+
+    // 2. Convert WAV to MP3 using ffmpeg
+    console.log(`Converting to MP3...`);
+    const ffmpegResult = spawnSync('ffmpeg', [
+        '-i', tempWav,
+        '-y',
+        '-acodec', 'libmp3lame',
+        '-ab', '128k',
+        filePath
+    ], { encoding: 'utf-8' });
+
+    // Cleanup temp WAV
+    if (fs.existsSync(tempWav)) fs.unlinkSync(tempWav);
+
+    if (ffmpegResult.status === 0) {
+        console.log(`✅ Success: Saved to ${filePath}`);
+        return true;
+    } else {
+        console.error(`\n❌ Error: ffmpeg conversion failed.`, ffmpegResult.stderr);
+        return false;
+    }
 }
 
 const args = process.argv.slice(2);

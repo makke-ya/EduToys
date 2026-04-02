@@ -45,10 +45,28 @@ const StickerSystem = {
     // シールを保存する
     saveSticker: function(sticker) {
         const saved = this.getSavedStickers();
-        saved.push({
+        const newSticker = {
             ...sticker,
-            date: new Date().toISOString()
-        });
+            id: Date.now() + Math.random().toString(36).substr(2, 9),
+            date: new Date().toISOString(),
+            x: 0,
+            y: 0,
+            rotation: 0
+        };
+        saved.push(newSticker);
+        localStorage.setItem(STICKER_STORAGE_KEY, JSON.stringify(saved));
+        return newSticker;
+    },
+
+    // シールの座標を更新する
+    updateStickerPosition: function(id, x, y, rotation) {
+        const saved = this.getSavedStickers();
+        const sticker = saved.find(s => s.id === id);
+        if (sticker) {
+            sticker.x = x;
+            sticker.y = y;
+            sticker.rotation = rotation;
+        }
         localStorage.setItem(STICKER_STORAGE_KEY, JSON.stringify(saved));
     },
 

@@ -6,11 +6,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const stage = document.getElementById('apple-stage');
     const counterDisplay = document.getElementById('counter');
     const finishOverlay = document.getElementById('finish-overlay');
+    const basket = document.getElementById('basket');
+    const instruction = document.getElementById('instruction');
+
+    // オブジェクトのバリエーション
+    const VARIATIONS = [
+        { name: 'リンゴ', emoji: '🍎' },
+        { name: 'イチゴ', emoji: '🍓' },
+        { name: 'くるま', emoji: '🚗' },
+        { name: 'ひよこ', emoji: '🐤' }
+    ];
+    const itemType = VARIATIONS[Math.floor(Math.random() * VARIATIONS.length)];
+    instruction.textContent = `${itemType.name}を タップ してね！`;
 
     // 音声ファイルの準備
     const bgm = new Audio('../../static/sounds/bgm/Pops_01.mp3');
     bgm.loop = true;
-    bgm.volume = 0.3; // BGMの音量は少し下げる
+    bgm.volume = 0.3;
 
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
@@ -19,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const soundClearVoice = new Audio('../../static/sounds/voice/clear.mp3');
     const soundSelectSticker = new Audio('../../static/sounds/voice/select_sticker.mp3');
 
-    const TOTAL_APPLES = 5; // 幼児向けに5個程度から開始
+    const TOTAL_ITEMS = 5; 
     let tappedCount = 0;
     let isFinished = false;
     let bgmStarted = false;
@@ -30,75 +42,54 @@ document.addEventListener('DOMContentLoaded', () => {
                 bgmStarted = true;
                 document.body.removeEventListener('click', tryPlayBgm);
                 document.body.removeEventListener('touchstart', tryPlayBgm);
-            }).catch(e => {
-                console.log('Autoplay prevented. Waiting for user interaction.', e);
-            });
+            }).catch(e => console.log('BGM wait'));
         }
     };
 
-    // URLパラメータに autoplay=1 があれば即時再生を試みる
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('autoplay') === '1') {
-        tryPlayBgm();
-    }
-
-    // フォールバック: 画面のどこかを触ったら再生
     document.body.addEventListener('click', tryPlayBgm);
     document.body.addEventListener('touchstart', tryPlayBgm, { passive: true });
 
-    // リンゴの生成と配置
-    
     let introPlayed = false;
     const playIntro = () => {
         if (!introPlayed) {
             soundIntro.play().catch(e=>{});
             introPlayed = true;
-            document.body.removeEventListener('click', playIntro);
-            document.body.removeEventListener('touchstart', playIntro);
         }
     };
-    document.body.addEventListener('click', playIntro);
-    document.body.addEventListener('touchstart', playIntro, { passive: true });
-    // 自動再生できれば最初から鳴らす
-    setTimeout(playIntro, 100);
-// リンゴの生成と配置
-async function init() {
-    for (let i = 0; i < TOTAL_APPLES; i++) {
-        createApple(i);
-        // 0.2秒ごとに1つずつ出す
-        await new Promise(r => setTimeout(r, 200));
+    setTimeout(playIntro, 500);
+
+    async function init() {
+        for (let i = 0; i < TOTAL_ITEMS; i++) {
+            createItem(i);
+            await new Promise(r => setTimeout(r, 200));
+        }
     }
-}
 
-function createApple(id) {
-    const apple = document.createElement('div');
-    apple.className = 'apple absolute cursor-pointer select-none text-6xl transition-all duration-500 scale-0 animate-bounce';
-    apple.innerHTML = '🍎';
+    function createItem(id) {
+        const item = document.createElement('div');
+        item.className = 'item absolute cursor-pointer select-none text-7xl transition-all duration-700 ease-in-out scale-0 animate-bounce';
+        item.innerHTML = itemType.emoji;
 
-    // ランダムな位置に配置
-    const x = Math.random() * 80 + 10;
-    const y = Math.random() * 60 + 20;
-    apple.style.left = `${x}%`;
-    apple.style.top = `${y}%`;
+        // ランダムな位置に配置
+        const x = Math.random() * 70 + 15;
+        const y = Math.random() * 50 + 15;
+        item.style.left = `${x}%`;
+        item.style.top = `${y}%`;
+        item.dataset.tapped = 'false';
 
-    apple.dataset.tapped = 'false';
+        item.addEventListener('click', () => handleTap(item));
+        item.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            handleTap(item);
+        }, { passive: false });
 
-    apple.addEventListener('click', () => handleTap(apple));
-    apple.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        handleTap(apple);
-    }, { passive: false });
+        stage.appendChild(item);
+        setTimeout(() => item.classList.remove('scale-0'), 50);
+    }
 
-    stage.appendChild(apple);
+    function handleTap(item) {
+        if (isFinished || item.dataset.tapped === 'true') return;
 
-    // 登場アニメーション
-    setTimeout(() => apple.classList.remove('scale-0'), 50);
-}
-
-    function handleTap(apple) {
-        if (isFinished || apple.dataset.tapped === 'true') return;
-
-        // カウントを先に増やす
         tappedCount++;
         counterDisplay.textContent = tappedCount;
 
@@ -106,72 +97,88 @@ function createApple(id) {
         const countVoice = new Audio(`../../static/sounds/voice/num_${tappedCount}.mp3`);
         countVoice.play().catch(e=>{});
 
-        apple.dataset.tapped = 'true';
-        apple.classList.remove('animate-bounce');
-        apple.classList.add('scale-150', 'opacity-0', 'pointer-events-none');
+        item.dataset.tapped = 'true';
+        item.classList.remove('animate-bounce');
 
-        // タップした瞬間に数字を表示するアニメーション (増やした後の数を表示)
-        showNumberAt(apple, tappedCount);
+        // カゴへ移動する演出
+        const basketRect = basket.getBoundingClientRect();
+        const stageRect = stage.getBoundingClientRect();
+        const itemRect = item.getBoundingClientRect();
 
-        if (tappedCount === TOTAL_APPLES) {
+        // 現在の絶対座標を固定してから移動開始
+        item.style.left = `${itemRect.left - stageRect.left}px`;
+        item.style.top = `${itemRect.top - stageRect.top}px`;
+        item.style.position = 'absolute';
+
+        setTimeout(() => {
+            const targetX = basketRect.left - stageRect.left + (basketRect.width / 4);
+            const targetY = basketRect.top - stageRect.top;
+            item.style.left = `${targetX}px`;
+            item.style.top = `${targetY}px`;
+            item.style.transform = 'scale(0.2) rotate(20deg)';
+            item.style.opacity = '0';
+        }, 10);
+
+        // カゴを少し揺らす
+        basket.classList.add('scale-125');
+        setTimeout(() => basket.classList.remove('scale-125'), 200);
+
+        showNumberAt(itemRect, tappedCount);
+
+        if (tappedCount === TOTAL_ITEMS) {
             finishGame();
         }
     }
 
-    function showNumberAt(apple, numberToShow) {
+    function showNumberAt(rect, numberToShow) {
+        const stageRect = stage.getBoundingClientRect();
         const num = document.createElement('div');
-        num.className = 'absolute text-4xl font-black text-orange-500 animate-number-up pointer-events-none';
+        num.className = 'absolute text-5xl font-black text-orange-500 animate-bounce z-50 pointer-events-none drop-shadow-md';
         num.textContent = numberToShow;
-        num.style.left = apple.style.left;
-        num.style.top = apple.style.top;
+        num.style.left = `${rect.left - stageRect.left}px`;
+        num.style.top = `${rect.top - stageRect.top - 40}px`;
         stage.appendChild(num);
-
         setTimeout(() => num.remove(), 1000);
     }
 
     function finishGame() {
-        GameUtils.showHanamaru();
         isFinished = true;
         
-        // クリア音を再生
+        // 少し間を置いてから合計数を強調
         setTimeout(() => {
-            soundClear.play().catch(e => console.log('Audio play failed:', e));
-        }, 300);
+            const finalCountVoice = new Audio(`../../static/sounds/voice/num_${TOTAL_ITEMS}.mp3`);
+            finalCountVoice.play().catch(e=>{});
+            GameUtils.showHanamaru();
+        }, 800);
+
+        setTimeout(() => {
+            soundClear.play().catch(e => {});
+            soundClearVoice.play().catch(e => {});
+        }, 1500);
 
         setTimeout(() => {
             finishOverlay.classList.remove('hidden');
             soundSelectSticker.play().catch(e=>{});
             setupStickers();
-        }, 800);
+        }, 2500);
     }
 
     function setupStickers() {
-        if (!window.StickerSystem) return; // テスト環境等のフォールバック
-        
+        if (!window.StickerSystem) return;
         const choicesContainer = document.getElementById('sticker-choices');
         const selectionArea = document.getElementById('sticker-selection');
         const afterSelection = document.getElementById('after-selection');
         
-        const drawnStickers = StickerSystem.drawThree();
-        
-        drawnStickers.forEach((sticker) => {
+        StickerSystem.drawThree().forEach((sticker) => {
             const btn = document.createElement('button');
             btn.className = `flex flex-col items-center justify-center p-6 rounded-2xl border-4 ${sticker.data.color} shadow-md hover:scale-110 transition-transform bg-white`;
-            btn.innerHTML = `
-                <div class="text-6xl mb-2 drop-shadow-sm">${sticker.item}</div>
-                <div class="text-sm font-bold">${sticker.data.label}</div>
-            `;
-            
+            btn.innerHTML = `<div class="text-6xl mb-2">${sticker.item}</div><div class="text-sm font-bold">${sticker.data.label}</div>`;
             btn.addEventListener('click', () => {
-                // 選択音を再生
-                soundSelect.currentTime = 0;
-                soundSelect.play().catch(e => console.log('Audio play failed:', e));
-
+                soundSelect.play().catch(e => {});
                 StickerSystem.saveSticker(sticker);
                 selectionArea.classList.add('hidden');
                 afterSelection.classList.remove('hidden');
             });
-            
             choicesContainer.appendChild(btn);
         });
     }

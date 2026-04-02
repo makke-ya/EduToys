@@ -1,17 +1,17 @@
 ---
 name: voicevox-generator
-description: Generate voice MP3 files using the VOICEVOX (TTS QUEST V3) API. Use this skill when you need to create narration or character voices for educational games or apps. Supports multiple speakers like Zundamon.
+description: Generate voice audio files using a local VOICEVOX engine via a shell script. Use this skill when you need to create narration or character voices for educational games or apps. Supports multiple speakers like Zundamon.
 ---
 
 # Voicevox Generator
 
-This skill provides a way to generate MP3 audio files from text using the VOICEVOX engine via the public TTS QUEST V3 API.
+This skill provides a way to generate MP3 audio files from text using a local VOICEVOX engine via a shell script and ffmpeg.
 
 ## Usage
 
-Run the provided script using Node.js. It handles API requests, rate limiting, and file saving.
+Run the provided script using Node.js.
 
-### Basic Command
+### Node.js Script
 
 ```bash
 node scripts/generate.cjs "<text>" <speaker_id> <output_path>
@@ -37,6 +37,6 @@ node scripts/generate.cjs "りんごを タップしてね" 3 static/sounds/voic
 
 ## Considerations
 
-- **Internet Access**: Requires an internet connection to reach `api.tts.quest`.
-- **Rate Limiting**: The script automatically handles 429 errors by waiting and retrying.
+- **Engine Initialization**: The script automatically starts the VOICEVOX engine if it's not already running.
+- **Format**: Outputs standard **MP3** files using ffmpeg conversion.
 - **Credits**: When using these voices, please include appropriate credits (e.g., "音声合成：VOICEVOX:ずんだもん").

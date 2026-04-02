@@ -6,35 +6,49 @@
     <title>シールちょう - EduToys</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { font-family: 'Hiragino Maru Gothic ProN', 'Rounded M+ 1c', 'Meiryo', sans-serif; }
+        body { font-family: 'Hiragino Maru Gothic ProN', 'Rounded M+ 1c', 'Meiryo', sans-serif; overflow: hidden; }
+        .sticker-canvas {
+            background-image: radial-gradient(#fbbf24 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        .sticker {
+            touch-action: none;
+            user-select: none;
+            transition: transform 0.1s ease-out;
+            cursor: grab;
+        }
+        .sticker:active { cursor: grabbing; scale: 1.1; z-index: 100; }
+        .sticker-label { pointer-events: none; }
     </style>
 </head>
-<body class="bg-yellow-50 min-h-screen p-4 md:p-8 flex flex-col items-center relative">
+<body class="bg-yellow-50 min-h-screen flex flex-col items-center">
     
-    <header class="w-full max-w-4xl flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <button onclick="parent.postMessage('closeGame', '*')" class="bg-white text-gray-700 px-6 py-3 rounded-full font-bold shadow-md hover:bg-gray-100 transition-colors">
+    <header class="w-full max-w-5xl flex justify-between items-center p-4 z-50">
+        <button onclick="parent.postMessage('closeGame', '*')" class="bg-white text-gray-700 px-6 py-3 rounded-full font-bold shadow-md hover:bg-gray-100 transition-colors border-2 border-orange-200">
             ◀ もどる
         </button>
-        <h1 class="text-4xl md:text-5xl font-black text-orange-500 drop-shadow-md">
+        <h1 class="text-3xl md:text-5xl font-black text-orange-500 drop-shadow-md">
             📕 シールちょう
         </h1>
-        <div id="completion-status" class="bg-white px-4 py-2 rounded-xl font-bold text-lg text-blue-600 shadow-sm border-2 border-blue-200">
-            あつめたシール: <span id="unique-count">0</span> / 30
+        <div id="completion-status" class="bg-white px-4 py-2 rounded-xl font-bold text-sm md:text-lg text-blue-600 shadow-sm border-2 border-blue-200">
+            <span id="unique-count">0</span> まい
         </div>
     </header>
 
-    <main class="w-full max-w-4xl bg-white rounded-3xl shadow-xl border-8 border-orange-300 p-8 min-h-[60vh]">
+    <main id="sticker-area" class="flex-grow w-full max-w-5xl bg-white rounded-t-3xl shadow-2xl border-x-8 border-t-8 border-orange-300 relative overflow-hidden sticker-canvas">
         
-        <div id="empty-message" class="hidden flex flex-col items-center justify-center h-full text-gray-400 pt-20">
+        <div id="empty-message" class="hidden absolute inset-0 flex flex-col items-center justify-center text-gray-400">
             <div class="text-6xl mb-4">😢</div>
-            <p class="text-2xl font-bold">まだシールがないよ。<br>ゲームであそんでシールをあつめよう！</p>
+            <p class="text-xl md:text-2xl font-bold text-center">まだシールがないよ。<br>ゲームであそんでシールをあつめよう！</p>
         </div>
 
-        <div id="sticker-grid" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            <!-- シールがここに動的に追加されます -->
-        </div>
+        <!-- シールがここに動的に追加されます -->
 
     </main>
+
+    <footer class="w-full bg-orange-300 py-2 text-center text-white font-bold text-sm">
+        シールを 好きなところに はってみよう！
+    </footer>
 
     <script src="static/common/js/sticker_system.js"></script>
     <script>
@@ -44,52 +58,114 @@
             bgm.volume = 0.3;
             let bgmStarted = false;
 
+            const soundPeta = new Audio('static/sounds/staging/短い音-ポヨン.mp3'); // シールを貼る音
+
             const tryPlayBgm = () => {
                 if (!bgmStarted) {
                     bgm.play().then(() => {
                         bgmStarted = true;
-                        document.body.removeEventListener('click', tryPlayBgm);
-                        document.body.removeEventListener('touchstart', tryPlayBgm);
-                    }).catch(e => {
-                        console.log('Autoplay prevented. Waiting for user interaction.', e);
-                    });
+                    }).catch(e => console.log('BGM wait'));
                 }
             };
+            document.body.addEventListener('click', tryPlayBgm, { once: true });
 
-            // URLパラメータに autoplay=1 があれば即時再生を試みる
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('autoplay') === '1') {
-                tryPlayBgm();
-            }
-
-            // ブロックされた場合のフォールバックとしてタップイベントも残す
-            document.body.addEventListener('click', tryPlayBgm);
-            document.body.addEventListener('touchstart', tryPlayBgm, { passive: true });
-
-            const grid = document.getElementById('sticker-grid');
+            const area = document.getElementById('sticker-area');
             const emptyMessage = document.getElementById('empty-message');
             const uniqueCountSpan = document.getElementById('unique-count');
             const stickers = StickerSystem.getSavedStickers();
 
-            // ユニークなシールの数を計算
             const uniqueItems = new Set(stickers.map(s => s.item));
-            uniqueCountSpan.textContent = uniqueItems.size;
+            uniqueCountSpan.textContent = stickers.length;
 
             if (stickers.length === 0) {
                 emptyMessage.classList.remove('hidden');
                 return;
             }
 
-            // 新しい順に表示
-            stickers.reverse().forEach(sticker => {
-                const el = document.createElement('div');
-                el.className = `flex flex-col items-center justify-center p-4 rounded-xl border-4 ${sticker.data.color} shadow-sm`;
-                el.innerHTML = `
-                    <div class="text-5xl mb-2 drop-shadow-sm">${sticker.item}</div>
-                    <div class="text-xs font-bold px-2 py-1 bg-white/80 rounded-full">${sticker.data.label}</div>
-                `;
-                grid.appendChild(el);
+            stickers.forEach(sticker => {
+                createStickerElement(sticker);
             });
+
+            function createStickerElement(sticker) {
+                const el = document.createElement('div');
+                el.className = `sticker absolute flex flex-col items-center justify-center p-3 rounded-xl border-2 md:border-4 ${sticker.data.color} shadow-sm bg-white/90`;
+                el.style.left = sticker.x === 0 ? `${Math.random() * 60 + 20}%` : `${sticker.x}px`;
+                el.style.top = sticker.y === 0 ? `${Math.random() * 60 + 20}%` : `${sticker.y}px`;
+                el.style.transform = `rotate(${sticker.rotation || 0}deg)`;
+                el.dataset.id = sticker.id;
+
+                el.innerHTML = `
+                    <div class="text-4xl md:text-5xl mb-1 drop-shadow-sm">${sticker.item}</div>
+                    <div class="sticker-label text-[10px] font-bold px-2 py-0.5 bg-white/80 rounded-full border border-gray-200">${sticker.data.label}</div>
+                `;
+
+                area.appendChild(el);
+                makeDraggable(el);
+                
+                // 初回配置（座標0の場合）は保存しておく
+                if (sticker.x === 0 || sticker.y === 0) {
+                    const rect = el.getBoundingClientRect();
+                    const areaRect = area.getBoundingClientRect();
+                    StickerSystem.updateStickerPosition(sticker.id, rect.left - areaRect.left, rect.top - areaRect.top, 0);
+                }
+            }
+
+            function makeDraggable(el) {
+                let isDragging = false;
+                let startX, startY;
+                let initialX, initialY;
+
+                el.addEventListener('pointerdown', (e) => {
+                    isDragging = true;
+                    el.setPointerCapture(e.pointerId);
+                    
+                    const rect = el.getBoundingClientRect();
+                    const areaRect = area.getBoundingClientRect();
+                    
+                    initialX = rect.left - areaRect.left;
+                    initialY = rect.top - areaRect.top;
+                    
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    
+                    el.style.transition = 'none';
+                    el.style.zIndex = 1000;
+                });
+
+                el.addEventListener('pointermove', (e) => {
+                    if (!isDragging) return;
+                    
+                    const dx = e.clientX - startX;
+                    const dy = e.clientY - startY;
+                    
+                    const newX = initialX + dx;
+                    const newY = initialY + dy;
+                    
+                    el.style.left = `${newX}px`;
+                    el.style.top = `${newY}px`;
+                });
+
+                el.addEventListener('pointerup', (e) => {
+                    if (!isDragging) return;
+                    isDragging = false;
+                    el.releasePointerCapture(e.pointerId);
+                    
+                    el.style.transition = 'transform 0.1s ease-out';
+                    el.style.zIndex = '';
+                    
+                    const rect = el.getBoundingClientRect();
+                    const areaRect = area.getBoundingClientRect();
+                    const finalX = rect.left - areaRect.left;
+                    const finalY = rect.top - areaRect.top;
+                    
+                    // 座標を保存
+                    StickerSystem.updateStickerPosition(el.dataset.id, finalX, finalY, 0);
+                    
+                    // 音を鳴らす
+                    soundPeta.currentTime = 0;
+                    soundPeta.play().catch(e=>{});
+                });
+            }
         });
     </script>
 </body>

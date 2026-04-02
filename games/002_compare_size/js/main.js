@@ -1,3 +1,7 @@
+/**
+ * どっちがおおい？ - main.js
+ */
+
 document.addEventListener('DOMContentLoaded', () => {
     const itemLeft = document.getElementById('item-left');
     const itemRight = document.getElementById('item-right');
@@ -19,18 +23,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!introPlayed) {
             soundIntro.play().catch(e=>{});
             introPlayed = true;
-            document.body.removeEventListener('click', playIntro);
-            document.body.removeEventListener('touchstart', playIntro);
         }
     };
-    document.body.addEventListener('click', playIntro);
-    document.body.addEventListener('touchstart', playIntro, { passive: true });
-    setTimeout(playIntro, 100);
+    setTimeout(playIntro, 500);
 
     function init() {
         const emoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
         
-        // 個数を決定 (差をつけて分かりやすくする)
+        // モードをランダムに決定 (0: グリッド, 1: ランダム)
+        const mode = Math.random() > 0.5 ? 'grid' : 'random';
+
+        // 個数を決定
         const counts = [
             Math.floor(Math.random() * 3) + 1, // 1-3
             Math.floor(Math.random() * 4) + 6  // 6-9
@@ -40,26 +43,43 @@ document.addEventListener('DOMContentLoaded', () => {
         const countRight = counts[1];
         const isLeftBigger = countLeft > countRight;
 
-        renderItems(itemLeft, emoji, countLeft);
-        renderItems(itemRight, emoji, countRight);
+        renderItems(itemLeft, emoji, countLeft, mode);
+        renderItems(itemRight, emoji, countRight, mode);
 
         itemLeft.onclick = () => handleTap(isLeftBigger, itemLeft);
         itemRight.onclick = () => handleTap(!isLeftBigger, itemRight);
     }
 
-    function renderItems(container, emoji, count) {
+    function renderItems(container, emoji, count, mode) {
         container.innerHTML = '';
-        const grid = document.createElement('div');
-        grid.className = 'grid grid-cols-3 gap-3 pointer-events-none';
+        container.className = 'relative w-full h-full min-h-[200px] flex items-center justify-center p-4 rounded-3xl border-4 border-transparent transition-all duration-300';
         
-        for (let i = 0; i < count; i++) {
-            const span = document.createElement('span');
-            span.className = 'text-5xl drop-shadow-sm animate-bounce';
-            span.style.animationDelay = `${i * 0.1}s`;
-            span.textContent = emoji;
-            grid.appendChild(span);
+        if (mode === 'grid') {
+            const grid = document.createElement('div');
+            grid.className = 'grid grid-cols-3 gap-3 pointer-events-none';
+            for (let i = 0; i < count; i++) {
+                const span = document.createElement('span');
+                span.className = 'text-5xl drop-shadow-sm animate-bounce';
+                span.style.animationDelay = `${i * 0.1}s`;
+                span.textContent = emoji;
+                grid.appendChild(span);
+            }
+            container.appendChild(grid);
+        } else {
+            // ランダム配置モード
+            const wrapper = document.createElement('div');
+            wrapper.className = 'absolute inset-0 pointer-events-none';
+            for (let i = 0; i < count; i++) {
+                const span = document.createElement('span');
+                span.className = 'absolute text-5xl drop-shadow-sm animate-bounce';
+                span.style.left = `${Math.random() * 70 + 10}%`;
+                span.style.top = `${Math.random() * 70 + 10}%`;
+                span.style.animationDelay = `${i * 0.1}s`;
+                span.textContent = emoji;
+                wrapper.appendChild(span);
+            }
+            container.appendChild(wrapper);
         }
-        container.appendChild(grid);
     }
 
     function handleTap(isCorrect, element) {
@@ -70,12 +90,15 @@ document.addEventListener('DOMContentLoaded', () => {
             soundTap.currentTime = 0;
             soundTap.play().catch(e=>{});
             
-            // 正解演出: 大きく跳ねる
-            element.classList.remove('hover:bg-orange-100', 'hover:bg-blue-100');
-            element.classList.add('bg-yellow-200', 'border-yellow-400', 'z-10', 'scale-110');
-            element.querySelector('div').classList.add('animate-bounce');
+            // 正解演出: 太い枠線と背景色
+            element.classList.add('bg-yellow-100', 'border-orange-500', 'scale-105', 'z-10');
             
-            setTimeout(finishGame, 1000);
+            // 全てのアイテムをさらに跳ねさせる
+            element.querySelectorAll('span').forEach(s => {
+                s.classList.add('scale-125');
+            });
+            
+            setTimeout(finishGame, 1500);
         } else {
             soundError.currentTime = 0;
             soundError.play().catch(e=>{});
@@ -99,18 +122,15 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupStickers() {
         if (!window.StickerSystem) return;
         const choices = document.getElementById('sticker-choices');
-        const selectionArea = document.getElementById('sticker-selection');
-        const afterSelection = document.getElementById('after-selection');
         StickerSystem.drawThree().forEach(sticker => {
             const btn = document.createElement('button');
             btn.className = `flex flex-col items-center justify-center p-6 rounded-2xl border-4 ${sticker.data.color} shadow-md hover:scale-110 transition-transform bg-white`;
             btn.innerHTML = `<div class="text-6xl mb-2">${sticker.item}</div><div class="text-sm font-bold">${sticker.data.label}</div>`;
             btn.addEventListener('click', () => {
-                soundSelect.currentTime = 0;
                 soundSelect.play().catch(e=>{});
                 StickerSystem.saveSticker(sticker);
-                selectionArea.classList.add('hidden');
-                afterSelection.classList.remove('hidden');
+                document.getElementById('sticker-selection').classList.add('hidden');
+                document.getElementById('after-selection').classList.remove('hidden');
             });
             choices.appendChild(btn);
         });
