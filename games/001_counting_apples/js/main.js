@@ -107,8 +107,9 @@ function createApple(id) {
         countVoice.play().catch(e=>{});
 
         apple.dataset.tapped = 'true';
-        apple.classList.add('opacity-50', 'scale-75', 'rotate-12');
-    ...
+        apple.classList.remove('animate-bounce');
+        apple.classList.add('scale-150', 'opacity-0', 'pointer-events-none');
+
         // タップした瞬間に数字を表示するアニメーション (増やした後の数を表示)
         showNumberAt(apple, tappedCount);
 

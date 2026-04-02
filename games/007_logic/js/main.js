@@ -69,9 +69,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isFinished) return;
                 if (item === correctAnswer) {
                     soundTap.currentTime = 0; soundTap.play().catch(e=>{});
-                    questionDiv.innerHTML = item;
+                    
+                    // コンベア演出: 右からスッと入ってくる
+                    questionDiv.style.overflow = 'hidden';
+                    questionDiv.innerHTML = `<div class="animate-conveyor">${item}</div>`;
                     questionDiv.classList.remove('animate-pulse', 'border-purple-300');
                     questionDiv.classList.add('border-green-400', 'scale-110');
+                    
                     isFinished = true;
                     setTimeout(finishGame, 800);
                 } else {

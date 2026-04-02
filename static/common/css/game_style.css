@@ -80,3 +80,13 @@ body {
     25% { transform: translateX(-5px) rotate(-5deg); }
     75% { transform: translateX(5px) rotate(5deg); }
 }
+
+/* コンベア演出（右からスライド） */
+.animate-conveyor {
+    animation: conveyor-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes conveyor-in {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}

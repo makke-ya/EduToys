@@ -53,9 +53,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // 正解
             soundTap.currentTime = 0;
             soundTap.play().catch(e=>{});
-            element.classList.add('scale-150', 'opacity-0');
+            element.classList.add('animate-bounce');
             isFinished = true;
-            setTimeout(finishGame, 500);
+            setTimeout(finishGame, 1000);
         } else {
             // 不正解
             soundError.currentTime = 0;

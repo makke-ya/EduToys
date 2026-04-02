@@ -64,9 +64,13 @@ document.addEventListener('DOMContentLoaded', () => {
             soundTap.currentTime = 0;
             soundTap.play().catch(e=>{});
             btn.classList.add('bg-green-400', 'text-white', 'border-green-500');
-            target.classList.add('animate-bounce');
+            
+            // 拡大・回転演出
+            target.style.transition = 'all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            target.style.transform = 'scale(1.8) rotate(360deg)';
+            
             isFinished = true;
-            setTimeout(finishGame, 1000);
+            setTimeout(finishGame, 1200);
         } else {
             soundError.currentTime = 0;
             soundError.play().catch(e=>{});
