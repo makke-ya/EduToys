@@ -7,14 +7,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../../static/common/css/game_style.css">
     <style>
-        .dot { touch-action: none; transition: all 0.3s; }
-        .dot-active { box-shadow: 0 0 15px #fbc02d; transform: scale(1.2); }
+        #dots-svg { touch-action: none; cursor: crosshair; }
+        .dot-marker { pointer-events: none; transition: all 0.3s; }
+        .dot-label { pointer-events: none; font-weight: 900; }
+        .dot-active { filter: drop-shadow(0 0 8px #fbc02d); transform: scale(1.2); }
+        .dot-reached { fill: #4caf50 !important; stroke: #2e7d32 !important; }
         .illustration-fadein { opacity: 1 !important; }
     </style>
 </head>
 <body class="bg-green-100 overflow-hidden flex flex-col items-center justify-center h-screen relative">
     
-    <!-- 戻るボタン -->
     <button onclick="parent.postMessage('closeGame', '*')" class="absolute top-4 left-4 z-40 bg-white/80 text-gray-700 px-4 py-2 rounded-full font-bold shadow-sm hover:bg-white transition-colors border-2 border-green-200">
         ◀ もどる
     </button>
@@ -26,19 +28,20 @@
             </h1>
         </div>
         
-        <div id="dots-stage" class="w-full h-full relative p-12">
+        <div id="dots-stage" class="w-full h-full relative p-8">
             <svg id="dots-svg" viewBox="0 0 100 100" class="w-full h-full">
-                <!-- 完成イラスト（最初は透明） -->
-                <path id="goal-illustration" d="M 20 80 L 20 45 L 50 15 L 80 45 L 80 80 Z" fill="#fff9c4" stroke="#fbc02d" stroke-width="2" class="opacity-0 transition-opacity duration-1000" />
-                <rect x="40" y="55" width="20" height="25" fill="#a1887f" class="goal-part opacity-0 transition-opacity duration-1000" />
+                <!-- 完成イラストのベース（背景） -->
+                <path id="goal-illustration" d="" fill="#fff9c4" stroke="#fbc02d" stroke-width="1" class="opacity-0 transition-opacity duration-1000" />
                 
-                <!-- 描画される線 -->
+                <!-- 確定した線 -->
                 <path id="lines-path" d="" fill="none" stroke="#ff9800" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+                
+                <!-- 現在引いている途中の線 -->
+                <line id="active-line" x1="0" y1="0" x2="0" y2="0" stroke="#ffb74d" stroke-width="4" stroke-dasharray="4,2" class="hidden" />
+
+                <!-- 点と数字のグループ -->
+                <g id="dots-group"></g>
             </svg>
-            
-            <div id="dots-container" class="absolute inset-0">
-                <!-- 点が動的に生成されます -->
-            </div>
         </div>
 
         <!-- 終了画面オーバーレイ -->
