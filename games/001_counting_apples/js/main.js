@@ -7,6 +7,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const counterDisplay = document.getElementById('counter');
     const finishOverlay = document.getElementById('finish-overlay');
 
+    // 音声ファイルの準備
+    const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
+    const soundClear = new Audio('../../static/sounds/voice/おめでとう.mp3');
+    const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
+
     const TOTAL_APPLES = 5; // 幼児向けに5個程度から開始
     let tappedCount = 0;
     let isFinished = false;
@@ -43,6 +48,10 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleTap(apple) {
         if (isFinished || apple.dataset.tapped === 'true') return;
 
+        // タップ音を再生 (連続タップに対応するためcurrentTimeをリセット)
+        soundTap.currentTime = 0;
+        soundTap.play().catch(e => console.log('Audio play failed:', e));
+
         apple.dataset.tapped = 'true';
         apple.classList.add('opacity-50', 'scale-75', 'rotate-12');
         
@@ -60,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function showNumberAt(apple) {
         const num = document.createElement('div');
         num.className = 'absolute text-4xl font-black text-orange-500 animate-number-up pointer-events-none';
-        num.textContent = tappedCount + 1;
+        num.textContent = tappedCount; // 1から始まるように修正済み
         num.style.left = apple.style.left;
         num.style.top = apple.style.top;
         stage.appendChild(num);
@@ -70,6 +79,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function finishGame() {
         isFinished = true;
+        
+        // クリア音を再生
+        setTimeout(() => {
+            soundClear.play().catch(e => console.log('Audio play failed:', e));
+        }, 300);
+
         setTimeout(() => {
             finishOverlay.classList.remove('hidden');
             setupStickers();
@@ -94,6 +109,10 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             
             btn.addEventListener('click', () => {
+                // 選択音を再生
+                soundSelect.currentTime = 0;
+                soundSelect.play().catch(e => console.log('Audio play failed:', e));
+
                 StickerSystem.saveSticker(sticker);
                 selectionArea.classList.add('hidden');
                 afterSelection.classList.remove('hidden');
