@@ -3,6 +3,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
     const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
+    const soundError = new Audio('../../static/sounds/staging/短い音-ズッコケ.mp3');
+    
+    const soundIntro = new Audio('../../static/sounds/voice/005_intro.mp3');
+    const soundClearVoice = new Audio('../../static/sounds/voice/clear.mp3');
+    const soundSelectSticker = new Audio('../../static/sounds/voice/select_sticker.mp3');
 
     const dragPoint = document.getElementById('drag-point');
     const tracingArea = document.getElementById('tracing-area');
@@ -13,25 +18,17 @@ document.addEventListener('DOMContentLoaded', () => {
     let dragging = false;
     let currentCheckIndex = 0;
     
-    // 今回は「1」と「2」のなぞりデータ
     const NUMBER_PATHS = [
         {
             number: '1',
             checkpoints: [
-                { x: 35, y: 30 }, // スタート
-                { x: 50, y: 15 }, // 頂点
-                { x: 50, y: 50 }, // 真ん中
-                { x: 50, y: 85 }  // ゴール
+                { x: 35, y: 30 }, { x: 50, y: 15 }, { x: 50, y: 50 }, { x: 50, y: 85 }
             ]
         },
         {
             number: '2',
             checkpoints: [
-                { x: 30, y: 30 }, // スタート
-                { x: 50, y: 15 }, // 上カーブ
-                { x: 75, y: 35 }, // 右カーブ
-                { x: 40, y: 85 }, // 左下へ
-                { x: 80, y: 85 }  // 右へ
+                { x: 30, y: 30 }, { x: 50, y: 15 }, { x: 75, y: 35 }, { x: 40, y: 85 }, { x: 80, y: 85 }
             ]
         }
     ];
@@ -39,7 +36,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentPath = [];
     let checkElements = [];
 
-    
     let introPlayed = false;
     const playIntro = () => {
         if (!introPlayed) {
@@ -51,7 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     document.body.addEventListener('click', playIntro);
     document.body.addEventListener('touchstart', playIntro, { passive: true });
-    // 自動再生できれば最初から鳴らす
     setTimeout(playIntro, 100);
 
     function init() {
@@ -68,65 +63,61 @@ document.addEventListener('DOMContentLoaded', () => {
             cp.className = 'absolute w-12 h-12 bg-yellow-300 rounded-full opacity-30 transform -translate-x-1/2 -translate-y-1/2 transition-all';
             cp.style.left = `${pt.x}%`;
             cp.style.top = `${pt.y}%`;
-            
             if (index === 0) cp.classList.add('animate-ping', 'opacity-80', 'bg-yellow-400');
-            
             checkpointsContainer.appendChild(cp);
             checkElements.push(cp);
         });
 
-        // Pointer Events によるドラッグ実装（マウスとタッチ両対応）
         dragPoint.addEventListener('pointerdown', startDrag);
-        // ドキュメント全体で動かせるようにする
         document.addEventListener('pointermove', onDrag, { passive: false });
         document.addEventListener('pointerup', endDrag);
 
-        // 初期位置へ（中心を合わせるための調整値）
-        dragPoint.style.left = `calc(${currentPath[0].x}% - 2rem)`;
-        dragPoint.style.top = `calc(${currentPath[0].y}% - 2rem)`;
+        moveDragPointTo(currentPath[0].x, currentPath[0].y);
+    }
+
+    function moveDragPointTo(px, py) {
+        dragPoint.style.left = `calc(${px}% - 2rem)`;
+        dragPoint.style.top = `calc(${py}% - 2rem)`;
     }
 
     function startDrag(e) {
         if (isFinished) return;
         dragging = true;
         dragPoint.classList.add('scale-125');
-        // ドラッグ中に画面がスクロールするのを防ぐ
         e.preventDefault();
-        
-        // 最初のポイントにすでに乗っているかチェック
         checkHit(e.clientX, e.clientY);
     }
-function onDrag(e) {
-    if (!dragging || isFinished) return;
-    e.preventDefault();
 
-    // キラキラを生成（なぞり演出）
-    if (Math.random() > 0.5) GameUtils.createSparkle(tracingArea);
+    function onDrag(e) {
+        if (!dragging || isFinished) return;
+        e.preventDefault();
 
-    // clientX, clientY を tracingArea 内の相対座標（%）に変換
-...
+        if (Math.random() > 0.6) GameUtils.createSparkle(tracingArea);
+
         const rect = tracingArea.getBoundingClientRect();
-        
         let x = e.clientX - rect.left;
         let y = e.clientY - rect.top;
-        
-        // はみ出し制限
         x = Math.max(0, Math.min(x, rect.width));
         y = Math.max(0, Math.min(y, rect.height));
 
         const percentX = (x / rect.width) * 100;
         const percentY = (y / rect.height) * 100;
 
-        // マウス位置にドラッグポイントを追従させる
-        dragPoint.style.left = `calc(${percentX}% - 2rem)`;
-        dragPoint.style.top = `calc(${percentY}% - 2rem)`;
-
+        moveDragPointTo(percentX, percentY);
         checkHit(e.clientX, e.clientY);
     }
 
-    function endDrag(e) {
+    function endDrag() {
+        if (!dragging) return;
         dragging = false;
         dragPoint.classList.remove('scale-125');
+
+        if (!isFinished) {
+            const lastCheck = currentPath[Math.max(0, currentCheckIndex - 1)];
+            dragPoint.style.transition = 'all 0.5s ease-out';
+            moveDragPointTo(lastCheck.x, lastCheck.y);
+            setTimeout(() => { dragPoint.style.transition = ''; }, 500);
+        }
     }
 
     function checkHit(clientX, clientY) {
@@ -134,21 +125,19 @@ function onDrag(e) {
 
         const cpEl = checkElements[currentCheckIndex];
         const cpRect = cpEl.getBoundingClientRect();
-
-        // 判定は clientX/Y（画面絶対座標）同士で計算
         const cpCenterX = cpRect.left + cpRect.width / 2;
         const cpCenterY = cpRect.top + cpRect.height / 2;
 
         const dist = Math.sqrt(Math.pow(clientX - cpCenterX, 2) + Math.pow(clientY - cpCenterY, 2));
 
-        // 当たり判定 (40pxくらいならOK)
         if (dist < 40) {
             cpEl.classList.remove('animate-ping', 'opacity-30', 'bg-yellow-400');
             cpEl.classList.add('bg-green-400', 'opacity-80', 'scale-150');
-            soundTap.currentTime = 0; soundTap.play().catch(e=>{});
+            
+            const strokeNum = Math.min(currentCheckIndex + 1, 3); // stroke_1 to stroke_3
+            new Audio(`../../static/sounds/voice/stroke_${strokeNum}.mp3`).play().catch(e=>{});
             
             setTimeout(() => cpEl.classList.remove('scale-150'), 200);
-
             currentCheckIndex++;
 
             if (currentCheckIndex < currentPath.length) {
@@ -164,7 +153,10 @@ function onDrag(e) {
 
     function finishGame() {
         GameUtils.showHanamaru();
-        setTimeout(() => soundClear.play().catch(e=>{}); soundClearVoice.play().catch(e=>{});, 300);
+        setTimeout(() => {
+            soundClear.play().catch(e=>{});
+            soundClearVoice.play().catch(e=>{});
+        }, 300);
         setTimeout(() => {
             finishOverlay.classList.remove('hidden');
             soundSelectSticker.play().catch(e=>{});

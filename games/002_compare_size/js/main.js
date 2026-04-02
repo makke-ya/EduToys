@@ -31,13 +31,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function init() {
         const emoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
-        // ランダムにどちらを大きくするか決定 (0: 左, 1: 右)
+        // ランダムに個数を決定 (例: 1-5個 vs 6-10個)
+        const numA = Math.floor(Math.random() * 4) + 1; // 1-4
+        const numB = Math.floor(Math.random() * 4) + 6; // 6-9
+        
         const isLeftBigger = Math.random() < 0.5;
+        const countLeft = isLeftBigger ? numB : numA;
+        const countRight = isLeftBigger ? numA : numB;
 
-        itemLeft.innerHTML = `<div class="${isLeftBigger ? 'text-9xl' : 'text-5xl'} transition-all">${emoji}</div>`;
-        itemRight.innerHTML = `<div class="${!isLeftBigger ? 'text-9xl' : 'text-5xl'} transition-all">${emoji}</div>`;
+        itemLeft.innerHTML = `<div class="grid grid-cols-3 gap-2 text-4xl">${emoji.repeat(countLeft).split('').map(e=>`<span>${e}</span>`).join('')}</div>`;
+        itemRight.innerHTML = `<div class="grid grid-cols-3 gap-2 text-4xl">${emoji.repeat(countRight).split('').map(e=>`<span>${e}</span>`).join('')}</div>`;
 
-        // イベントリスナーの登録
         itemLeft.onclick = () => handleTap(isLeftBigger, itemLeft);
         itemRight.onclick = () => handleTap(!isLeftBigger, itemRight);
     }

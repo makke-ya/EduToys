@@ -104,8 +104,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (isOverlap) {
                 if (shape === correctAnswer) {
-                    // 正解
-                    draggingElement.remove();
+                    // 正解（スナップ演出）
+                    draggingElement.style.left = `${silRect.left}px`;
+                    draggingElement.style.top = `${silRect.top}px`;
+                    draggingElement.classList.remove('scale-110', 'z-50');
+                    draggingElement.classList.add('scale-100');
+                    
+                    soundSelect.currentTime = 0; soundSelect.play().catch(e=>{}); // カチッという音
+                    
                     silhouette.classList.remove('filter', 'brightness-0', 'opacity-30');
                     silhouette.classList.add('scale-125', 'transition-transform');
                     isFinished = true;

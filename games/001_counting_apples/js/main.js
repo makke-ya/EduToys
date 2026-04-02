@@ -98,17 +98,17 @@ function createApple(id) {
     function handleTap(apple) {
         if (isFinished || apple.dataset.tapped === 'true') return;
 
-        // タップ音を再生 (連続タップに対応するためcurrentTimeをリセット)
-        soundTap.currentTime = 0;
-        soundTap.play().catch(e => console.log('Audio play failed:', e));
-
-        apple.dataset.tapped = 'true';
-        apple.classList.add('opacity-50', 'scale-75', 'rotate-12');
-        
         // カウントを先に増やす
         tappedCount++;
         counterDisplay.textContent = tappedCount;
 
+        // 数え上げ音声を再生
+        const countVoice = new Audio(`../../static/sounds/voice/num_${tappedCount}.mp3`);
+        countVoice.play().catch(e=>{});
+
+        apple.dataset.tapped = 'true';
+        apple.classList.add('opacity-50', 'scale-75', 'rotate-12');
+    ...
         // タップした瞬間に数字を表示するアニメーション (増やした後の数を表示)
         showNumberAt(apple, tappedCount);
 
