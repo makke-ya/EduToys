@@ -11,6 +11,14 @@
 </head>
 <body class="bg-yellow-50 min-h-screen p-4 md:p-8 relative">
     
+    <!-- スタートオーバーレイ (BGM再生とブラウザ制限解除のトリガー) -->
+    <div id="start-overlay" class="fixed inset-0 bg-yellow-50 z-[100] flex flex-col items-center justify-center transition-opacity duration-300">
+        <h1 class="text-6xl font-black text-orange-500 mb-8 animate-bounce drop-shadow-lg">EduToys</h1>
+        <button id="btn-start" class="px-10 py-6 bg-yellow-400 hover:bg-yellow-500 text-white text-4xl font-bold rounded-full shadow-xl transition-transform active:scale-95 border-4 border-yellow-200">
+            はじめる！ ▶
+        </button>
+    </div>
+
     <header class="text-center mb-10 relative">
         <h1 class="text-5xl md:text-6xl font-black text-orange-500 mb-4 drop-shadow-md">
             🌟 EduToys 🌟
@@ -56,20 +64,15 @@
             const bgm = new Audio('static/sounds/bgm/Pops_02.mp3');
             bgm.loop = true;
             bgm.volume = 0.4;
-            let bgmStarted = false;
+            
+            const startOverlay = document.getElementById('start-overlay');
+            const btnStart = document.getElementById('btn-start');
 
-            const startBgm = () => {
-                if (!bgmStarted) {
-                    bgm.play().catch(e => console.log('BGM play failed:', e));
-                    bgmStarted = true;
-                    // 一度再生できたらリスナーを解除
-                    document.body.removeEventListener('click', startBgm);
-                    document.body.removeEventListener('touchstart', startBgm);
-                }
-            };
-
-            document.body.addEventListener('click', startBgm);
-            document.body.addEventListener('touchstart', startBgm, { passive: true });
+            btnStart.addEventListener('click', () => {
+                bgm.play().catch(e => console.log('BGM play failed:', e));
+                startOverlay.style.opacity = '0';
+                setTimeout(() => startOverlay.classList.add('hidden'), 300);
+            });
         });
     </script>
 </body>
