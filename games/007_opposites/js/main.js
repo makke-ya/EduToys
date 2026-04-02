@@ -1,20 +1,58 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const stage = document.getElementById('stage');
-    const target = document.getElementById('target-item');
     const finishOverlay = document.getElementById('finish-overlay');
-
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
     const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
+    const soundError = new Audio('../../static/sounds/system/エラー2.mp3');
 
-    // 簡易的なクリアロジック（タップで即クリア）
-    target.addEventListener('click', () => {
-        soundTap.currentTime = 0;
-        soundTap.play().catch(e=>{});
-        target.classList.add('scale-150', 'opacity-0');
-        setTimeout(finishGame, 500);
-    });
-    
+    const PAIRS = [
+        { a: {icon:'🐘', word:'おおきい'}, b: {icon:'🐭', word:'ちいさい'} },
+        { a: {icon:'☀️', word:'あつい'}, b: {icon:'⛄', word:'さむい'} },
+        { a: {icon:'😊', word:'わらう'}, b: {icon:'😭', word:'なく'} }
+    ];
+    let isFinished = false;
+
+    function init() {
+        const pair = PAIRS[Math.floor(Math.random() * PAIRS.length)];
+        const isA = Math.random() < 0.5;
+        const question = isA ? pair.a : pair.b;
+        const answer = isA ? pair.b : pair.a;
+        
+        document.getElementById('target-item').innerHTML = `${question.icon}<br><span class="text-2xl">${question.word}</span>`;
+        
+        let currentChoices = [answer];
+        while (currentChoices.length < 3) {
+            const randomPair = PAIRS[Math.floor(Math.random() * PAIRS.length)];
+            const dummy = Math.random() < 0.5 ? randomPair.a : randomPair.b;
+            if (!currentChoices.find(c => c.word === dummy.word) && dummy.word !== question.word) {
+                currentChoices.push(dummy);
+            }
+        }
+        currentChoices.sort(() => Math.random() - 0.5);
+
+        const choicesContainer = document.getElementById('choices');
+        choicesContainer.innerHTML = '';
+        currentChoices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.className = 'text-6xl p-6 bg-white rounded-3xl shadow-md border-4 border-purple-200 hover:scale-110 hover:border-purple-400 transition-transform active:scale-95 flex flex-col items-center';
+            btn.innerHTML = `${choice.icon}<span class="text-xl mt-2 font-bold">${choice.word}</span>`;
+            btn.onclick = () => {
+                if (isFinished) return;
+                if (choice.word === answer.word) {
+                    soundTap.currentTime = 0; soundTap.play().catch(e=>{    init();
+});
+                    btn.classList.add('bg-green-200', 'border-green-400');
+                    isFinished = true;
+                    setTimeout(finishGame, 800);
+                } else {
+                    soundError.currentTime = 0; soundError.play().catch(e=>{});
+                    btn.classList.add('opacity-50');
+                }
+            };
+            choicesContainer.appendChild(btn);
+        });
+    }
+
     function finishGame() {
         setTimeout(() => soundClear.play().catch(e=>{}), 300);
         setTimeout(() => {

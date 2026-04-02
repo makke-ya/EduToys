@@ -14,9 +14,13 @@
             <h1 class="text-3xl font-bold text-cyan-500 bg-white/80 inline-block px-6 py-2 rounded-full shadow-md">ばいきんを アワアワで やっつけよう！</h1>
         </div>
         
-        <div id="stage" class="w-full h-full relative flex items-center justify-center text-8xl">
-            <!-- ゲームコンテンツ -->
-            <div class="cursor-pointer hover:scale-110 transition-transform" id="target-item">🧼</div>
+                <div id="stage" class="w-full h-full relative flex flex-col items-center justify-center">
+            <div id="hands" class="text-9xl relative">
+                ✋
+                <div id="germs" class="absolute inset-0 flex items-center justify-center gap-2 flex-wrap pointer-events-none"></div>
+            </div>
+            <p class="mt-8 text-xl font-bold text-gray-500">ばいきんを タップして やっつけよう！</p>
+        </div>
         </div>
 
         <div id="finish-overlay" class="hidden absolute inset-0 bg-white/95 flex flex-col items-center justify-center z-50">

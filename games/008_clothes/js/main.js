@@ -1,20 +1,52 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const stage = document.getElementById('stage');
-    const target = document.getElementById('target-item');
     const finishOverlay = document.getElementById('finish-overlay');
-
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
     const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
+    const soundError = new Audio('../../static/sounds/system/エラー2.mp3');
 
-    // 簡易的なクリアロジック（タップで即クリア）
-    target.addEventListener('click', () => {
-        soundTap.currentTime = 0;
-        soundTap.play().catch(e=>{});
-        target.classList.add('scale-150', 'opacity-0');
-        setTimeout(finishGame, 500);
-    });
-    
+    const WEATHERS = [
+        { icon: '☀️', name: 'はれ', correct: '🧢' },
+        { icon: '☔', name: 'あめ', correct: '☂️' },
+        { icon: '⛄', name: 'ゆき', correct: '🧣' }
+    ];
+    const ALL_CLOTHES = ['🧢', '☂️', '🧣', '🕶️', '👢'];
+    let isFinished = false;
+
+    function init() {
+        const weather = WEATHERS[Math.floor(Math.random() * WEATHERS.length)];
+        document.getElementById('weather').innerHTML = `${weather.icon}<br><span class="text-2xl font-bold">${weather.name} のひは？</span>`;
+        
+        let currentChoices = [weather.correct];
+        while(currentChoices.length < 3) {
+            const dummy = ALL_CLOTHES[Math.floor(Math.random() * ALL_CLOTHES.length)];
+            if(!currentChoices.includes(dummy)) currentChoices.push(dummy);
+        }
+        currentChoices.sort(() => Math.random() - 0.5);
+
+        const choicesContainer = document.getElementById('choices');
+        choicesContainer.innerHTML = '';
+        currentChoices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.className = 'text-7xl p-4 bg-white rounded-full shadow-md border-4 border-orange-200 hover:scale-110 transition-transform active:scale-95';
+            btn.innerHTML = choice;
+            btn.onclick = () => {
+                if (isFinished) return;
+                if (choice === weather.correct) {
+                    soundTap.currentTime = 0; soundTap.play().catch(e=>{    init();
+});
+                    btn.classList.add('bg-yellow-200');
+                    isFinished = true;
+                    setTimeout(finishGame, 800);
+                } else {
+                    soundError.currentTime = 0; soundError.play().catch(e=>{});
+                    btn.classList.add('opacity-50');
+                }
+            };
+            choicesContainer.appendChild(btn);
+        });
+    }
+
     function finishGame() {
         setTimeout(() => soundClear.play().catch(e=>{}), 300);
         setTimeout(() => {

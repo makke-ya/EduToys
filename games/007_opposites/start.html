@@ -14,9 +14,13 @@
             <h1 class="text-3xl font-bold text-purple-500 bg-white/80 inline-block px-6 py-2 rounded-full shadow-md">はんたいの いみを さがしてね！</h1>
         </div>
         
-        <div id="stage" class="w-full h-full relative flex items-center justify-center text-8xl">
-            <!-- ゲームコンテンツ -->
-            <div class="cursor-pointer hover:scale-110 transition-transform" id="target-item">↔️</div>
+                <div id="stage" class="w-full h-full relative flex flex-col items-center justify-center gap-8">
+            <div class="flex items-center justify-center gap-4">
+                <div id="target-item" class="text-8xl p-8 bg-gray-100 rounded-3xl"></div>
+                <div class="text-4xl font-bold text-gray-400">の はんたいは？</div>
+            </div>
+            <div id="choices" class="flex gap-8 mt-8"></div>
+        </div>
         </div>
 
         <div id="finish-overlay" class="hidden absolute inset-0 bg-white/95 flex flex-col items-center justify-center z-50">

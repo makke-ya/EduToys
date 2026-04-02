@@ -1,20 +1,47 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const stage = document.getElementById('stage');
-    const target = document.getElementById('target-item');
     const finishOverlay = document.getElementById('finish-overlay');
-
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
     const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
+    const soundError = new Audio('../../static/sounds/system/エラー2.mp3');
 
-    // 簡易的なクリアロジック（タップで即クリア）
-    target.addEventListener('click', () => {
-        soundTap.currentTime = 0;
-        soundTap.play().catch(e=>{});
-        target.classList.add('scale-150', 'opacity-0');
-        setTimeout(finishGame, 500);
-    });
-    
+    const EMOJIS = [
+        { icon: '😄', emotion: 'うれしい' }, { icon: '😭', emotion: 'かなしい' }, { icon: '😡', emotion: 'おこってる' }
+    ];
+    let isFinished = false;
+
+    function init() {
+        const stage = document.getElementById('stage');
+        const qText = document.getElementById('question-text');
+        const choicesContainer = document.getElementById('choices');
+        
+        const question = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+        qText.textContent = `「${question.emotion}」おかおは どれかな？`;
+        
+        const currentChoices = [...EMOJIS].sort(() => Math.random() - 0.5);
+
+        choicesContainer.innerHTML = '';
+        currentChoices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.className = 'text-8xl p-4 bg-white rounded-full shadow-md border-4 border-blue-200 hover:scale-110 hover:border-blue-400 transition-transform active:scale-95';
+            btn.innerHTML = choice.icon;
+            btn.onclick = () => {
+                if (isFinished) return;
+                if (choice.emotion === question.emotion) {
+                    soundTap.currentTime = 0; soundTap.play().catch(e=>{    init();
+});
+                    btn.classList.add('scale-125', 'bg-yellow-200', 'border-yellow-400');
+                    isFinished = true;
+                    setTimeout(finishGame, 800);
+                } else {
+                    soundError.currentTime = 0; soundError.play().catch(e=>{});
+                    btn.classList.add('opacity-50');
+                }
+            };
+            choicesContainer.appendChild(btn);
+        });
+    }
+
     function finishGame() {
         setTimeout(() => soundClear.play().catch(e=>{}), 300);
         setTimeout(() => {

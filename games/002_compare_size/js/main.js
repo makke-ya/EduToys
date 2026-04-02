@@ -1,19 +1,47 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const stage = document.getElementById('stage');
-    const target = document.getElementById('target-item');
+    const itemLeft = document.getElementById('item-left');
+    const itemRight = document.getElementById('item-right');
     const finishOverlay = document.getElementById('finish-overlay');
 
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
     const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
+    const soundError = new Audio('../../static/sounds/system/エラー2.mp3');
 
-    // 簡易的なクリアロジック（タップで即クリア）
-    target.addEventListener('click', () => {
-        soundTap.currentTime = 0;
-        soundTap.play().catch(e=>{});
-        target.classList.add('scale-150', 'opacity-0');
-        setTimeout(finishGame, 500);
-    });
+    const EMOJIS = ['🐘', '🍎', '🐶', '🚗', '🍓', '🐱', '⚽', '🧸'];
+    let isFinished = false;
+
+    function init() {
+        const emoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+        // ランダムにどちらを大きくするか決定 (0: 左, 1: 右)
+        const isLeftBigger = Math.random() < 0.5;
+
+        itemLeft.innerHTML = `<div class="${isLeftBigger ? 'text-9xl' : 'text-5xl'} transition-all">${emoji}</div>`;
+        itemRight.innerHTML = `<div class="${!isLeftBigger ? 'text-9xl' : 'text-5xl'} transition-all">${emoji}</div>`;
+
+        // イベントリスナーの登録
+        itemLeft.onclick = () => handleTap(isLeftBigger, itemLeft);
+        itemRight.onclick = () => handleTap(!isLeftBigger, itemRight);
+    }
+
+    function handleTap(isCorrect, element) {
+        if (isFinished) return;
+
+        if (isCorrect) {
+            // 正解
+            soundTap.currentTime = 0;
+            soundTap.play().catch(e=>{});
+            element.classList.add('scale-150', 'opacity-0');
+            isFinished = true;
+            setTimeout(finishGame, 500);
+        } else {
+            // 不正解
+            soundError.currentTime = 0;
+            soundError.play().catch(e=>{});
+            element.classList.add('animate-ping'); // ブルブル震える
+            setTimeout(() => element.classList.remove('animate-ping'), 500);
+        }
+    }
     
     function finishGame() {
         setTimeout(() => soundClear.play().catch(e=>{}), 300);
@@ -30,8 +58,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const afterSelection = document.getElementById('after-selection');
         StickerSystem.drawThree().forEach(sticker => {
             const btn = document.createElement('button');
-            btn.className = "flex flex-col items-center justify-center p-6 rounded-2xl border-4 " + sticker.data.color + " shadow-md hover:scale-110 transition-transform bg-white";
-            btn.innerHTML = '<div class="text-6xl mb-2">' + sticker.item + '</div><div class="text-sm font-bold">' + sticker.data.label + '</div>';
+            btn.className = `flex flex-col items-center justify-center p-6 rounded-2xl border-4 ${sticker.data.color} shadow-md hover:scale-110 transition-transform bg-white`;
+            btn.innerHTML = `<div class="text-6xl mb-2">${sticker.item}</div><div class="text-sm font-bold">${sticker.data.label}</div>`;
             btn.addEventListener('click', () => {
                 soundSelect.currentTime = 0;
                 soundSelect.play().catch(e=>{});
@@ -42,4 +70,6 @@ document.addEventListener('DOMContentLoaded', () => {
             choices.appendChild(btn);
         });
     }
+
+    init();
 });

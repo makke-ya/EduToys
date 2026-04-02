@@ -1,19 +1,61 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const stage = document.getElementById('stage');
     const target = document.getElementById('target-item');
+    const choicesContainer = document.getElementById('choices');
     const finishOverlay = document.getElementById('finish-overlay');
 
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
     const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
+    const soundError = new Audio('../../static/sounds/system/エラー2.mp3');
 
-    // 簡易的なクリアロジック（タップで即クリア）
-    target.addEventListener('click', () => {
-        soundTap.currentTime = 0;
-        soundTap.play().catch(e=>{});
-        target.classList.add('scale-150', 'opacity-0');
-        setTimeout(finishGame, 500);
-    });
+    const DICTIONARY = [
+        { icon: '🐶', name: 'いぬ' }, { icon: '🐱', name: 'ねこ' }, { icon: '🐘', name: 'ぞう' },
+        { icon: '🍎', name: 'りんご' }, { icon: '🍓', name: 'いちご' }, { icon: '🌻', name: 'ひまわり' },
+        { icon: '🚗', name: 'くるま' }, { icon: '✈️', name: 'ひこうき' }, { icon: '🧸', name: 'くま' }
+    ];
+    let isFinished = false;
+
+    function init() {
+        const question = DICTIONARY[Math.floor(Math.random() * DICTIONARY.length)];
+        target.innerHTML = question.icon;
+        
+        const currentChoices = [question];
+        while (currentChoices.length < 3) {
+            const dummy = DICTIONARY[Math.floor(Math.random() * DICTIONARY.length)];
+            if (!currentChoices.find(c => c.name === dummy.name)) {
+                currentChoices.push(dummy);
+            }
+        }
+        
+        currentChoices.sort(() => Math.random() - 0.5);
+
+        choicesContainer.innerHTML = '';
+        currentChoices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.className = 'w-full py-4 text-3xl font-bold bg-white rounded-full shadow-md border-4 border-pink-200 hover:bg-pink-50 hover:border-pink-400 transition-colors active:scale-95';
+            btn.textContent = choice.name;
+            btn.onclick = () => handleTap(choice.name === question.name, btn);
+            choicesContainer.appendChild(btn);
+        });
+    }
+
+    function handleTap(isCorrect, btn) {
+        if (isFinished) return;
+
+        if (isCorrect) {
+            soundTap.currentTime = 0;
+            soundTap.play().catch(e=>{});
+            btn.classList.add('bg-green-400', 'text-white', 'border-green-500');
+            target.classList.add('animate-bounce');
+            isFinished = true;
+            setTimeout(finishGame, 1000);
+        } else {
+            soundError.currentTime = 0;
+            soundError.play().catch(e=>{});
+            btn.classList.add('bg-gray-300', 'text-gray-500', 'border-gray-400');
+            btn.disabled = true;
+        }
+    }
     
     function finishGame() {
         setTimeout(() => soundClear.play().catch(e=>{}), 300);
@@ -30,8 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const afterSelection = document.getElementById('after-selection');
         StickerSystem.drawThree().forEach(sticker => {
             const btn = document.createElement('button');
-            btn.className = "flex flex-col items-center justify-center p-6 rounded-2xl border-4 " + sticker.data.color + " shadow-md hover:scale-110 transition-transform bg-white";
-            btn.innerHTML = '<div class="text-6xl mb-2">' + sticker.item + '</div><div class="text-sm font-bold">' + sticker.data.label + '</div>';
+            btn.className = `flex flex-col items-center justify-center p-6 rounded-2xl border-4 ${sticker.data.color} shadow-md hover:scale-110 transition-transform bg-white`;
+            btn.innerHTML = `<div class="text-6xl mb-2">${sticker.item}</div><div class="text-sm font-bold">${sticker.data.label}</div>`;
             btn.addEventListener('click', () => {
                 soundSelect.currentTime = 0;
                 soundSelect.play().catch(e=>{});
@@ -42,4 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
             choices.appendChild(btn);
         });
     }
+
+    init();
 });

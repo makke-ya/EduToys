@@ -1,20 +1,41 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const stage = document.getElementById('stage');
-    const target = document.getElementById('target-item');
     const finishOverlay = document.getElementById('finish-overlay');
-
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
     const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
+    const soundError = new Audio('../../static/sounds/system/エラー2.mp3');
 
-    // 簡易的なクリアロジック（タップで即クリア）
-    target.addEventListener('click', () => {
-        soundTap.currentTime = 0;
-        soundTap.play().catch(e=>{});
-        target.classList.add('scale-150', 'opacity-0');
-        setTimeout(finishGame, 500);
-    });
+    const NOTES = [
+        { color: 'bg-red-400', key: 'ド' }, { color: 'bg-orange-400', key: 'レ' },
+        { color: 'bg-yellow-400', key: 'ミ' }, { color: 'bg-green-400', key: 'ファ' },
+        { color: 'bg-blue-400', key: 'ソ' }, { color: 'bg-indigo-400', key: 'ラ' },
+        { color: 'bg-purple-400', key: 'シ' }, { color: 'bg-pink-400', key: 'ド' }
+    ];
+    let tapCount = 0;
     
+    function init() {
+        const keyboard = document.getElementById('keyboard');
+        keyboard.innerHTML = '';
+        NOTES.forEach((note, i) => {
+            const key = document.createElement('button');
+            key.className = `w-12 h-48 md:w-16 md:h-64 rounded-b-xl shadow-md border-b-8 border-black/20 text-white font-bold text-xl flex items-end justify-center pb-4 hover:brightness-110 active:translate-y-2 active:border-b-0 transition-all ${note.color}`;
+            key.textContent = note.key;
+            key.onclick = () => {
+                // 本来は音階ごとの音源を鳴らすが、今回はタップ音で代用しピッチを変える擬似実装
+                const s = soundTap.cloneNode();
+                s.preservesPitch = false;
+                s.playbackRate = 0.8 + (i * 0.1);
+                s.play().catch(e=>{    init();
+});
+                
+                tapCount++;
+                // 適当に10回弾いたらクリアとする
+                if(tapCount === 10) setTimeout(finishGame, 500);
+            };
+            keyboard.appendChild(key);
+        });
+    }
+
     function finishGame() {
         setTimeout(() => soundClear.play().catch(e=>{}), 300);
         setTimeout(() => {

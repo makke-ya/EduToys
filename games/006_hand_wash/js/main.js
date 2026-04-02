@@ -1,20 +1,37 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const stage = document.getElementById('stage');
-    const target = document.getElementById('target-item');
     const finishOverlay = document.getElementById('finish-overlay');
-
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
     const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
+    const soundError = new Audio('../../static/sounds/system/エラー2.mp3');
 
-    // 簡易的なクリアロジック（タップで即クリア）
-    target.addEventListener('click', () => {
-        soundTap.currentTime = 0;
-        soundTap.play().catch(e=>{});
-        target.classList.add('scale-150', 'opacity-0');
-        setTimeout(finishGame, 500);
-    });
-    
+    let isFinished = false;
+    let germsCount = 5;
+
+    function init() {
+        const germsContainer = document.getElementById('germs');
+        for (let i = 0; i < germsCount; i++) {
+            const germ = document.createElement('div');
+            germ.className = 'text-3xl animate-bounce cursor-pointer pointer-events-auto';
+            germ.innerHTML = '🦠';
+            germ.style.transform = `translate(${(Math.random()-0.5)*100}px, ${(Math.random()-0.5)*100}px)`;
+            germ.onclick = () => {
+                if (isFinished || germ.classList.contains('opacity-0')) return;
+                soundTap.currentTime = 0; soundTap.play().catch(e=>{    init();
+});
+                germ.innerHTML = '✨';
+                germ.classList.add('opacity-0', 'scale-150', 'transition-all', 'duration-500');
+                germsCount--;
+                if (germsCount === 0) {
+                    isFinished = true;
+                    document.getElementById('hands').classList.add('animate-pulse');
+                    setTimeout(finishGame, 1000);
+                }
+            };
+            germsContainer.appendChild(germ);
+        }
+    }
+
     function finishGame() {
         setTimeout(() => soundClear.play().catch(e=>{}), 300);
         setTimeout(() => {
