@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>シールちょう - EduToys</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Hiragino Maru Gothic ProN', 'Rounded M+ 1c', 'Meiryo', sans-serif; }
+    </style>
+</head>
+<body class="bg-yellow-50 min-h-screen p-4 md:p-8 flex flex-col items-center">
+    <header class="w-full max-w-4xl flex justify-between items-center mb-8">
+        <a href="index.html" class="bg-white text-gray-700 px-6 py-3 rounded-full font-bold shadow-md hover:bg-gray-100 transition-colors">
+            ◀ もどる
+        </a>
+        <h1 class="text-4xl md:text-5xl font-black text-orange-500 drop-shadow-md">
+            📕 シールちょう
+        </h1>
+        <div class="w-24"></div> <!-- スペーサー -->
+    </header>
+
+    <main class="w-full max-w-4xl bg-white rounded-3xl shadow-xl border-8 border-orange-300 p-8 min-h-[60vh]">
+        
+        <div id="empty-message" class="hidden flex flex-col items-center justify-center h-full text-gray-400 pt-20">
+            <div class="text-6xl mb-4">😢</div>
+            <p class="text-2xl font-bold">まだシールがないよ。<br>ゲームであそんでシールをあつめよう！</p>
+        </div>
+
+        <div id="sticker-grid" class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <!-- シールがここに動的に追加されます -->
+        </div>
+
+    </main>
+
+    <script src="static/common/js/sticker_system.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const grid = document.getElementById('sticker-grid');
+            const emptyMessage = document.getElementById('empty-message');
+            const stickers = StickerSystem.getSavedStickers();
+
+            if (stickers.length === 0) {
+                emptyMessage.classList.remove('hidden');
+                return;
+            }
+
+            // 新しい順に表示
+            stickers.reverse().forEach(sticker => {
+                const el = document.createElement('div');
+                el.className = `flex flex-col items-center justify-center p-4 rounded-xl border-4 ${sticker.data.color} shadow-sm`;
+                el.innerHTML = `
+                    <div class="text-5xl mb-2 drop-shadow-sm">${sticker.item}</div>
+                    <div class="text-xs font-bold px-2 py-1 bg-white/80 rounded-full">${sticker.data.label}</div>
+                `;
+                grid.appendChild(el);
+            });
+        });
+    </script>
+</body>
+</html>

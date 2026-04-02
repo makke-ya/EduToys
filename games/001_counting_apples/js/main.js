@@ -72,7 +72,35 @@ document.addEventListener('DOMContentLoaded', () => {
         isFinished = true;
         setTimeout(() => {
             finishOverlay.classList.remove('hidden');
+            setupStickers();
         }, 800);
+    }
+
+    function setupStickers() {
+        if (!window.StickerSystem) return; // テスト環境等のフォールバック
+        
+        const choicesContainer = document.getElementById('sticker-choices');
+        const selectionArea = document.getElementById('sticker-selection');
+        const afterSelection = document.getElementById('after-selection');
+        
+        const drawnStickers = StickerSystem.drawThree();
+        
+        drawnStickers.forEach((sticker) => {
+            const btn = document.createElement('button');
+            btn.className = `flex flex-col items-center justify-center p-6 rounded-2xl border-4 ${sticker.data.color} shadow-md hover:scale-110 transition-transform bg-white`;
+            btn.innerHTML = `
+                <div class="text-6xl mb-2 drop-shadow-sm">${sticker.item}</div>
+                <div class="text-sm font-bold">${sticker.data.label}</div>
+            `;
+            
+            btn.addEventListener('click', () => {
+                StickerSystem.saveSticker(sticker);
+                selectionArea.classList.add('hidden');
+                afterSelection.classList.remove('hidden');
+            });
+            
+            choicesContainer.appendChild(btn);
+        });
     }
 
     init();
