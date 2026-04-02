@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     bgm.volume = 0.3; // BGMの音量は少し下げる
 
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
-    const soundClear = new Audio('../../static/sounds/voice/おめでとう.mp3');
+    const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
     const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
 
     const TOTAL_APPLES = 5; // 幼児向けに5個程度から開始

@@ -46,8 +46,31 @@
         </div>
     </main>
 
-    <footer class="text-center mt-16 text-gray-500 font-medium">
+    <footer class="text-center mt-16 text-gray-500 font-medium pb-8">
         <p>&copy; EduToys Project.</p>
     </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const bgm = new Audio('static/sounds/bgm/Pops_02.mp3');
+            bgm.loop = true;
+            bgm.volume = 0.4;
+            let bgmStarted = false;
+
+            // 画面のどこかをタップしたらBGM開始（ブラウザの自動再生ポリシー対応）
+            const startBgm = () => {
+                if (!bgmStarted) {
+                    bgm.play().catch(e => console.log('BGM play failed:', e));
+                    bgmStarted = true;
+                    // 再生できたらイベントリスナーを解除
+                    document.body.removeEventListener('click', startBgm);
+                    document.body.removeEventListener('touchstart', startBgm);
+                }
+            };
+
+            document.body.addEventListener('click', startBgm);
+            document.body.addEventListener('touchstart', startBgm, { passive: true });
+        });
+    </script>
 </body>
 </html>
