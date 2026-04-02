@@ -71,21 +71,22 @@ document.addEventListener('DOMContentLoaded', () => {
         apple.dataset.tapped = 'true';
         apple.classList.add('opacity-50', 'scale-75', 'rotate-12');
         
-        // タップした瞬間に数字を表示するアニメーション
-        showNumberAt(apple);
-
+        // カウントを先に増やす
         tappedCount++;
         counterDisplay.textContent = tappedCount;
+
+        // タップした瞬間に数字を表示するアニメーション (増やした後の数を表示)
+        showNumberAt(apple, tappedCount);
 
         if (tappedCount === TOTAL_APPLES) {
             finishGame();
         }
     }
 
-    function showNumberAt(apple) {
+    function showNumberAt(apple, numberToShow) {
         const num = document.createElement('div');
         num.className = 'absolute text-4xl font-black text-orange-500 animate-number-up pointer-events-none';
-        num.textContent = tappedCount; // 1から始まるように修正済み
+        num.textContent = numberToShow;
         num.style.left = apple.style.left;
         num.style.top = apple.style.top;
         stage.appendChild(num);
