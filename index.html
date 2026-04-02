@@ -56,7 +56,8 @@
     </main>
 
     <footer class="text-center mt-16 text-gray-500 font-medium pb-8">
-        <p>&copy; EduToys Project.</p>
+        <p class="mb-2">&copy; EduToys Project.</p>
+        <p class="text-sm opacity-60">音源提供：Springin' Sound Stock</p>
     </footer>
 
     <script>
@@ -68,7 +69,19 @@
             const startOverlay = document.getElementById('start-overlay');
             const btnStart = document.getElementById('btn-start');
 
+            // セッション内で一度でも「はじめる」を押したことがあれば、オーバーレイを表示しない
+            if (sessionStorage.getItem('edutoys_started') === 'true') {
+                startOverlay.classList.add('hidden');
+                // ブラウザの自動再生制限により、戻った際もタップが必要な場合があるためのフォールバック
+                const autoStart = () => {
+                    bgm.play().catch(e => console.log('Auto-play blocked, waiting for tap', e));
+                    document.body.removeEventListener('click', autoStart);
+                };
+                document.body.addEventListener('click', autoStart);
+            }
+
             btnStart.addEventListener('click', () => {
+                sessionStorage.setItem('edutoys_started', 'true');
                 bgm.play().catch(e => console.log('BGM play failed:', e));
                 startOverlay.style.opacity = '0';
                 setTimeout(() => startOverlay.classList.add('hidden'), 300);
