@@ -11,6 +11,11 @@
 </head>
 <body class="bg-yellow-50 min-h-screen p-4 md:p-8 relative">
     
+    <!-- ゲーム表示用 Iframe オーバーレイ -->
+    <div id="game-overlay" class="hidden fixed inset-0 z-[200] bg-white">
+        <iframe id="game-frame" class="w-full h-full border-none"></iframe>
+    </div>
+
     <!-- スタートオーバーレイ (BGM再生とブラウザ制限解除のトリガー) -->
     <div id="start-overlay" class="fixed inset-0 bg-yellow-50 z-[100] flex flex-col items-center justify-center transition-opacity duration-300">
         <h1 class="text-6xl font-black text-orange-500 mb-8 animate-bounce drop-shadow-lg">EduToys</h1>
@@ -25,26 +30,25 @@
         </h1>
         <p class="text-xl text-gray-600 font-bold mb-6">たのしくあそんで、ぐんぐんそだつ！</p>
         
-        <a href="sticker_book.html?autoplay=1" class="inline-block bg-white text-orange-500 border-4 border-orange-400 px-6 py-3 rounded-full font-bold text-xl shadow-md hover:bg-orange-50 transition-colors">
+        <button onclick="openInIframe('sticker_book.html?autoplay=1')" class="inline-block bg-white text-orange-500 border-4 border-orange-400 px-6 py-3 rounded-full font-bold text-xl shadow-md hover:bg-orange-50 transition-colors">
             📕 シールちょうをみる
-        </a>
+        </button>
     </header>
 
     <main class="max-w-4xl mx-auto">
         <div id="game-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             
-            <!-- ゲーム一覧：動的に生成するか、静的に記述します -->
             <!-- 001_counting_apples -->
-            <a href="games/001_counting_apples/start.html?autoplay=1" class="block bg-white rounded-3xl shadow-lg border-4 border-blue-300 hover:border-blue-500 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 overflow-hidden group">
+            <button onclick="openInIframe('games/001_counting_apples/start.html?autoplay=1')" class="block text-left bg-white rounded-3xl shadow-lg border-4 border-blue-300 hover:border-blue-500 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 overflow-hidden group">
                 <div class="h-40 bg-blue-100 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform">
                     🍎
                 </div>
-                <div class="p-6 text-center">
+                <div class="p-6">
                     <span class="inline-block bg-green-100 text-green-700 text-sm font-bold px-3 py-1 rounded-full mb-2">かず・かたち</span>
                     <h2 class="text-2xl font-black text-gray-800 mb-2">かずをかぞえよう</h2>
                     <p class="text-gray-600 font-medium">リンゴをタッチして、1から5までかぞえてみよう！</p>
                 </div>
-            </a>
+            </button>
 
             <!-- 今後追加されるゲームのプレースホルダー -->
             <div class="bg-gray-100 rounded-3xl border-4 border-dashed border-gray-300 flex flex-col items-center justify-center h-full min-h-[300px] text-gray-400">
@@ -68,23 +72,39 @@
             
             const startOverlay = document.getElementById('start-overlay');
             const btnStart = document.getElementById('btn-start');
-
-            // セッション内で一度でも「はじめる」を押したことがあれば、オーバーレイを表示しない
-            if (sessionStorage.getItem('edutoys_started') === 'true') {
-                startOverlay.classList.add('hidden');
-                // ブラウザの自動再生制限により、戻った際もタップが必要な場合があるためのフォールバック
-                const autoStart = () => {
-                    bgm.play().catch(e => console.log('Auto-play blocked, waiting for tap', e));
-                    document.body.removeEventListener('click', autoStart);
-                };
-                document.body.addEventListener('click', autoStart);
-            }
+            const gameOverlay = document.getElementById('game-overlay');
+            const gameFrame = document.getElementById('game-frame');
 
             btnStart.addEventListener('click', () => {
                 sessionStorage.setItem('edutoys_started', 'true');
                 bgm.play().catch(e => console.log('BGM play failed:', e));
                 startOverlay.style.opacity = '0';
                 setTimeout(() => startOverlay.classList.add('hidden'), 300);
+            });
+
+            // セッション内で一度でも「はじめる」を押したことがあれば、オーバーレイを表示しない
+            if (sessionStorage.getItem('edutoys_started') === 'true') {
+                startOverlay.classList.add('hidden');
+                document.body.addEventListener('click', () => {
+                    bgm.play().catch(e => {});
+                }, { once: true });
+            }
+
+            // Iframeでゲームを開く
+            window.openInIframe = (url) => {
+                gameFrame.src = url;
+                gameOverlay.classList.remove('hidden');
+                // ゲーム画面が開いている間は親のBGMを少し下げるか止める
+                bgm.volume = 0.1;
+            };
+
+            // 子画面（Iframe）からのメッセージを受け取る
+            window.addEventListener('message', (event) => {
+                if (event.data === 'closeGame') {
+                    gameOverlay.classList.add('hidden');
+                    gameFrame.src = 'about:blank';
+                    bgm.volume = 0.4; // BGMの音量を戻す
+                }
             });
         });
     </script>
