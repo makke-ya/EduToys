@@ -41,8 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const d = data.paths[currentStrokeIndex];
         bgPath.setAttribute('d', data.paths.join(' ')); // 背景は全画表示
         guidePath.setAttribute('d', d);
-        userPath.setAttribute('d', '');
-        userPoints = [];
         
         // サンプリング点の生成
         samplingPoints = [];
@@ -106,8 +104,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         if (isNear) {
-            userPoints.push(pos);
-            renderUserPath();
             updateTargetDot();
             
             // 判定: 80%以上の点に到達したらストローク完了
@@ -117,15 +113,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             // 外れたら少し揺らすなどの演出（オプション）
         }
-    }
-
-    function renderUserPath() {
-        if (userPoints.length < 2) return;
-        let d = `M ${userPoints[0].x} ${userPoints[0].y}`;
-        for (let i = 1; i < userPoints.length; i++) {
-            d += ` L ${userPoints[i].x} ${userPoints[i].y}`;
-        }
-        userPath.setAttribute('d', d);
     }
 
     function completeStroke() {
