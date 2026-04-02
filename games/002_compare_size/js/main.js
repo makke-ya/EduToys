@@ -56,12 +56,13 @@ document.addEventListener('DOMContentLoaded', () => {
             // 不正解
             soundError.currentTime = 0;
             soundError.play().catch(e=>{});
-            element.classList.add('opacity-50', 'scale-90'); // 責めないように少し小さく・半透明になる
+            GameUtils.shakeElement(element); // 責めないように少し小さく・半透明になる
             setTimeout(() => element.classList.remove('opacity-50', 'scale-90'), 800);
         }
     }
     
     function finishGame() {
+        GameUtils.showHanamaru();
         setTimeout(() => soundClear.play().catch(e=>{}); soundClearVoice.play().catch(e=>{});, 300);
         setTimeout(() => {
             finishOverlay.classList.remove('hidden');

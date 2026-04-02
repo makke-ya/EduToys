@@ -61,34 +61,39 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.addEventListener('touchstart', playIntro, { passive: true });
     // 自動再生できれば最初から鳴らす
     setTimeout(playIntro, 100);
-
-    function init() {
-        for (let i = 0; i < TOTAL_APPLES; i++) {
-            createApple(i);
-        }
+// リンゴの生成と配置
+async function init() {
+    for (let i = 0; i < TOTAL_APPLES; i++) {
+        createApple(i);
+        // 0.2秒ごとに1つずつ出す
+        await new Promise(r => setTimeout(r, 200));
     }
+}
 
-    function createApple(id) {
-        const apple = document.createElement('div');
-        apple.className = 'apple absolute cursor-pointer select-none text-6xl transition-transform active:scale-110';
-        apple.innerHTML = '🍎';
-        
-        // ランダムな位置に配置 (ヘッダーとフッターを避ける)
-        const x = Math.random() * 80 + 10; // 10% to 90%
-        const y = Math.random() * 60 + 20; // 20% to 80%
-        apple.style.left = `${x}%`;
-        apple.style.top = `${y}%`;
+function createApple(id) {
+    const apple = document.createElement('div');
+    apple.className = 'apple absolute cursor-pointer select-none text-6xl transition-all duration-500 scale-0 animate-bounce';
+    apple.innerHTML = '🍎';
 
-        apple.dataset.tapped = 'false';
+    // ランダムな位置に配置
+    const x = Math.random() * 80 + 10;
+    const y = Math.random() * 60 + 20;
+    apple.style.left = `${x}%`;
+    apple.style.top = `${y}%`;
 
-        apple.addEventListener('click', () => handleTap(apple));
-        apple.addEventListener('touchstart', (e) => {
-            e.preventDefault(); // タッチデバイスの遅延防止
-            handleTap(apple);
-        }, { passive: false });
+    apple.dataset.tapped = 'false';
 
-        stage.appendChild(apple);
-    }
+    apple.addEventListener('click', () => handleTap(apple));
+    apple.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        handleTap(apple);
+    }, { passive: false });
+
+    stage.appendChild(apple);
+
+    // 登場アニメーション
+    setTimeout(() => apple.classList.remove('scale-0'), 50);
+}
 
     function handleTap(apple) {
         if (isFinished || apple.dataset.tapped === 'true') return;
@@ -124,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function finishGame() {
+        GameUtils.showHanamaru();
         isFinished = true;
         
         // クリア音を再生

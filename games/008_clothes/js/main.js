@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function finishGame() {
+        GameUtils.showHanamaru();
         setTimeout(() => soundClear.play().catch(e=>{}); soundClearVoice.play().catch(e=>{});, 300);
         setTimeout(() => {
             finishOverlay.classList.remove('hidden');

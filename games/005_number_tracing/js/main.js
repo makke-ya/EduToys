@@ -96,12 +96,15 @@ document.addEventListener('DOMContentLoaded', () => {
         // 最初のポイントにすでに乗っているかチェック
         checkHit(e.clientX, e.clientY);
     }
+function onDrag(e) {
+    if (!dragging || isFinished) return;
+    e.preventDefault();
 
-    function onDrag(e) {
-        if (!dragging || isFinished) return;
-        e.preventDefault();
+    // キラキラを生成（なぞり演出）
+    if (Math.random() > 0.5) GameUtils.createSparkle(tracingArea);
 
-        // clientX, clientY を tracingArea 内の相対座標（%）に変換
+    // clientX, clientY を tracingArea 内の相対座標（%）に変換
+...
         const rect = tracingArea.getBoundingClientRect();
         
         let x = e.clientX - rect.left;
@@ -160,6 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function finishGame() {
+        GameUtils.showHanamaru();
         setTimeout(() => soundClear.play().catch(e=>{}); soundClearVoice.play().catch(e=>{});, 300);
         setTimeout(() => {
             finishOverlay.classList.remove('hidden');

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>いろまぜマジック - EduToys</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../../static/common/css/game_style.css">
 </head>
 <body class="bg-red-100 overflow-hidden flex flex-col items-center justify-center h-screen relative">
     <button onclick="parent.postMessage('closeGame', '*')" class="absolute top-4 left-4 z-40 bg-white/80 text-gray-700 px-4 py-2 rounded-full font-bold shadow-sm hover:bg-white transition-colors">◀ もどる</button>
@@ -36,11 +37,12 @@
                 <p class="text-2xl font-bold text-orange-500 mb-8">シールをゲットしたよ！</p>
                 <div class="flex gap-4">
                     <a href="../../sticker_book.html?autoplay=1" class="px-6 py-4 bg-white text-orange-500 border-4 border-orange-400 hover:bg-orange-50 text-xl font-bold rounded-full shadow-lg transition-transform active:scale-95">📕 シールちょう</a>
-                    <button onclick="location.reload()" class="px-6 py-4 bg-yellow-400 hover:bg-yellow-500 text-white text-xl font-bold rounded-full shadow-lg transition-transform active:scale-95">もういっかい！</button>
+                    <button onclick="location.reload()" class="px-6 py-4 btn-bubbly transition-transform active:scale-95">もういっかい！</button>
                 </div>
             </div>
         </div>
     </div>
+    <script src="../../static/common/js/game_utils.js"></script>
     <script src="../../static/common/js/sticker_system.js"></script>
     <script src="js/main.js"></script>
 </body>
