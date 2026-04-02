@@ -35,16 +35,28 @@ document.addEventListener('DOMContentLoaded', () => {
             germ.style.transform = `translate(${(Math.random()-0.5)*100}px, ${(Math.random()-0.5)*100}px)`;
             germ.onclick = () => {
                 if (isFinished || germ.classList.contains('opacity-0')) return;
-                soundTap.currentTime = 0; soundTap.play().catch(e=>{    init();
-});
+                soundTap.currentTime = 0; soundTap.play().catch(e=>{});
+
+                // 泡の演出
+                const bubble = document.createElement('div');
+                bubble.className = 'absolute text-5xl animate-ping pointer-events-none';
+                bubble.innerHTML = '🫧';
+                bubble.style.left = germ.style.left;
+                bubble.style.top = germ.style.top;
+                germsContainer.appendChild(bubble);
+                setTimeout(() => bubble.remove(), 500);
+
                 germ.innerHTML = '✨';
                 germ.classList.add('opacity-0', 'scale-150', 'transition-all', 'duration-500');
                 germsCount--;
                 if (germsCount === 0) {
                     isFinished = true;
+                    const clearVoice = new Audio('../../static/sounds/voice/006_clear.mp3');
+                    clearVoice.play().catch(e=>{});
                     document.getElementById('hands').classList.add('animate-pulse');
                     setTimeout(finishGame, 1000);
                 }
+            };
             };
             germsContainer.appendChild(germ);
         }

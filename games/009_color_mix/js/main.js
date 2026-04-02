@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const mix = MIXES[Math.floor(Math.random() * MIXES.length)];
         document.getElementById('color1').className = `w-24 h-24 rounded-full shadow-inner ${mix.c1}`;
         document.getElementById('color2').className = `w-24 h-24 rounded-full shadow-inner ${mix.c2}`;
-        
+
         let currentChoices = [mix.ans];
         while(currentChoices.length < 3) {
             const dummy = ALL_COLORS[Math.floor(Math.random() * ALL_COLORS.length)];
@@ -51,13 +51,18 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.onclick = () => {
                 if (isFinished) return;
                 if (choice === mix.ans) {
-                    soundTap.currentTime = 0; soundTap.play().catch(e=>{    init();
-});
+                    soundTap.currentTime = 0; soundTap.play().catch(e=>{});
+
+                    // 色名の読み上げ
+                    const colorNames = { 'bg-purple-500': 'むらさき', 'bg-orange-500': 'オレンジ', 'bg-green-500': 'みどり' };
+                    const nameVoice = new Audio(`../../static/sounds/voice/color_${colorNames[choice]}.mp3`);
+                    setTimeout(() => nameVoice.play().catch(e=>{}), 300);
+
                     const resBox = document.getElementById('result-box');
-                    resBox.className = `w-28 h-28 rounded-full shadow-lg border-4 border-white animate-bounce ${choice}`;
+                    resBox.className = `w-28 h-28 rounded-full shadow-lg border-4 border-white animate-conveyor ${choice}`;
                     resBox.innerHTML = '';
                     isFinished = true;
-                    setTimeout(finishGame, 1000);
+                    setTimeout(finishGame, 1500);
                 } else {
                     soundError.currentTime = 0; soundError.play().catch(e=>{});
                     btn.classList.add('opacity-20');
@@ -65,6 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             choicesContainer.appendChild(btn);
         });
+    }
     }
 
     function finishGame() {

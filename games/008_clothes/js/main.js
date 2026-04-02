@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function init() {
         const weather = WEATHERS[Math.floor(Math.random() * WEATHERS.length)];
         document.getElementById('weather').innerHTML = `${weather.icon}<br><span class="text-2xl font-bold">${weather.name} のひは？</span>`;
-        
+
         let currentChoices = [weather.correct];
         while(currentChoices.length < 3) {
             const dummy = ALL_CLOTHES[Math.floor(Math.random() * ALL_CLOTHES.length)];
@@ -51,18 +51,27 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.onclick = () => {
                 if (isFinished) return;
                 if (choice === weather.correct) {
-                    soundTap.currentTime = 0; soundTap.play().catch(e=>{    init();
-});
-                    btn.classList.add('bg-yellow-200');
+                    soundTap.currentTime = 0; soundTap.play().catch(e=>{});
+
+                    // 着せ替え演出
+                    const wornItem = document.getElementById('worn-item');
+                    wornItem.innerHTML = choice;
+                    wornItem.classList.remove('opacity-0', 'scale-150');
+                    wornItem.classList.add('opacity-100', 'scale-100');
+
                     isFinished = true;
-                    setTimeout(finishGame, 800);
+                    const clearVoice = new Audio('../../static/sounds/voice/008_clear.mp3');
+                    setTimeout(() => clearVoice.play().catch(e=>{}), 500);
+
+                    setTimeout(finishGame, 1500);
                 } else {
                     soundError.currentTime = 0; soundError.play().catch(e=>{});
-                    btn.classList.add('opacity-50');
+                    GameUtils.shakeElement(btn);
                 }
             };
             choicesContainer.appendChild(btn);
         });
+    }
     }
 
     function finishGame() {

@@ -63,6 +63,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (isCorrect) {
             soundTap.currentTime = 0;
             soundTap.play().catch(e=>{});
+            
+            // 単語の読み上げ
+            const wordVoice = new Audio(`../../static/sounds/voice/word_${question.name}.mp3`);
+            wordVoice.play().catch(e=>{});
+
             btn.classList.add('bg-green-400', 'text-white', 'border-green-500');
             
             // 拡大・回転演出
