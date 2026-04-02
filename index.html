@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>EduToys - 幼児向け知育ゲーム</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Hiragino Maru Gothic ProN', 'Rounded M+ 1c', 'Meiryo', sans-serif; }
+    </style>
+</head>
+<body class="bg-yellow-50 min-h-screen p-4 md:p-8">
+    <header class="text-center mb-10">
+        <h1 class="text-5xl md:text-6xl font-black text-orange-500 mb-4 drop-shadow-md">
+            🌟 EduToys 🌟
+        </h1>
+        <p class="text-xl text-gray-600 font-bold">たのしくあそんで、ぐんぐんそだつ！</p>
+    </header>
+
+    <main class="max-w-4xl mx-auto">
+        <div id="game-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            
+            <!-- ゲーム一覧：動的に生成するか、静的に記述します -->
+            <!-- 001_counting_apples -->
+            <a href="games/001_counting_apples/start.html" class="block bg-white rounded-3xl shadow-lg border-4 border-blue-300 hover:border-blue-500 hover:shadow-xl hover:-translate-y-2 transition-all duration-300 overflow-hidden group">
+                <div class="h-40 bg-blue-100 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform">
+                    🍎
+                </div>
+                <div class="p-6 text-center">
+                    <span class="inline-block bg-green-100 text-green-700 text-sm font-bold px-3 py-1 rounded-full mb-2">かず・かたち</span>
+                    <h2 class="text-2xl font-black text-gray-800 mb-2">かずをかぞえよう</h2>
+                    <p class="text-gray-600 font-medium">リンゴをタッチして、1から5までかぞえてみよう！</p>
+                </div>
+            </a>
+
+            <!-- 今後追加されるゲームのプレースホルダー -->
+            <div class="bg-gray-100 rounded-3xl border-4 border-dashed border-gray-300 flex flex-col items-center justify-center h-full min-h-[300px] text-gray-400">
+                <div class="text-5xl mb-4">🚀</div>
+                <p class="font-bold text-lg">あたらしいあそびを<br>つくっているよ！</p>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="text-center mt-16 text-gray-500 font-medium">
+        <p>&copy; EduToys Project.</p>
+    </footer>
+</body>
+</html>
