@@ -4,10 +4,10 @@
  */
 
 const STICKER_DB = {
-    N: { label: 'ノーマル', color: 'text-gray-500 bg-gray-100 border-gray-300', rate: 60, items: ['🍎', '🚗', '🐶', '🎈', '🌻', '🐟', '⚽', '🧸'] },
-    R: { label: 'レア', color: 'text-blue-500 bg-blue-100 border-blue-300', rate: 25, items: ['⭐', '🌙', '🐱', '🌸', '🐬', '🚗', '🍓', '🍀'] },
-    SR: { label: 'スーパーレア', color: 'text-purple-500 bg-purple-100 border-purple-300', rate: 12, items: ['👑', '🦄', '🚀', '💎', '🍰', '🛸', '🦖', '🎸'] },
-    UR: { label: 'ウルトラレア', color: 'text-yellow-500 bg-yellow-100 border-yellow-400', rate: 3, items: ['🐉', '🌈', '🏆', '✨', '🌍', '🌋', '🧞‍♂️', '🎰'] }
+    N: { label: 'ノーマル', color: 'text-gray-500 bg-gray-100 border-gray-300', rate: 86.9, items: ['🍎', '🚗', '🐶', '🎈', '🌻', '🐟', '⚽', '🧸', '🦋', '🐢', '🍩', '🍔', '✈️', '🚌', '🐸'] }, // 15種類
+    R: { label: 'レア', color: 'text-blue-500 bg-blue-100 border-blue-300', rate: 10.0, items: ['⭐', '🌙', '🐱', '🌸', '🐬', '🍓', '🍀', '🏰'] }, // 8種類
+    SR: { label: 'スーパーレア', color: 'text-purple-500 bg-purple-100 border-purple-300', rate: 3.0, items: ['👑', '🦄', '🚀', '💎', '🍰'] }, // 5種類
+    UR: { label: 'ウルトラレア', color: 'text-yellow-500 bg-yellow-100 border-yellow-400', rate: 0.1, items: ['🐉', '🌈'] } // 2種類
 };
 
 const STICKER_STORAGE_KEY = 'edutoys_stickers';
