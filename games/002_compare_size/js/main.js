@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
     const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
-    const soundError = new Audio('../../static/sounds/system/エラー2.mp3');
+    const soundError = new Audio('../../static/sounds/staging/短い音-ズッコケ.mp3');
 
     const EMOJIS = ['🐘', '🍎', '🐶', '🚗', '🍓', '🐱', '⚽', '🧸'];
     let isFinished = false;
@@ -38,8 +38,8 @@ document.addEventListener('DOMContentLoaded', () => {
             // 不正解
             soundError.currentTime = 0;
             soundError.play().catch(e=>{});
-            element.classList.add('animate-ping'); // ブルブル震える
-            setTimeout(() => element.classList.remove('animate-ping'), 500);
+            element.classList.add('opacity-50', 'scale-90'); // 責めないように少し小さく・半透明になる
+            setTimeout(() => element.classList.remove('opacity-50', 'scale-90'), 800);
         }
     }
     

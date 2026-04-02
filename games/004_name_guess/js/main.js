@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
     const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
-    const soundError = new Audio('../../static/sounds/system/エラー2.mp3');
+    const soundError = new Audio('../../static/sounds/staging/短い音-ズッコケ.mp3');
 
     const DICTIONARY = [
         { icon: '🐶', name: 'いぬ' }, { icon: '🐱', name: 'ねこ' }, { icon: '🐘', name: 'ぞう' },
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             soundError.currentTime = 0;
             soundError.play().catch(e=>{});
-            btn.classList.add('bg-gray-300', 'text-gray-500', 'border-gray-400');
+            btn.classList.add('opacity-50');
             btn.disabled = true;
         }
     }

@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
     const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
-    const soundError = new Audio('../../static/sounds/system/エラー2.mp3');
+    const soundError = new Audio('../../static/sounds/staging/短い音-ズッコケ.mp3');
 
     const SHAPES = ['🔺', '🟩', '🔵', '⭐', '❤️', '🌙', '🔷'];
     let isFinished = false;
@@ -56,8 +56,8 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
             soundError.currentTime = 0;
             soundError.play().catch(e=>{});
-            btn.classList.add('bg-red-200', 'border-red-400', 'animate-ping');
-            setTimeout(() => btn.classList.remove('bg-red-200', 'border-red-400', 'animate-ping'), 500);
+            btn.classList.add('opacity-50', 'scale-95');
+            setTimeout(() => btn.classList.remove('opacity-50', 'scale-95'), 800);
         }
     }
     

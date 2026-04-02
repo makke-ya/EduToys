@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
     const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
-    const soundError = new Audio('../../static/sounds/system/エラー2.mp3');
+    const soundError = new Audio('../../static/sounds/staging/短い音-ズッコケ.mp3');
 
     const MIXES = [
         { c1: 'bg-red-500', c2: 'bg-blue-500', ans: 'bg-purple-500' },
