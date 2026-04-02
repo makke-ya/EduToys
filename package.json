@@ -1,0 +1,19 @@
+{
+  "name": "edutoys",
+  "version": "1.0.0",
+  "description": "Educational Toys for Children",
+  "main": "index.html",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:integration": "jest -c jest.integration.config.js",
+    "start": "python3 scripts/preview_server.py"
+  },
+  "keywords": [
+    "education",
+    "toys",
+    "kids"
+  ],
+  "author": "",
+  "license": "ISC"
+}
