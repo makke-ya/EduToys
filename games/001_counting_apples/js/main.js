@@ -19,23 +19,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const TOTAL_APPLES = 5; // 幼児向けに5個程度から開始
     let tappedCount = 0;
     let isFinished = false;
-    let bgmStarted = false; // BGMが開始されたかどうかのフラグ
+
+    // スタート画面の処理
+    const startOverlay = document.getElementById('start-overlay');
+    const btnStart = document.getElementById('btn-start');
+
+    btnStart.addEventListener('click', () => {
+        bgm.play().catch(e => console.log('BGM play failed:', e));
+        startOverlay.style.opacity = '0';
+        setTimeout(() => {
+            startOverlay.classList.add('hidden');
+            init(); // スタートボタンを押してからリンゴを配置する
+        }, 300);
+    });
 
     // リンゴの生成と配置
     function init() {
-        // ユーザーインタラクションを促すため、画面全体への初回タップでBGM開始（ブラウザの自動再生ポリシー対応）
-        document.body.addEventListener('click', startBgm, { once: true });
-        document.body.addEventListener('touchstart', startBgm, { once: true, passive: true });
-
         for (let i = 0; i < TOTAL_APPLES; i++) {
             createApple(i);
-        }
-    }
-
-    function startBgm() {
-        if (!bgmStarted && !isFinished) {
-            bgm.play().catch(e => console.log('BGM play failed (auto-play policy):', e));
-            bgmStarted = true;
         }
     }
 
@@ -97,9 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function finishGame() {
         isFinished = true;
         
-        // BGMを停止
-        bgm.pause();
-        
         // クリア音を再生
         setTimeout(() => {
             soundClear.play().catch(e => console.log('Audio play failed:', e));
@@ -142,5 +140,4 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    init();
 });
