@@ -8,6 +8,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const finishOverlay = document.getElementById('finish-overlay');
 
     // 音声ファイルの準備
+    const bgm = new Audio('../../static/sounds/bgm/Pops_01.mp3');
+    bgm.loop = true;
+    bgm.volume = 0.3; // BGMの音量は少し下げる
+
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
     const soundClear = new Audio('../../static/sounds/voice/おめでとう.mp3');
     const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
@@ -15,11 +19,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const TOTAL_APPLES = 5; // 幼児向けに5個程度から開始
     let tappedCount = 0;
     let isFinished = false;
+    let bgmStarted = false; // BGMが開始されたかどうかのフラグ
 
     // リンゴの生成と配置
     function init() {
+        // ユーザーインタラクションを促すため、画面全体への初回タップでBGM開始（ブラウザの自動再生ポリシー対応）
+        document.body.addEventListener('click', startBgm, { once: true });
+        document.body.addEventListener('touchstart', startBgm, { once: true, passive: true });
+
         for (let i = 0; i < TOTAL_APPLES; i++) {
             createApple(i);
+        }
+    }
+
+    function startBgm() {
+        if (!bgmStarted && !isFinished) {
+            bgm.play().catch(e => console.log('BGM play failed (auto-play policy):', e));
+            bgmStarted = true;
         }
     }
 
@@ -79,6 +95,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function finishGame() {
         isFinished = true;
+        
+        // BGMを停止
+        bgm.pause();
         
         // クリア音を再生
         setTimeout(() => {
