@@ -39,6 +39,21 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentPath = [];
     let checkElements = [];
 
+    
+    let introPlayed = false;
+    const playIntro = () => {
+        if (!introPlayed) {
+            soundIntro.play().catch(e=>{});
+            introPlayed = true;
+            document.body.removeEventListener('click', playIntro);
+            document.body.removeEventListener('touchstart', playIntro);
+        }
+    };
+    document.body.addEventListener('click', playIntro);
+    document.body.addEventListener('touchstart', playIntro, { passive: true });
+    // 自動再生できれば最初から鳴らす
+    setTimeout(playIntro, 100);
+
     function init() {
         const numData = NUMBER_PATHS[Math.floor(Math.random() * NUMBER_PATHS.length)];
         numberOutline.textContent = numData.number;
@@ -145,9 +160,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function finishGame() {
-        setTimeout(() => soundClear.play().catch(e=>{}), 300);
+        setTimeout(() => soundClear.play().catch(e=>{}); soundClearVoice.play().catch(e=>{});, 300);
         setTimeout(() => {
             finishOverlay.classList.remove('hidden');
+            soundSelectSticker.play().catch(e=>{});
             setupStickers();
         }, 800);
     }

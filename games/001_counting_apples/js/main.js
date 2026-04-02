@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
     const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
+    const soundIntro = new Audio('../../static/sounds/voice/001_intro.mp3');
+    const soundClearVoice = new Audio('../../static/sounds/voice/clear.mp3');
+    const soundSelectSticker = new Audio('../../static/sounds/voice/select_sticker.mp3');
 
     const TOTAL_APPLES = 5; // 幼児向けに5個程度から開始
     let tappedCount = 0;
@@ -44,6 +47,21 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.addEventListener('touchstart', tryPlayBgm, { passive: true });
 
     // リンゴの生成と配置
+    
+    let introPlayed = false;
+    const playIntro = () => {
+        if (!introPlayed) {
+            soundIntro.play().catch(e=>{});
+            introPlayed = true;
+            document.body.removeEventListener('click', playIntro);
+            document.body.removeEventListener('touchstart', playIntro);
+        }
+    };
+    document.body.addEventListener('click', playIntro);
+    document.body.addEventListener('touchstart', playIntro, { passive: true });
+    // 自動再生できれば最初から鳴らす
+    setTimeout(playIntro, 100);
+
     function init() {
         for (let i = 0; i < TOTAL_APPLES; i++) {
             createApple(i);
@@ -115,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setTimeout(() => {
             finishOverlay.classList.remove('hidden');
+            soundSelectSticker.play().catch(e=>{});
             setupStickers();
         }, 800);
     }
