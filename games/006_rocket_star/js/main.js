@@ -136,6 +136,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function collectStar(star) {
+        if (isTransitioning || isFinished) return; // ガードを強化
+
         star.collected = true;
         star.el.classList.add('star-collected');
         soundCollect.currentTime = 0;
@@ -147,12 +149,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function completeRound() {
+        if (isTransitioning) return;
         isTransitioning = true;
         isDragging = false;
+        
         GameUtils.showHanamaru();
+        
         setTimeout(() => {
-            currentRound++;
-            if (currentRound < TOTAL_ROUNDS) {
+            if (currentRound < TOTAL_ROUNDS - 1) {
+                currentRound++;
                 initRound();
             } else {
                 finishGame();
@@ -162,6 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function finishGame() {
         isFinished = true;
+        isTransitioning = false;
         soundClear.play().catch(e => {});
         soundClearVoice.play().catch(e => {});
         setTimeout(() => {
