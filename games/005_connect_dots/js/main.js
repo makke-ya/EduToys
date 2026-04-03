@@ -1,6 +1,6 @@
 /**
  * てんつなぎ - main.js
- * 004の堅牢ななぞり書きロジックを移植
+ * 004の堅牢ななぞり書きロジックを移植し、さらに安定化
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const soundIntro = new Audio('../../static/sounds/voice/005_intro.mp3');
     const soundClearVoice = new Audio('../../static/sounds/voice/clear.mp3');
 
-    // なぞる音のシンセサイザー (004から移植)
     let audioCtx = null;
     let oscillator = null;
     let gainNode = null;
@@ -84,15 +83,18 @@ document.addEventListener('DOMContentLoaded', () => {
         
         instruction.textContent = `${shape.name}を なぞろう！ (${currentShapeIndex + 1}/3)`;
 
-        // サンプリング点生成
+        // サンプリング点生成 (DOMに一時追加して正確な長さを取得)
         const tempPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
         tempPath.setAttribute('d', d);
+        svg.appendChild(tempPath);
         const length = tempPath.getTotalLength();
+        
         samplingPoints = [];
         const step = 2;
         for (let i = 0; i <= length; i += step) {
             samplingPoints.push(tempPath.getPointAtLength(i));
         }
+        svg.removeChild(tempPath); // 計算後は削除
         
         lastReachedIndex = -1;
         renderDots(shape);
@@ -146,14 +148,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     svg.addEventListener('pointerdown', (e) => {
         if (!finishOverlay.classList.contains('hidden')) return;
-        const pos = getMousePos(e);
-        // スタート地点に近いか
-        const startP = samplingPoints[0];
-        if (Math.hypot(startP.x - pos.x, startP.y - pos.y) < 15) {
-            isDrawing = true;
-            startSynth();
-            handleMove(e);
-        }
+        isDrawing = true;
+        startSynth();
+        handleMove(e);
     });
 
     window.addEventListener('pointermove', handleMove);
@@ -167,14 +164,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const pos = getMousePos(e);
         
         let foundNewPoint = false;
-        const searchRange = 20; // 前方の探索範囲を広く取る
+        const searchRange = 25; // 探索範囲をさらに拡大
         const startSearch = lastReachedIndex + 1;
         const endSearch = Math.min(startSearch + searchRange, samplingPoints.length);
 
         for (let i = startSearch; i < endSearch; i++) {
             const p = samplingPoints[i];
             const dist = Math.hypot(p.x - pos.x, p.y - pos.y);
-            if (dist < 15) {
+            // 判定半径を 18 まで広げて遊びやすく
+            if (dist < 18) {
                 lastReachedIndex = i;
                 foundNewPoint = true;
             }

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ほしあつめロケット - EduToys</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="../../static/common/css/game_style.css">
+    <style>
+        body { background: radial-gradient(circle at center, #1a237e 0%, #000051 100%); overflow: hidden; }
+        #game-stage { touch-action: none; position: relative; width: 100%; height: 100%; }
+        .rocket { font-size: 5rem; cursor: grab; transition: transform 0.1s ease-out; z-index: 50; position: absolute; pointer-events: auto; user-select: none; }
+        .rocket:active { cursor: grabbing; scale: 1.1; }
+        .star { font-size: 3rem; position: absolute; pointer-events: none; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .star-collected { scale: 2; opacity: 0; filter: blur(5px); }
+        .particle { position: absolute; pointer-events: none; border-radius: 50%; background: #fffde7; }
+        .nebula { position: absolute; width: 100%; height: 100%; background: url('https://www.transparenttextures.com/patterns/stardust.png'); opacity: 0.3; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center relative">
+    
+    <div class="nebula"></div>
+
+    <!-- 戻るボタン -->
+    <button onclick="parent.postMessage('closeGame', '*')" class="absolute top-4 left-4 z-[100] bg-white/20 text-white px-4 py-2 rounded-full font-bold shadow-sm hover:bg-white/30 transition-colors border border-white/20">
+        ◀ もどる
+    </button>
+
+    <div id="game-container" class="relative w-full max-w-4xl h-[85vh] bg-transparent overflow-hidden">
+        <div id="header" class="absolute top-4 left-0 w-full text-center z-10">
+            <h1 id="instruction" class="text-2xl md:text-3xl font-bold text-yellow-300 bg-black/30 backdrop-blur-sm inline-block px-8 py-3 rounded-full border border-yellow-300/30">
+                おほしさまを ぜんぶ あつめよう！
+            </h1>
+        </div>
+        
+        <div id="game-stage">
+            <div id="rocket" class="rocket">🚀</div>
+            <!-- 星が動的に生成されます -->
+        </div>
+
+        <!-- 終了画面オーバーレイ -->
+        <div id="finish-overlay" class="hidden absolute inset-0 bg-black/80 backdrop-blur-md flex flex-col items-center justify-center z-[200]">
+            <h2 class="text-5xl md:text-6xl font-black text-yellow-400 animate-bounce mb-8 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]">だいせいこう！</h2>
+            
+            <div id="sticker-selection" class="w-full max-w-xl text-center">
+                <p class="text-2xl font-bold text-white mb-8 bg-blue-600/50 py-3 rounded-full mx-8 border border-blue-400">
+                    ごほうびシールを えらんでね！
+                </p>
+                <div id="sticker-choices" class="flex justify-center gap-6 mb-12"></div>
+            </div>
+
+            <div id="after-selection" class="hidden flex flex-col items-center">
+                <p class="text-3xl font-bold text-yellow-400 mb-10">シールをゲットしたよ！</p>
+                <div class="flex gap-6">
+                    <a href="../../sticker_book.html?autoplay=1" class="px-8 py-5 bg-white text-blue-600 text-2xl font-bold rounded-full shadow-2xl hover:scale-105 transition-transform active:scale-95">📕 シールちょう</a>
+                    <button onclick="location.reload()" class="px-8 py-5 bg-yellow-400 text-black text-2xl font-bold rounded-full shadow-2xl hover:scale-105 transition-transform active:scale-95">もういっかい！</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../../static/common/js/game_utils.js"></script>
+    <script src="../../static/common/js/sticker_system.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
