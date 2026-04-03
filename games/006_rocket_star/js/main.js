@@ -22,31 +22,35 @@ document.addEventListener('DOMContentLoaded', () => {
     let isTransitioning = false;
     let isFinished = false;
 
-    // ロケットの状態
-    let rocketPos = { x: 50, y: 80 }; // パーセント
-    let targetPos = { x: 50, y: 80 };
+    // ロケットの物理状態
+    let rocketX = 50, rocketY = 80; // 現在値(%)
+    let targetX = 50, targetY = 80; // 目標値(%)
+    let rocketRotation = 0;
 
     function initRound() {
-        isTransitioning = false;
+        isTransitioning = true;
         isDragging = false;
         stage.querySelectorAll('.star').forEach(s => s.remove());
         stars = [];
 
         instruction.textContent = `おほしさまを あつめよう！ (${currentRound + 1}/${TOTAL_ROUNDS})`;
 
-        // ロケットを初期位置へ
-        rocketPos = { x: 50, y: 85 };
-        updateRocketElement();
-
+        // ラウンド開始時のロケット登場
+        rocketX = 50; rocketY = 120; // 画面下から
+        targetX = 50; targetY = 80;  // 定位置へ
+        
         // 星を生成
-        const starCount = 5 + currentRound * 2;
+        const starCount = 6 + currentRound * 3;
         for (let i = 0; i < starCount; i++) {
             createStar();
         }
 
-        if (currentRound === 0) {
-            soundIntro.play().catch(e => {});
-        }
+        setTimeout(() => {
+            isTransitioning = false;
+            if (currentRound === 0) {
+                soundIntro.play().catch(e => {});
+            }
+        }, 1000);
     }
 
     function createStar() {
@@ -54,82 +58,78 @@ document.addEventListener('DOMContentLoaded', () => {
         star.className = 'star';
         star.innerHTML = '⭐';
         
-        // 重なりすぎないようにランダム配置
         const x = Math.random() * 80 + 10;
-        const y = Math.random() * 60 + 10;
+        const y = Math.random() * 65 + 15;
         
         star.style.left = `${x}%`;
         star.style.top = `${y}%`;
-        star.dataset.collected = 'false';
-
+        
         stage.appendChild(star);
-        stars.push({
-            el: star,
-            x: x,
-            y: y,
-            collected: false
-        });
+        stars.push({ el: star, x, y, collected: false });
     }
 
-    function updateRocketElement() {
-        rocket.style.left = `calc(${rocketPos.x}% - 2.5rem)`;
-        rocket.style.top = `calc(${rocketPos.y}% - 2.5rem)`;
+    // メインループ（ロケットの移動とアニメーション）
+    function update() {
+        if (isFinished) return;
+
+        // イージング追従 (0.1 = 10% ずつ近づく)
+        const easing = isDragging ? 0.15 : 0.05;
+        const dx = targetX - rocketX;
+        const dy = targetY - rocketY;
+        
+        rocketX += dx * easing;
+        rocketY += dy * easing;
+
+        // 回転計算
+        if (Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1) {
+            const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+            // 角度の急激な変化を抑制
+            const da = (angle - rocketRotation + 540) % 360 - 180;
+            rocketRotation += da * 0.2;
+        }
+
+        rocket.style.left = `calc(${rocketX}% - 3rem)`;
+        rocket.style.top = `calc(${rocketY}% - 3rem)`;
+        rocket.style.transform = `rotate(${rocketRotation}deg)`;
+
+        if (isDragging && !isTransitioning) {
+            checkCollisions();
+            if (Math.random() > 0.3) {
+                // 噴射パーティクル
+                createParticle(rocketX, rocketY, rocketRotation);
+            }
+        }
+
+        requestAnimationFrame(update);
     }
 
-    // パーティクル生成
-    function createParticle(x, y) {
+    function createParticle(x, y, rot) {
         const p = document.createElement('div');
         p.className = 'particle';
-        const size = Math.random() * 8 + 4;
+        const size = Math.random() * 10 + 5;
         p.style.width = `${size}px`;
         p.style.height = `${size}px`;
-        p.style.left = `${x}%`;
-        p.style.top = `${y}%`;
         
+        // ロケットの後ろから出す
+        const offsetRad = (rot + 90) * (Math.PI / 180);
+        const px = x + Math.cos(offsetRad) * 5;
+        const py = y + Math.sin(offsetRad) * 5;
+
+        p.style.left = `${px}%`;
+        p.style.top = `${py}%`;
         stage.appendChild(p);
 
-        const angle = Math.random() * Math.PI * 2;
-        const dist = Math.random() * 50 + 20;
-        const dx = Math.cos(angle) * dist;
-        const dy = Math.sin(angle) * dist;
-
         p.animate([
-            { transform: 'translate(0, 0) scale(1)', opacity: 1 },
-            { transform: `translate(${dx}px, ${dy}px) scale(0)`, opacity: 0 }
-        ], {
-            duration: 800,
-            easing: 'ease-out'
-        }).onfinish = () => p.remove();
-    }
-
-    function handleMove(e) {
-        if (!isDragging || isTransitioning || isFinished) return;
-
-        const rect = stage.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-
-        rocketPos.x = Math.max(5, Math.min(95, ((clientX - rect.left) / rect.width) * 100));
-        rocketPos.y = Math.max(5, Math.min(95, ((clientY - rect.top) / rect.height) * 100));
-
-        updateRocketElement();
-        checkCollisions();
-
-        // 移動中に火花を散らす
-        if (Math.random() > 0.5) {
-            createParticle(rocketPos.x, rocketPos.y + 5);
-        }
+            { transform: 'translate(0,0) scale(1)', opacity: 0.8 },
+            { transform: `translate(${(Math.random()-0.5)*40}px, ${20 + Math.random()*40}px) scale(0)`, opacity: 0 }
+        ], { duration: 600, easing: 'ease-out' }).onfinish = () => p.remove();
     }
 
     function checkCollisions() {
         stars.forEach(star => {
             if (star.collected) return;
-
-            const dx = star.x - rocketPos.x;
-            const dy = star.y - rocketPos.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            if (dist < 8) { // 当たり判定半径
+            const dist = Math.hypot(star.x - rocketX, star.y - rocketY);
+            if (dist < 10) {
                 collectStar(star);
             }
         });
@@ -138,11 +138,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function collectStar(star) {
         star.collected = true;
         star.el.classList.add('star-collected');
-        
         soundCollect.currentTime = 0;
         soundCollect.play().catch(e => {});
 
-        // 全て集めたかチェック
         if (stars.every(s => s.collected)) {
             completeRound();
         }
@@ -152,7 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
         isTransitioning = true;
         isDragging = false;
         GameUtils.showHanamaru();
-
         setTimeout(() => {
             currentRound++;
             if (currentRound < TOTAL_ROUNDS) {
@@ -167,7 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
         isFinished = true;
         soundClear.play().catch(e => {});
         soundClearVoice.play().catch(e => {});
-        
         setTimeout(() => {
             finishOverlay.classList.remove('hidden');
             setupStickers();
@@ -179,8 +175,8 @@ document.addEventListener('DOMContentLoaded', () => {
         choices.innerHTML = '';
         StickerSystem.drawThree().forEach(sticker => {
             const btn = document.createElement('button');
-            btn.className = `flex flex-col items-center justify-center p-6 rounded-2xl border-4 ${sticker.data.color} shadow-lg hover:scale-110 transition-transform bg-white/90 backdrop-blur-sm`;
-            btn.innerHTML = `<div class="text-6xl mb-2">${sticker.item}</div><div class="text-sm font-bold text-gray-800">${sticker.data.label}</div>`;
+            btn.className = `flex flex-col items-center justify-center p-8 rounded-[40px] border-4 ${sticker.data.color} shadow-2xl hover:scale-110 transition-transform bg-white/90`;
+            btn.innerHTML = `<div class="text-7xl mb-4">${sticker.item}</div><div class="text-lg font-black text-gray-800">${sticker.data.label}</div>`;
             btn.addEventListener('click', () => {
                 soundSelect.play().catch(e => {});
                 StickerSystem.saveSticker(sticker);
@@ -191,16 +187,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // イベントリスナー
-    rocket.addEventListener('pointerdown', (e) => {
+    // ドラッグ操作
+    function onMove(e) {
+        if (!isDragging || isTransitioning || isFinished) return;
+        const rect = stage.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        targetX = Math.max(5, Math.min(95, ((clientX - rect.left) / rect.width) * 100));
+        targetY = Math.max(5, Math.min(95, ((clientY - rect.top) / rect.height) * 100));
+    }
+
+    stage.addEventListener('pointerdown', (e) => {
         if (isTransitioning || isFinished) return;
         isDragging = true;
-        rocket.setPointerCapture(e.pointerId);
+        stage.setPointerCapture(e.pointerId);
+        onMove(e);
         soundTap.play().catch(e => {});
     });
 
-    window.addEventListener('pointermove', handleMove);
-    window.addEventListener('pointerup', () => isDragging = false);
+    stage.addEventListener('pointermove', onMove);
+    stage.addEventListener('pointerup', () => isDragging = false);
 
     initRound();
+    update();
 });
