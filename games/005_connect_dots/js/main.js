@@ -1,12 +1,15 @@
 /**
  * てんつなぎ - main.js
+ * 004の堅牢ななぞり書きロジックを移植
  */
 
 document.addEventListener('DOMContentLoaded', () => {
     const svg = document.getElementById('dots-svg');
     const dotsGroup = document.getElementById('dots-group');
-    const linesPath = document.getElementById('lines-path');
+    const bgPath = document.getElementById('bg-path');
     const guidePath = document.getElementById('guide-path');
+    const tracedPath = document.getElementById('traced-path');
+    const targetDot = document.getElementById('target-dot');
     const goalIllustration = document.getElementById('goal-illustration');
     const finishOverlay = document.getElementById('finish-overlay');
     const instruction = document.getElementById('instruction');
@@ -17,6 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const soundIntro = new Audio('../../static/sounds/voice/005_intro.mp3');
     const soundClearVoice = new Audio('../../static/sounds/voice/clear.mp3');
 
+    // なぞる音のシンセサイザー (004から移植)
     let audioCtx = null;
     let oscillator = null;
     let gainNode = null;
@@ -26,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (oscillator) return;
         oscillator = audioCtx.createOscillator();
         gainNode = audioCtx.createGain();
-        oscillator.type = 'sine';
+        oscillator.type = 'triangle';
         oscillator.connect(gainNode);
         gainNode.connect(audioCtx.destination);
         gainNode.gain.setValueAtTime(0, audioCtx.currentTime);
@@ -58,11 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let sessionShapes = [];
     let currentShapeIndex = 0;
-    let currentTargetIndex = 0;
-    let pathData = "";
     let isDrawing = false;
     let samplingPoints = [];
-    let lastReachedIndexInSegment = -1;
+    let lastReachedIndex = -1;
 
     function initGame() {
         sessionShapes = SHAPES.sort(() => Math.random() - 0.5).slice(0, 3);
@@ -72,75 +74,64 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function loadShape() {
         const shape = sessionShapes[currentShapeIndex];
-        currentTargetIndex = 0;
-        pathData = "";
-        linesPath.setAttribute('d', "");
+        const d = "M " + shape.dots.map(p => `${p.x} ${p.y}`).join(" L ");
         
-        // 全体のガイドパスをセット
-        const dGuide = "M " + shape.dots.map(d => `${d.x} ${d.y}`).join(" L ") + " Z";
-        guidePath.setAttribute('d', dGuide);
-        
+        bgPath.setAttribute('d', d);
+        guidePath.setAttribute('d', d);
+        tracedPath.setAttribute('d', '');
+        goalIllustration.setAttribute('d', d);
         goalIllustration.classList.remove('illustration-fadein');
-        goalIllustration.setAttribute('d', dGuide);
+        
         instruction.textContent = `${shape.name}を なぞろう！ (${currentShapeIndex + 1}/3)`;
 
-        renderDots();
-        initSegmentSampling();
+        // サンプリング点生成
+        const tempPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        tempPath.setAttribute('d', d);
+        const length = tempPath.getTotalLength();
+        samplingPoints = [];
+        const step = 2;
+        for (let i = 0; i <= length; i += step) {
+            samplingPoints.push(tempPath.getPointAtLength(i));
+        }
+        
+        lastReachedIndex = -1;
+        renderDots(shape);
+        updateTargetDot();
     }
 
-    function renderDots() {
-        const shape = sessionShapes[currentShapeIndex];
+    function renderDots(shape) {
         dotsGroup.innerHTML = '';
         shape.dots.forEach((dot, index) => {
-            // 重なる点は1つだけ描画
             if (index > 0 && dot.x === shape.dots[0].x && dot.y === shape.dots[0].y) return;
-
-            const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-            g.setAttribute('class', 'dot-marker');
             const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            circle.setAttribute('cx', dot.x); circle.setAttribute('cy', dot.y); circle.setAttribute('r', 3);
-            circle.setAttribute('fill', 'white'); circle.setAttribute('stroke', '#4caf50'); circle.setAttribute('stroke-width', 1);
-            
-            // 番号は削除
-            g.appendChild(circle);
-            dotsGroup.appendChild(g);
+            circle.setAttribute('cx', dot.x);
+            circle.setAttribute('cy', dot.y);
+            circle.setAttribute('r', 3);
+            circle.setAttribute('fill', 'white');
+            circle.setAttribute('stroke', '#4caf50');
+            circle.setAttribute('stroke-width', 1);
+            dotsGroup.appendChild(circle);
         });
-        updateDotsStatus();
     }
 
-    function initSegmentSampling() {
-        const shape = sessionShapes[currentShapeIndex];
-        const p1 = shape.dots[currentTargetIndex];
-        const p2 = shape.dots[currentTargetIndex + 1];
-        if (!p2) return;
-
-        samplingPoints = [];
-        const steps = 30; // 密度を上げて滑らかに
-        for (let i = 0; i <= steps; i++) {
-            samplingPoints.push({
-                x: p1.x + (p2.x - p1.x) * (i / steps),
-                y: p1.y + (p2.y - p1.y) * (i / steps)
-            });
+    function updateTargetDot() {
+        const nextIndex = lastReachedIndex + 1;
+        if (nextIndex < samplingPoints.length) {
+            targetDot.setAttribute('cx', samplingPoints[nextIndex].x);
+            targetDot.setAttribute('cy', samplingPoints[nextIndex].y);
+            targetDot.classList.remove('hidden');
+        } else {
+            targetDot.classList.add('hidden');
         }
-        lastReachedIndexInSegment = -1;
     }
 
-    function updateDotsStatus() {
-        const markers = dotsGroup.querySelectorAll('.dot-marker');
-        markers.forEach((m, i) => {
-            const circle = m.querySelector('circle');
-            if (i < currentTargetIndex) {
-                circle.setAttribute('class', 'dot-reached');
-                m.classList.remove('dot-active');
-            } else if (i === currentTargetIndex) {
-                m.classList.add('dot-active');
-                circle.setAttribute('fill', '#fff9c4');
-                circle.setAttribute('r', 5); // ターゲットを少し大きく
-            } else {
-                m.classList.remove('dot-active');
-                circle.setAttribute('r', 3);
-            }
-        });
+    function renderTracedPath() {
+        if (lastReachedIndex < 0) return;
+        let d = `M ${samplingPoints[0].x} ${samplingPoints[0].y}`;
+        for (let i = 1; i <= lastReachedIndex; i++) {
+            d += ` L ${samplingPoints[i].x} ${samplingPoints[i].y}`;
+        }
+        tracedPath.setAttribute('d', d);
     }
 
     function getMousePos(e) {
@@ -154,94 +145,63 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     svg.addEventListener('pointerdown', (e) => {
-        if (finishOverlay.classList.contains('hidden') === false) return;
+        if (!finishOverlay.classList.contains('hidden')) return;
         const pos = getMousePos(e);
-        const shape = sessionShapes[currentShapeIndex];
-        const startDot = shape.dots[currentTargetIndex];
-        const dist = Math.hypot(startDot.x - pos.x, startDot.y - pos.y);
-        if (dist < 15) {
+        // スタート地点に近いか
+        const startP = samplingPoints[0];
+        if (Math.hypot(startP.x - pos.x, startP.y - pos.y) < 15) {
             isDrawing = true;
             startSynth();
+            handleMove(e);
         }
     });
 
-    window.addEventListener('pointermove', (e) => {
-        if (!isDrawing) return;
-        const pos = getMousePos(e);
-        
-        let foundNewPoint = false;
-        const searchRange = 8;
-        const startSearch = lastReachedIndexInSegment + 1;
-        const endSearch = Math.min(startSearch + searchRange, samplingPoints.length);
-
-        for (let i = startSearch; i < endSearch; i++) {
-            const p = samplingPoints[i];
-            const dist = Math.hypot(p.x - pos.x, p.y - pos.y);
-            if (dist < 12) {
-                lastReachedIndexInSegment = i;
-                foundNewPoint = true;
-            }
-        }
-
-        if (foundNewPoint) {
-            const progress = lastReachedIndexInSegment / (samplingPoints.length - 1);
-            updateSynth(progress);
-            renderCurrentProgress();
-
-            if (lastReachedIndexInSegment >= samplingPoints.length - 1) {
-                completeSegment();
-            }
-        } else {
-            if (gainNode) gainNode.gain.setTargetAtTime(0.02, audioCtx.currentTime, 0.1);
-        }
-    });
-
+    window.addEventListener('pointermove', handleMove);
     window.addEventListener('pointerup', () => {
         isDrawing = false;
         stopSynth();
     });
 
-    function renderCurrentProgress() {
-        const shape = sessionShapes[currentShapeIndex];
-        const currentP = samplingPoints[lastReachedIndexInSegment];
-        let d = pathData;
-        if (currentTargetIndex === 0) {
-            d = `M ${shape.dots[0].x} ${shape.dots[0].y} L ${currentP.x} ${currentP.y}`;
-        } else {
-            d += ` L ${currentP.x} ${currentP.y}`;
-        }
-        linesPath.setAttribute('d', d);
-    }
-
-    function completeSegment() {
-        const shape = sessionShapes[currentShapeIndex];
-        const p2 = shape.dots[currentTargetIndex + 1];
+    function handleMove(e) {
+        if (!isDrawing) return;
+        const pos = getMousePos(e);
         
-        if (currentTargetIndex === 0) {
-            pathData = `M ${shape.dots[0].x} ${shape.dots[0].y} L ${p2.x} ${p2.y}`;
-        } else {
-            pathData += ` L ${p2.x} ${p2.y}`;
+        let foundNewPoint = false;
+        const searchRange = 20; // 前方の探索範囲を広く取る
+        const startSearch = lastReachedIndex + 1;
+        const endSearch = Math.min(startSearch + searchRange, samplingPoints.length);
+
+        for (let i = startSearch; i < endSearch; i++) {
+            const p = samplingPoints[i];
+            const dist = Math.hypot(p.x - pos.x, p.y - pos.y);
+            if (dist < 15) {
+                lastReachedIndex = i;
+                foundNewPoint = true;
+            }
         }
-        linesPath.setAttribute('d', pathData);
-        
-        soundTap.currentTime = 0;
-        soundTap.play().catch(e=>{});
 
-        currentTargetIndex++;
-        updateDotsStatus();
+        if (foundNewPoint) {
+            renderTracedPath();
+            updateTargetDot();
+            const progress = lastReachedIndex / (samplingPoints.length - 1);
+            updateSynth(progress);
 
-        if (currentTargetIndex >= shape.dots.length - 1) {
-            finishSingleShape();
+            if (lastReachedIndex >= samplingPoints.length - 1) {
+                completeShape();
+            }
         } else {
-            initSegmentSampling();
+            if (gainNode) gainNode.gain.setTargetAtTime(0.02, audioCtx.currentTime, 0.1);
         }
     }
 
-    function finishSingleShape() {
+    function completeShape() {
         isDrawing = false;
         stopSynth();
+        soundTap.play().catch(e=>{});
+        
         goalIllustration.classList.add('illustration-fadein');
         GameUtils.showHanamaru();
+
         setTimeout(() => {
             currentShapeIndex++;
             if (currentShapeIndex < sessionShapes.length) {
