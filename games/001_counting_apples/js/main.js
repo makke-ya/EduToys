@@ -16,8 +16,6 @@ document.addEventListener('DOMContentLoaded', () => {
         { name: 'くるま', emoji: '🚗' },
         { name: 'ひよこ', emoji: '🐤' }
     ];
-    const itemType = VARIATIONS[Math.floor(Math.random() * VARIATIONS.length)];
-    instruction.textContent = `${itemType.name}を タップ してね！`;
 
     // 音声ファイルの準備
     const bgm = new Audio('../../static/sounds/bgm/Pops_01.mp3');
@@ -31,9 +29,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const soundClearVoice = new Audio('../../static/sounds/voice/clear.mp3');
     const soundSelectSticker = new Audio('../../static/sounds/voice/select_sticker.mp3');
 
-    const TOTAL_ITEMS = 5; 
+    let currentRound = 0;
+    const TOTAL_ROUNDS = 3;
+    let totalItemsInRound = 0;
     let tappedCount = 0;
     let isFinished = false;
+    let isTransitioning = false;
     let bgmStarted = false;
 
     const tryPlayBgm = () => {
@@ -58,17 +59,27 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     setTimeout(playIntro, 500);
 
-    async function init() {
-        for (let i = 0; i < TOTAL_ITEMS; i++) {
-            createItem(i);
+    async function initRound() {
+        isTransitioning = false;
+        tappedCount = 0;
+        counterDisplay.textContent = tappedCount;
+        stage.innerHTML = '';
+        
+        const itemType = VARIATIONS[Math.floor(Math.random() * VARIATIONS.length)];
+        totalItemsInRound = Math.floor(Math.random() * 3) + 3; // 3〜5個
+        
+        instruction.textContent = `${itemType.name}を タップ してね！ (${currentRound + 1}/${TOTAL_ROUNDS})`;
+
+        for (let i = 0; i < totalItemsInRound; i++) {
+            createItem(itemType.emoji);
             await new Promise(r => setTimeout(r, 200));
         }
     }
 
-    function createItem(id) {
+    function createItem(emoji) {
         const item = document.createElement('div');
         item.className = 'item absolute cursor-pointer select-none text-7xl transition-all duration-700 ease-in-out scale-0 animate-bounce';
-        item.innerHTML = itemType.emoji;
+        item.innerHTML = emoji;
 
         // ランダムな位置に配置
         const x = Math.random() * 70 + 15;
@@ -88,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleTap(item) {
-        if (isFinished || item.dataset.tapped === 'true') return;
+        if (isFinished || isTransitioning || item.dataset.tapped === 'true') return;
 
         tappedCount++;
         counterDisplay.textContent = tappedCount;
@@ -105,7 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const stageRect = stage.getBoundingClientRect();
         const itemRect = item.getBoundingClientRect();
 
-        // 現在の絶対座標を固定してから移動開始
         item.style.left = `${itemRect.left - stageRect.left}px`;
         item.style.top = `${itemRect.top - stageRect.top}px`;
         item.style.position = 'absolute';
@@ -119,14 +129,13 @@ document.addEventListener('DOMContentLoaded', () => {
             item.style.opacity = '0';
         }, 10);
 
-        // カゴを少し揺らす
         basket.classList.add('scale-125');
         setTimeout(() => basket.classList.remove('scale-125'), 200);
 
         showNumberAt(itemRect, tappedCount);
 
-        if (tappedCount === TOTAL_ITEMS) {
-            finishGame();
+        if (tappedCount === totalItemsInRound) {
+            completeRound();
         }
     }
 
@@ -141,31 +150,43 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => num.remove(), 1000);
     }
 
-    function finishGame() {
-        isFinished = true;
+    function completeRound() {
+        isTransitioning = true;
         
-        // 少し間を置いてから合計数を強調
         setTimeout(() => {
-            const finalCountVoice = new Audio(`../../static/sounds/voice/num_${TOTAL_ITEMS}.mp3`);
+            const finalCountVoice = new Audio(`../../static/sounds/voice/num_${totalItemsInRound}.mp3`);
             finalCountVoice.play().catch(e=>{});
             GameUtils.showHanamaru();
         }, 800);
 
         setTimeout(() => {
+            currentRound++;
+            if (currentRound < TOTAL_ROUNDS) {
+                initRound();
+            } else {
+                finishGame();
+            }
+        }, 2500);
+    }
+
+    function finishGame() {
+        isFinished = true;
+        setTimeout(() => {
             soundClear.play().catch(e => {});
             soundClearVoice.play().catch(e => {});
-        }, 1500);
+        }, 300);
 
         setTimeout(() => {
             finishOverlay.classList.remove('hidden');
             soundSelectSticker.play().catch(e=>{});
             setupStickers();
-        }, 2500);
+        }, 1500);
     }
 
     function setupStickers() {
         if (!window.StickerSystem) return;
         const choicesContainer = document.getElementById('sticker-choices');
+        choicesContainer.innerHTML = '';
         const selectionArea = document.getElementById('sticker-selection');
         const afterSelection = document.getElementById('after-selection');
         
@@ -183,5 +204,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    init();
+    initRound();
 });

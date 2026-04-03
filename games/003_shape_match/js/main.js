@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const silhouetteGuide = document.getElementById('silhouette-guide');
     const choicesContainer = document.getElementById('choices');
     const finishOverlay = document.getElementById('finish-overlay');
+    const instruction = document.querySelector('h1#instruction');
 
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
@@ -16,9 +17,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const ITEMS = [
         { icon: '🍎', name: 'りんご' }, { icon: '🚗', name: 'くるま' },
         { icon: '🐘', name: 'ぞう' }, { icon: '⭐', name: 'ほし' },
-        { icon: '🌻', name: 'ひまわり' }, { icon: '🎈', name: 'ふうせん' }
+        { icon: '🌻', name: 'ひまわり' }, { icon: '🎈', name: 'ふうせん' },
+        { icon: '🦁', name: 'らいおん' }, { icon: '🍰', name: 'けーき' }
     ];
+
+    let currentRound = 0;
+    const TOTAL_ROUNDS = 3;
     let isFinished = false;
+    let isTransitioning = false;
     let correctAnswer = null;
 
     let draggingElement = null;
@@ -30,18 +36,27 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!introPlayed) {
             soundIntro.play().catch(e=>{});
             introPlayed = true;
-            document.body.removeEventListener('click', playIntro);
-            document.body.removeEventListener('touchstart', playIntro);
         }
     };
-    document.body.addEventListener('click', playIntro);
-    document.body.addEventListener('touchstart', playIntro, { passive: true });
-    setTimeout(playIntro, 100);
+    document.body.addEventListener('click', playIntro, { once: true });
+    setTimeout(playIntro, 500);
 
-    function init() {
+    function initRound() {
+        isTransitioning = false;
+        
+        // ヘッダーの更新
+        if (instruction) {
+            instruction.textContent = `かたちあわせに ちょうせん！ (${currentRound + 1}/${TOTAL_ROUNDS})`;
+        }
+
         const item = ITEMS[Math.floor(Math.random() * ITEMS.length)];
         correctAnswer = item;
+        
         silhouette.innerHTML = item.icon;
+        silhouette.className = 'text-[120px] filter brightness-0 opacity-20 transition-all duration-500';
+        silhouette.style.transform = '';
+        
+        silhouetteGuide.className = 'absolute inset-0 border-8 border-dashed border-gray-200 rounded-[40px] transition-all duration-300';
         
         const currentChoices = [item];
         while (currentChoices.length < 3) {
@@ -57,95 +72,111 @@ document.addEventListener('DOMContentLoaded', () => {
             el.innerHTML = choice.icon;
             el.dataset.icon = choice.icon;
             
-            el.addEventListener('pointerdown', (e) => {
-                if (isFinished) return;
-                draggingElement = el;
-                const rect = el.getBoundingClientRect();
-                offsetX = e.clientX - rect.left;
-                offsetY = e.clientY - rect.top;
-                
-                el.classList.add('scale-110', 'z-50', 'absolute');
-                el.style.left = `${rect.left}px`;
-                el.style.top = `${rect.top}px`;
-                document.body.appendChild(el);
-                
-                soundTap.currentTime = 0; soundTap.play().catch(e=>{});
-            });
-
+            el.addEventListener('pointerdown', handlePointerDown);
             choicesContainer.appendChild(el);
         });
-
-        document.addEventListener('pointermove', (e) => {
-            if (!draggingElement) return;
-            e.preventDefault();
-            draggingElement.style.left = `${e.clientX - offsetX}px`;
-            draggingElement.style.top = `${e.clientY - offsetY}px`;
-            
-            // 距離チェック（ガイドの色を変えるなどの視覚的フィードバック）
-            checkDistance(e.clientX, e.clientY);
-        });
-
-        document.addEventListener('pointerup', (e) => {
-            if (!draggingElement) return;
-            
-            const icon = draggingElement.dataset.icon;
-            const silRect = silhouette.getBoundingClientRect();
-            const elRect = draggingElement.getBoundingClientRect();
-            const centerX = elRect.left + elRect.width / 2;
-            const centerY = elRect.top + elRect.height / 2;
-
-            const isOverlap = centerX > silRect.left - 20 && centerX < silRect.right + 20 && 
-                              centerY > silRect.top - 20 && centerY < silRect.bottom + 20;
-
-            if (isOverlap && icon === correctAnswer.icon) {
-                // 正解（スナップ）
-                draggingElement.style.left = `${silRect.left}px`;
-                draggingElement.style.top = `${silRect.top}px`;
-                draggingElement.classList.remove('scale-110', 'z-50', 'bg-white', 'border-yellow-200');
-                draggingElement.classList.add('scale-100', 'border-transparent', 'bg-transparent', 'shadow-none');
-                
-                silhouette.classList.remove('filter', 'brightness-0', 'opacity-20');
-                silhouette.classList.add('scale-125', 'transition-transform');
-                silhouetteGuide.classList.add('opacity-0');
-                
-                soundSelect.currentTime = 0; soundSelect.play().catch(e=>{});
-                isFinished = true;
-                setTimeout(finishGame, 800);
-            } else {
-                if (isOverlap) {
-                    soundError.currentTime = 0; soundError.play().catch(e=>{});
-                }
-                resetDraggingElement();
-            }
-            draggingElement = null;
-        });
     }
+
+    function handlePointerDown(e) {
+        if (isFinished || isTransitioning) return;
+        const el = e.currentTarget;
+        draggingElement = el;
+        const rect = el.getBoundingClientRect();
+        offsetX = e.clientX - rect.left;
+        offsetY = e.clientY - rect.top;
+        
+        el.classList.add('scale-110', 'z-50', 'absolute');
+        el.style.left = `${rect.left}px`;
+        el.style.top = `${rect.top}px`;
+        document.body.appendChild(el);
+        
+        soundTap.currentTime = 0; soundTap.play().catch(e=>{});
+        el.setPointerCapture(e.pointerId);
+    }
+
+    document.addEventListener('pointermove', (e) => {
+        if (!draggingElement) return;
+        e.preventDefault();
+        draggingElement.style.left = `${e.clientX - offsetX}px`;
+        draggingElement.style.top = `${e.clientY - offsetY}px`;
+        checkDistance(e.clientX, e.clientY);
+    });
+
+    document.addEventListener('pointerup', (e) => {
+        if (!draggingElement) return;
+        
+        const icon = draggingElement.dataset.icon;
+        const silRect = silhouette.getBoundingClientRect();
+        const elRect = draggingElement.getBoundingClientRect();
+        const centerX = elRect.left + elRect.width / 2;
+        const centerY = elRect.top + elRect.height / 2;
+
+        const isOverlap = centerX > silRect.left - 40 && centerX < silRect.right + 40 && 
+                          centerY > silRect.top - 40 && centerY < silRect.bottom + 40;
+
+        if (isOverlap && icon === correctAnswer.icon) {
+            isTransitioning = true;
+            const targetX = silRect.left;
+            const targetY = silRect.top;
+            
+            draggingElement.style.transition = 'all 0.3s ease-out';
+            draggingElement.style.left = `${targetX}px`;
+            draggingElement.style.top = `${targetY}px`;
+            draggingElement.classList.remove('bg-white', 'border-yellow-200', 'shadow-md');
+            draggingElement.classList.add('border-transparent', 'bg-transparent', 'shadow-none');
+            
+            silhouette.classList.remove('filter', 'brightness-0', 'opacity-20');
+            silhouette.classList.add('scale-125');
+            silhouetteGuide.classList.add('opacity-0');
+            
+            soundSelect.currentTime = 0; soundSelect.play().catch(e=>{});
+            GameUtils.showHanamaru();
+
+            setTimeout(() => {
+                if (draggingElement) draggingElement.remove();
+                draggingElement = null;
+                currentRound++;
+                if (currentRound < TOTAL_ROUNDS) {
+                    initRound();
+                } else {
+                    finishGame();
+                }
+            }, 2000);
+        } else {
+            if (isOverlap) {
+                soundError.currentTime = 0; soundError.play().catch(e=>{});
+            }
+            resetDraggingElement();
+        }
+        draggingElement = null;
+    });
 
     function checkDistance(clientX, clientY) {
         const silRect = silhouette.getBoundingClientRect();
         const dist = Math.sqrt(Math.pow(clientX - (silRect.left + silRect.width/2), 2) + Math.pow(clientY - (silRect.top + silRect.height/2), 2));
-        
         if (dist < 100) {
-            silhouetteGuide.classList.add('border-yellow-400', 'scale-125');
+            silhouetteGuide.classList.add('border-yellow-400', 'scale-110');
         } else {
-            silhouetteGuide.classList.remove('border-yellow-400', 'scale-125');
+            silhouetteGuide.classList.remove('border-yellow-400', 'scale-110');
         }
     }
 
     function resetDraggingElement() {
-        GameUtils.shakeElement(draggingElement);
+        if (!draggingElement) return;
+        const el = draggingElement;
+        GameUtils.shakeElement(el);
         setTimeout(() => {
-            if (draggingElement && draggingElement.parentNode === document.body) {
-                draggingElement.classList.remove('absolute', 'z-50', 'scale-110');
-                draggingElement.style.left = '';
-                draggingElement.style.top = '';
-                choicesContainer.appendChild(draggingElement);
+            if (el && el.parentNode === document.body) {
+                el.classList.remove('absolute', 'z-50', 'scale-110');
+                el.style.left = '';
+                el.style.top = '';
+                choicesContainer.appendChild(el);
             }
         }, 300);
     }
     
     function finishGame() {
-        GameUtils.showHanamaru();
+        isFinished = true;
         setTimeout(() => {
             soundClear.play().catch(e=>{});
             soundClearVoice.play().catch(e=>{});
@@ -160,22 +191,20 @@ document.addEventListener('DOMContentLoaded', () => {
     function setupStickers() {
         if (!window.StickerSystem) return;
         const choices = document.getElementById('sticker-choices');
-        const selectionArea = document.getElementById('sticker-selection');
-        const afterSelection = document.getElementById('after-selection');
+        choices.innerHTML = '';
         StickerSystem.drawThree().forEach(sticker => {
             const btn = document.createElement('button');
             btn.className = `flex flex-col items-center justify-center p-6 rounded-2xl border-4 ${sticker.data.color} shadow-md hover:scale-110 transition-transform bg-white`;
             btn.innerHTML = `<div class="text-6xl mb-2">${sticker.item}</div><div class="text-sm font-bold">${sticker.data.label}</div>`;
             btn.addEventListener('click', () => {
-                soundSelect.currentTime = 0;
                 soundSelect.play().catch(e=>{});
                 StickerSystem.saveSticker(sticker);
-                selectionArea.classList.add('hidden');
-                afterSelection.classList.remove('hidden');
+                document.getElementById('sticker-selection').classList.add('hidden');
+                document.getElementById('after-selection').classList.remove('hidden');
             });
             choices.appendChild(btn);
         });
     }
 
-    init();
+    initRound();
 });
