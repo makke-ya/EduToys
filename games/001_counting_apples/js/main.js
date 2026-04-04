@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function createItem(emoji) {
         const item = document.createElement('div');
-        item.className = 'item absolute cursor-pointer select-none text-7xl transition-all duration-700 ease-in-out scale-0 animate-bounce';
+        item.className = 'item absolute cursor-pointer select-none text-[6rem] transition-all duration-700 ease-in-out scale-0 animate-bounce hover:scale-110 drop-shadow-md';
         item.innerHTML = emoji;
 
         // ランダムな位置に配置
@@ -104,12 +104,15 @@ document.addEventListener('DOMContentLoaded', () => {
         tappedCount++;
         counterDisplay.textContent = tappedCount;
 
+        soundTap.currentTime = 0;
+        soundTap.play().catch(e=>{});
+
         // 数え上げ音声を再生
         const countVoice = new Audio(`../../static/sounds/voice/num_${tappedCount}.mp3`);
         countVoice.play().catch(e=>{});
 
         item.dataset.tapped = 'true';
-        item.classList.remove('animate-bounce');
+        item.classList.remove('animate-bounce', 'hover:scale-110');
 
         // カゴへ移動する演出
         const basketRect = basket.getBoundingClientRect();
@@ -142,7 +145,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function showNumberAt(rect, numberToShow) {
         const stageRect = stage.getBoundingClientRect();
         const num = document.createElement('div');
-        num.className = 'absolute text-5xl font-black text-orange-500 animate-bounce z-50 pointer-events-none drop-shadow-md';
+        num.className = 'absolute text-6xl font-black text-orange-500 animate-bounce z-50 pointer-events-none drop-shadow-md';
         num.textContent = numberToShow;
         num.style.left = `${rect.left - stageRect.left}px`;
         num.style.top = `${rect.top - stageRect.top - 40}px`;
@@ -156,7 +159,9 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             const finalCountVoice = new Audio(`../../static/sounds/voice/num_${totalItemsInRound}.mp3`);
             finalCountVoice.play().catch(e=>{});
-            GameUtils.showHanamaru();
+            try {
+                GameUtils.showHanamaru('game-container');
+            } catch (e) { console.error(e); }
         }, 800);
 
         setTimeout(() => {
@@ -192,8 +197,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         StickerSystem.drawThree().forEach((sticker) => {
             const btn = document.createElement('button');
-            btn.className = `flex flex-col items-center justify-center p-6 rounded-2xl border-4 ${sticker.data.color} shadow-md hover:scale-110 transition-transform bg-white`;
-            btn.innerHTML = `<div class="text-6xl mb-2">${sticker.item}</div><div class="text-sm font-bold">${sticker.data.label}</div>`;
+            btn.className = `flex flex-col items-center justify-center p-8 rounded-[40px] border-4 ${sticker.data.color} shadow-2xl hover:scale-110 transition-transform bg-white/90`;
+            btn.innerHTML = `<div class="text-7xl mb-4">${sticker.item}</div><div class="text-lg font-black text-gray-800">${sticker.data.label}</div>`;
             btn.addEventListener('click', () => {
                 soundSelect.play().catch(e => {});
                 StickerSystem.saveSticker(sticker);
