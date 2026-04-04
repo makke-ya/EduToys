@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const bgPath = document.getElementById('bg-path');
     const guidePath = document.getElementById('guide-path');
     const tracedPath = document.getElementById('traced-path');
+    const completedPaths = document.getElementById('completed-paths');
     const targetDot = document.getElementById('target-dot');
     const resultChar = document.getElementById('result-char');
     const finishOverlay = document.getElementById('finish-overlay');
@@ -85,6 +86,9 @@ document.addEventListener('DOMContentLoaded', () => {
         resultChar.classList.add('hidden');
         resultChar.classList.remove('success-bounce');
         svg.classList.remove('hidden');
+        
+        // Clear completed paths
+        completedPaths.innerHTML = '';
         
         instruction.textContent = `すうじを なぞろう！ (${currentIndexInSession + 1}/3)`;
         initStroke();
@@ -186,6 +190,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function completeStroke() {
         isDrawing = false;
         stopSynth();
+
+        // Add current stroke to completed paths
+        const finishedPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        finishedPath.setAttribute('d', tracedPath.getAttribute('d'));
+        completedPaths.appendChild(finishedPath);
+        tracedPath.setAttribute('d', '');
+
         currentStrokeIndex++;
         soundTap.play().catch(e=>{});
 
