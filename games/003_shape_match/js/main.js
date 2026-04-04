@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const instruction = document.querySelector('h1#instruction');
 
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
+    const soundCorrect = new Audio('../../static/sounds/system/正解1.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
     const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
     const soundError = new Audio('../../static/sounds/staging/短い音-ズッコケ.mp3');
@@ -53,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         correctAnswer = item;
         
         silhouette.innerHTML = item.icon;
-        silhouette.className = 'text-[120px] filter brightness-0 opacity-20 transition-all duration-500';
+        silhouette.className = 'text-[10rem] md:text-[12rem] filter brightness-0 opacity-20 transition-all duration-500 drop-shadow-lg leading-none';
         silhouette.style.transform = '';
         
         silhouetteGuide.className = 'absolute inset-0 border-8 border-dashed border-gray-200 rounded-[40px] transition-all duration-300';
@@ -68,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
         choicesContainer.innerHTML = '';
         currentChoices.forEach(choice => {
             const el = document.createElement('div');
-            el.className = 'text-7xl p-6 bg-white rounded-3xl shadow-md border-4 border-yellow-200 cursor-grab select-none touch-none hover:scale-105 transition-transform';
+            el.className = 'text-7xl p-6 bg-white rounded-[32px] shadow-md border-4 border-yellow-200 cursor-grab select-none touch-none hover:scale-105 hover:bg-yellow-50 transition-all';
             el.innerHTML = choice.icon;
             el.dataset.icon = choice.icon;
             
@@ -85,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
         offsetX = e.clientX - rect.left;
         offsetY = e.clientY - rect.top;
         
-        el.classList.add('scale-110', 'z-50', 'absolute');
+        el.classList.add('scale-110', 'z-50', 'absolute', 'shadow-2xl');
         el.style.left = `${rect.left}px`;
         el.style.top = `${rect.top}px`;
         document.body.appendChild(el);
@@ -116,21 +117,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isOverlap && icon === correctAnswer.icon) {
             isTransitioning = true;
-            const targetX = silRect.left;
-            const targetY = silRect.top;
+            const targetX = silRect.left + (silRect.width - elRect.width) / 2;
+            const targetY = silRect.top + (silRect.height - elRect.height) / 2;
             
             draggingElement.style.transition = 'all 0.3s ease-out';
             draggingElement.style.left = `${targetX}px`;
             draggingElement.style.top = `${targetY}px`;
-            draggingElement.classList.remove('bg-white', 'border-yellow-200', 'shadow-md');
+            draggingElement.classList.remove('bg-white', 'border-yellow-200', 'shadow-md', 'shadow-2xl');
             draggingElement.classList.add('border-transparent', 'bg-transparent', 'shadow-none');
             
             silhouette.classList.remove('filter', 'brightness-0', 'opacity-20');
             silhouette.classList.add('scale-125');
             silhouetteGuide.classList.add('opacity-0');
             
-            soundSelect.currentTime = 0; soundSelect.play().catch(e=>{});
-            GameUtils.showHanamaru();
+            soundCorrect.currentTime = 0; soundCorrect.play().catch(e=>{});
+            try {
+                GameUtils.showHanamaru('game-container');
+            } catch(e) { console.error(e); }
 
             setTimeout(() => {
                 if (draggingElement) draggingElement.remove();
@@ -167,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
         GameUtils.shakeElement(el);
         setTimeout(() => {
             if (el && el.parentNode === document.body) {
-                el.classList.remove('absolute', 'z-50', 'scale-110');
+                el.classList.remove('absolute', 'z-50', 'scale-110', 'shadow-2xl');
                 el.style.left = '';
                 el.style.top = '';
                 choicesContainer.appendChild(el);
@@ -194,8 +197,8 @@ document.addEventListener('DOMContentLoaded', () => {
         choices.innerHTML = '';
         StickerSystem.drawThree().forEach(sticker => {
             const btn = document.createElement('button');
-            btn.className = `flex flex-col items-center justify-center p-6 rounded-2xl border-4 ${sticker.data.color} shadow-md hover:scale-110 transition-transform bg-white`;
-            btn.innerHTML = `<div class="text-6xl mb-2">${sticker.item}</div><div class="text-sm font-bold">${sticker.data.label}</div>`;
+            btn.className = `flex flex-col items-center justify-center p-8 rounded-[40px] border-4 ${sticker.data.color} shadow-2xl hover:scale-110 transition-transform bg-white/90`;
+            btn.innerHTML = `<div class="text-7xl mb-4">${sticker.item}</div><div class="text-lg font-black text-gray-800">${sticker.data.label}</div>`;
             btn.addEventListener('click', () => {
                 soundSelect.play().catch(e=>{});
                 StickerSystem.saveSticker(sticker);
