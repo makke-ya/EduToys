@@ -1,5 +1,5 @@
 /**
- * ひらがななぞり書き - main.js
+ * えいごなぞり - main.js
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const soundWordClear = new Audio('../../static/sounds/system/正解1.mp3');
     const soundGameClear = new Audio('../../static/sounds/voice/008_clear.mp3');
 
-    // ひらがなのパスデータ定義 (KanjiVGのセンターラインデータ)
+    // アルファベットのパスデータ定義 (仮のシンプルなパス)
     const ALPHABET_DATA = {
         'A': { paths: ['M 54.5 15 L 20 90', 'M 54.5 15 L 89 90', 'M 35 60 L 74 60'], voice: '008_a_upper.mp3' },
         'a': { paths: ['M 70 45 C 50 25, 20 40, 20 65 C 20 90, 50 100, 70 85', 'M 70 35 L 70 90 C 70 95, 80 95, 85 85'], voice: '008_a_lower.mp3' },
@@ -84,7 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
         currentWordIndex = 0;
         initWord();
         
-        // 初回のみイントロ再生
         setTimeout(() => {
             soundIntro.play().catch(e => {});
         }, 1000);
@@ -97,15 +96,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateWordProgress() {
-        const word = WORDS[currentWordIndex].word;
+        const chars = WORDS[currentWordIndex].chars;
         wordProgress.innerHTML = '';
-        for (let i = 0; i < word.length; i++) {
+        for (let i = 0; i < chars.length; i++) {
             const span = document.createElement('span');
+            span.textContent = chars[i];
             if (i < currentCharIndex) {
-                span.textContent = chars[i];
-                span.className = "text-purple-600";
+                span.className = "text-cyan-600";
             } else {
-                span.textContent = '〇';
                 span.className = "text-gray-300";
             }
             wordProgress.appendChild(span);
@@ -126,7 +124,7 @@ document.addEventListener('DOMContentLoaded', () => {
         instruction.textContent = `「${char}」を なぞろう！`;
         
         // 文字の音声を再生
-        const charVoiceFile = ALPHABET_DATA[char] ? ALPHABET_DATA[char].voice : '007_a.mp3';
+        const charVoiceFile = ALPHABET_DATA[char] ? ALPHABET_DATA[char].voice : '008_a_upper.mp3';
         const charVoice = new Audio(`../../static/sounds/voice/${charVoiceFile}`);
         charVoice.play().catch(e => {});
 
@@ -203,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         while (maxAdvance > 0 && lastReachedIndex + 1 < samplingPoints.length) {
             const p = samplingPoints[lastReachedIndex + 1];
             const dist = Math.hypot(p.x - pos.x, p.y - pos.y);
-            if (dist < 22) { // ゆるめの判定
+            if (dist < 18) { // 少し厳しめの判定
                 lastReachedIndex++;
                 foundNewPoint = true;
                 maxAdvance--;
@@ -286,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             wordFinishOverlay.classList.add('hidden');
             currentWordIndex++;
-            if (currentWordIndex < 3) { // 3単語でクリア
+            if (currentWordIndex < WORDS.length) {
                 initWord();
             } else {
                 showFinalFinish();
