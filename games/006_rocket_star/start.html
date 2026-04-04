@@ -83,7 +83,7 @@
         }
     </style>
 </head>
-<body class="flex flex-col items-center justify-center relative">
+<body class="flex flex-col items-center justify-center relative h-screen">
     
     <div class="space-bg"></div>
     <div class="stars-overlay"></div>
@@ -93,14 +93,16 @@
         ◀ もどる
     </button>
 
-    <div id="game-stage">
-        <div id="instruction-area" class="absolute top-8 left-0 w-full text-center z-[500] pointer-events-none">
-            <h1 id="instruction" class="text-3xl md:text-4xl font-black text-yellow-300 drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)]">
-                おほしさまを ぜんぶ あつめよう！
-            </h1>
-        </div>
+    <div id="game-container" class="w-full h-full relative overflow-hidden">
+        <div id="game-stage" class="w-full h-full relative pointer-events-none">
+            <div id="instruction-area" class="absolute top-8 left-0 w-full text-center z-[500] pointer-events-none">
+                <h1 id="instruction" class="text-3xl md:text-4xl font-black text-yellow-300 drop-shadow-[0_4px_4px_rgba(0,0,0,0.5)]">
+                    おほしさまを ぜんぶ あつめよう！
+                </h1>
+            </div>
 
-        <div id="rocket" class="rocket">🚀</div>
+            <div id="rocket" class="rocket pointer-events-auto">🚀</div>
+        </div>
     </div>
 
     <!-- 終了画面オーバーレイ -->
