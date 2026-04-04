@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const instruction = document.querySelector('h1#instruction'); // start.htmlにid="instruction"があると仮定
 
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
+    const soundCorrect = new Audio('../../static/sounds/system/正解1.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
     const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
     const soundError = new Audio('../../static/sounds/staging/短い音-ズッコケ.mp3');
@@ -29,12 +30,15 @@ document.addEventListener('DOMContentLoaded', () => {
             introPlayed = true;
         }
     };
+    document.body.addEventListener('click', playIntro, { once: true });
     setTimeout(playIntro, 500);
 
     function initRound() {
         isTransitioning = false;
-        itemLeft.className = 'relative w-full h-full min-h-[200px] flex items-center justify-center p-4 rounded-3xl border-4 border-transparent transition-all duration-300 hover:bg-orange-100 cursor-pointer';
-        itemRight.className = 'relative w-full h-full min-h-[200px] flex items-center justify-center p-4 rounded-3xl border-4 border-transparent transition-all duration-300 hover:bg-blue-100 cursor-pointer';
+        
+        // Remove success states
+        itemLeft.classList.remove('bg-yellow-200', 'border-orange-500', 'scale-110', 'z-10', 'shadow-2xl');
+        itemRight.classList.remove('bg-yellow-200', 'border-orange-500', 'scale-110', 'z-10', 'shadow-2xl');
         
         const emoji = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
         
@@ -63,13 +67,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function renderItems(container, emoji, count, mode) {
+        // Only remove the inner grid/wrapper, keep the tailwind classes intact
         container.innerHTML = '';
         if (mode === 'grid') {
             const grid = document.createElement('div');
-            grid.className = 'grid grid-cols-3 gap-3 pointer-events-none';
+            grid.className = 'grid grid-cols-3 gap-4 pointer-events-none w-full h-full content-center justify-items-center p-2';
             for (let i = 0; i < count; i++) {
                 const span = document.createElement('span');
-                span.className = 'text-5xl drop-shadow-sm animate-bounce';
+                span.className = 'text-6xl drop-shadow-md animate-bounce';
                 span.style.animationDelay = `${i * 0.1}s`;
                 span.textContent = emoji;
                 grid.appendChild(span);
@@ -77,12 +82,12 @@ document.addEventListener('DOMContentLoaded', () => {
             container.appendChild(grid);
         } else {
             const wrapper = document.createElement('div');
-            wrapper.className = 'absolute inset-0 pointer-events-none';
+            wrapper.className = 'absolute inset-0 pointer-events-none p-6';
             for (let i = 0; i < count; i++) {
                 const span = document.createElement('span');
-                span.className = 'absolute text-5xl drop-shadow-sm animate-bounce';
-                span.style.left = `${Math.random() * 70 + 10}%`;
-                span.style.top = `${Math.random() * 70 + 10}%`;
+                span.className = 'absolute text-6xl drop-shadow-md animate-bounce';
+                span.style.left = `${Math.random() * 60 + 10}%`;
+                span.style.top = `${Math.random() * 60 + 10}%`;
                 span.style.animationDelay = `${i * 0.1}s`;
                 span.textContent = emoji;
                 wrapper.appendChild(span);
@@ -96,13 +101,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isCorrect) {
             isTransitioning = true;
-            soundTap.currentTime = 0;
-            soundTap.play().catch(e=>{});
+            soundCorrect.currentTime = 0;
+            soundCorrect.play().catch(e=>{});
             
-            element.classList.add('bg-yellow-100', 'border-orange-500', 'scale-105', 'z-10');
-            element.querySelectorAll('span').forEach(s => s.classList.add('scale-125'));
+            element.classList.add('bg-yellow-200', 'border-orange-500', 'scale-110', 'z-10', 'shadow-2xl');
+            element.querySelectorAll('span').forEach(s => s.classList.add('scale-125', 'transition-transform'));
             
-            GameUtils.showHanamaru();
+            try {
+                GameUtils.showHanamaru('game-container');
+            } catch (e) { console.error(e); }
 
             setTimeout(() => {
                 currentRound++;
@@ -138,8 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
         choices.innerHTML = '';
         StickerSystem.drawThree().forEach(sticker => {
             const btn = document.createElement('button');
-            btn.className = `flex flex-col items-center justify-center p-6 rounded-2xl border-4 ${sticker.data.color} shadow-md hover:scale-110 transition-transform bg-white`;
-            btn.innerHTML = `<div class="text-6xl mb-2">${sticker.item}</div><div class="text-sm font-bold">${sticker.data.label}</div>`;
+            btn.className = `flex flex-col items-center justify-center p-8 rounded-[40px] border-4 ${sticker.data.color} shadow-2xl hover:scale-110 transition-transform bg-white/90`;
+            btn.innerHTML = `<div class="text-7xl mb-4">${sticker.item}</div><div class="text-lg font-black text-gray-800">${sticker.data.label}</div>`;
             btn.addEventListener('click', () => {
                 soundSelect.play().catch(e=>{});
                 StickerSystem.saveSticker(sticker);
