@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
         '2': { paths: ['M 25 35 C 25 10, 75 10, 75 35 C 75 55, 25 85, 25 85 L 75 85'] },
         '3': { paths: ['M 30 25 C 75 15, 75 45, 50 45 C 75 45, 75 85, 30 75'] },
         '4': { paths: ['M 50 15 L 20 65 L 80 65', 'M 60 15 L 60 85'] },
-        '5': { paths: ['M 40 15 L 35 45 C 35 45, 80 40, 80 65 C 80 90, 30 90, 30 75', 'M 40 15 L 75 15'] },
+        '5': { paths: ['M 40 15 L 75 15', 'M 40 15 L 35 45 C 35 45, 80 40, 80 65 C 80 90, 30 90, 30 75'] },
         '6': { paths: ['M 65 15 C 30 15, 25 50, 25 60 C 25 85, 75 85, 75 60 C 75 40, 35 40, 35 60 C 35 70, 45 75, 50 75 C 65 75, 75 65, 75 60'] },
         '7': { paths: ['M 25 20 L 75 20 L 40 85'] },
         '8': { paths: ['M 50 15 C 30 15, 25 35, 50 50 C 75 65, 70 85, 50 85 C 30 85, 25 65, 50 50 C 75 35, 70 15, 50 15'] },
@@ -112,8 +112,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateTargetDot() {
-        const nextIndex = lastReachedIndex + 1;
-        if (nextIndex < samplingPoints.length) {
+        // ターゲットドットを現在位置の少し先に表示する (進行方向のナビゲーションとして)
+        const nextIndex = Math.min(lastReachedIndex + 3, samplingPoints.length - 1);
+        if (nextIndex >= 0 && nextIndex < samplingPoints.length) {
             targetDot.setAttribute('cx', samplingPoints[nextIndex].x);
             targetDot.setAttribute('cy', samplingPoints[nextIndex].y);
             targetDot.classList.remove('hidden');
@@ -153,16 +154,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const pos = getMousePos(e);
         
         let foundNewPoint = false;
-        const searchRange = 20; // 探索範囲をさらに広げてスムーズに
-        const startSearch = lastReachedIndex + 1;
-        const endSearch = Math.min(startSearch + searchRange, samplingPoints.length);
+        let maxAdvance = 30; // ユーザーが早くドラッグしても追いつけるようにするが、飛び地は許可しない
 
-        for (let i = startSearch; i < endSearch; i++) {
-            const p = samplingPoints[i];
+        while (maxAdvance > 0 && lastReachedIndex + 1 < samplingPoints.length) {
+            const p = samplingPoints[lastReachedIndex + 1];
             const dist = Math.hypot(p.x - pos.x, p.y - pos.y);
-            if (dist < 18) { // 判定距離をさらに拡大
-                lastReachedIndex = i;
+            // 現在のターゲットポイントとの距離が一定以内なら進める
+            if (dist < 20) {
+                lastReachedIndex++;
                 foundNewPoint = true;
+                maxAdvance--;
+            } else {
+                break;
             }
         }
 
