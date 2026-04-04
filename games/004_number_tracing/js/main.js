@@ -204,7 +204,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const voice = new Audio(`../../static/sounds/voice/num_${num}.mp3`);
         voice.play().catch(e=>{});
 
-        GameUtils.showHanamaru();
+        try {
+            GameUtils.showHanamaru('game-container');
+        } catch(e) { console.error(e); }
         
         setTimeout(() => {
             currentIndexInSession++;
@@ -236,8 +238,8 @@ document.addEventListener('DOMContentLoaded', () => {
         choices.innerHTML = '';
         StickerSystem.drawThree().forEach(sticker => {
             const btn = document.createElement('button');
-            btn.className = `flex flex-col items-center justify-center p-6 rounded-2xl border-4 ${sticker.data.color} shadow-md hover:scale-110 transition-transform bg-white`;
-            btn.innerHTML = `<div class="text-6xl mb-2">${sticker.item}</div><div class="text-sm font-bold">${sticker.data.label}</div>`;
+            btn.className = `flex flex-col items-center justify-center p-8 rounded-[40px] border-4 ${sticker.data.color} shadow-2xl hover:scale-110 transition-transform bg-white/90`;
+            btn.innerHTML = `<div class="text-7xl mb-4">${sticker.item}</div><div class="text-lg font-black text-gray-800">${sticker.data.label}</div>`;
             btn.addEventListener('click', () => {
                 soundSelect.play().catch(e=>{});
                 StickerSystem.saveSticker(sticker);
@@ -256,5 +258,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     initGame();
-    soundIntro.play().catch(e=>{});
+    // Use user interaction for intro playback if possible to avoid auto-play blocking
+    let introPlayed = false;
+    const playIntro = () => {
+        if (!introPlayed) {
+            soundIntro.play().catch(e=>{});
+            introPlayed = true;
+        }
+    };
+    document.body.addEventListener('click', playIntro, { once: true });
+    setTimeout(playIntro, 500);
 });
