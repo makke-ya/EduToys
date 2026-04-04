@@ -19,23 +19,95 @@ document.addEventListener('DOMContentLoaded', () => {
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
     const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
-    const soundIntro = new Audio('../../static/sounds/system/出題1.mp3'); // Placeholder
-    const soundClearVoice = new Audio('../../static/sounds/system/正解1.mp3'); // Placeholder
+    const soundIntro = new Audio('../../static/sounds/voice/007_intro.mp3');
+    const soundWordClear = new Audio('../../static/sounds/voice/007_word_clear.mp3');
+    const soundGameClear = new Audio('../../static/sounds/voice/007_clear.mp3');
 
-    // ひらがなのパスデータ定義
+    // ひらがなのパスデータ定義 (Cubic Bezier: C x1 y1, x2 y2, x y)
     const HIRAGANA_DATA = {
-        'い': { paths: ['M 25 30 C 25 60, 40 80, 45 80', 'M 75 35 C 75 50, 70 65, 65 70'] },
-        'ぬ': { paths: ['M 40 25 C 35 60, 20 75, 20 50 C 20 20, 60 20, 70 45 C 80 75, 50 85, 45 60 C 40 40, 65 35, 75 55 C 80 65, 90 60, 90 40', 'M 30 25 L 50 75'] }, // Simplified
-        'ね': { paths: ['M 30 20 L 30 85', 'M 20 40 L 70 30 C 70 60, 30 60, 30 40 C 30 20, 80 20, 80 50 C 80 70, 50 85, 45 65 C 40 45, 65 40, 75 60 C 80 70, 90 65, 90 45'] }, // Simplified
-        'こ': { paths: ['M 30 30 C 50 25, 70 30, 75 35', 'M 25 75 C 45 85, 65 80, 80 70'] },
-        'あ': { paths: ['M 25 40 L 75 40', 'M 50 20 C 50 40, 45 60, 40 80', 'M 60 25 C 60 85, 20 85, 20 55 C 20 25, 80 25, 80 65 C 80 85, 50 90, 40 85'] },
-        'り': { paths: ['M 30 30 C 30 60, 35 75, 45 75', 'M 70 30 C 70 50, 60 80, 50 90'] }
+        'あ': { 
+            paths: [
+                'M 20 40 L 80 40', // 1画目: 横棒
+                'M 50 15 C 50 40, 45 60, 40 85', // 2画目: 縦棒
+                'M 60 25 C 60 85, 20 85, 20 55 C 20 25, 80 25, 80 65 C 80 85, 50 90, 40 85' // 3画目: のの字
+            ],
+            voice: '007_a.mp3'
+        },
+        'い': { 
+            paths: [
+                'M 25 30 C 25 60, 30 85, 45 80', // 1画目
+                'M 75 35 C 75 50, 70 70, 65 75' // 2画目
+            ],
+            voice: '007_i.mp3'
+        },
+        'か': {
+            paths: [
+                'M 25 35 C 55 25, 85 40, 75 80 C 70 85, 65 85, 60 80', // 1画目: 左から右へ、曲がって下へ
+                'M 45 15 L 40 75', // 2画目: 斜め縦棒
+                'M 65 25 C 75 25, 85 30, 85 40' // 3画目: 右上の点
+            ],
+            voice: '007_ka.mp3'
+        },
+        'さ': {
+            paths: [
+                'M 25 35 L 75 35', // 1画目: 横棒
+                'M 55 15 C 55 50, 45 75, 30 85', // 2画目: 縦棒（少し斜め）
+                'M 35 75 C 50 85, 75 80, 80 65' // 3画目: 下のカーブ
+            ],
+            voice: '007_sa.mp3'
+        },
+        'な': {
+            paths: [
+                'M 25 30 L 50 30', // 1画目: 横棒
+                'M 35 15 L 35 55', // 2画目: 縦棒
+                'M 65 20 C 75 20, 85 25, 85 35', // 3画目: 右上の点
+                'M 60 40 C 60 85, 30 85, 30 65 C 30 45, 80 45, 80 75 C 80 90, 65 95, 55 90' // 4画目: 結び
+            ],
+            voice: '007_na.mp3'
+        },
+        'ぬ': { 
+            paths: [
+                'M 40 20 L 50 75', // 1画目: 縦棒
+                'M 25 45 C 75 10, 85 60, 50 85 C 30 95, 20 70, 20 50 C 20 20, 80 20, 80 65 C 80 85, 90 85, 95 65' // 2画目: 複雑なループ
+            ],
+            voice: '007_nu.mp3'
+        },
+        'ね': { 
+            paths: [
+                'M 30 15 L 30 85', // 1画目: 縦棒
+                'M 20 40 L 70 30 C 70 65, 30 65, 30 45 C 30 20, 80 20, 80 60 C 80 85, 90 85, 95 65' // 2画目: ジグザグとループ
+            ],
+            voice: '007_ne.mp3'
+        },
+        'こ': { 
+            paths: [
+                'M 30 30 C 50 25, 75 30, 75 40', // 1画目
+                'M 25 75 C 45 85, 70 85, 80 75' // 2画目
+            ],
+            voice: '007_ko.mp3'
+        },
+        'め': {
+            paths: [
+                'M 45 20 L 35 75', // 1画目: 短い縦棒
+                'M 20 50 C 80 15, 90 70, 50 90 C 30 95, 20 75, 20 55 C 20 25, 80 25, 85 65' // 2画目: 大きな円
+            ],
+            voice: '007_me.mp3'
+        },
+        'り': { 
+            paths: [
+                'M 30 30 C 30 60, 35 80, 45 80', // 1画目
+                'M 70 20 C 70 60, 60 85, 50 90' // 2画目
+            ],
+            voice: '007_ri.mp3'
+        }
     };
 
     const WORDS = [
-        { word: 'いぬ', emoji: '🐶' },
-        { word: 'ねこ', emoji: '🐱' },
-        { word: 'あり', emoji: '🐜' }
+        { word: 'いぬ', emoji: '🐶', voice: '007_word_inu.mp3' },
+        { word: 'ねこ', emoji: '🐱', voice: '007_word_neko.mp3' },
+        { word: 'あり', emoji: '🐜', voice: '007_word_ari.mp3' },
+        { word: 'あめ', emoji: '☔', voice: '007_word_ame.mp3' },
+        { word: 'さかな', emoji: '🐟', voice: '007_word_sakana.mp3' }
     ];
 
     let currentWordIndex = 0;
@@ -81,6 +153,11 @@ document.addEventListener('DOMContentLoaded', () => {
         WORDS.sort(() => Math.random() - 0.5);
         currentWordIndex = 0;
         initWord();
+        
+        // 初回のみイントロ再生
+        setTimeout(() => {
+            soundIntro.play().catch(e => {});
+        }, 1000);
     }
 
     function initWord() {
@@ -114,13 +191,18 @@ document.addEventListener('DOMContentLoaded', () => {
         svg.classList.remove('hidden');
         
         instruction.textContent = `「${char}」を なぞろう！`;
+        
+        // 文字の音声を再生
+        const charVoice = new Audio(`../../static/sounds/voice/${HIRAGANA_DATA[char].voice}`);
+        charVoice.play().catch(e => {});
+
         initStroke();
     }
 
     function initStroke() {
         const char = WORDS[currentWordIndex].word[currentCharIndex];
         const data = HIRAGANA_DATA[char];
-        if (!data) return; // Fallback
+        if (!data) return;
 
         const d = data.paths[currentStrokeIndex];
         
@@ -187,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
         while (maxAdvance > 0 && lastReachedIndex + 1 < samplingPoints.length) {
             const p = samplingPoints[lastReachedIndex + 1];
             const dist = Math.hypot(p.x - pos.x, p.y - pos.y);
-            if (dist < 20) { // ゆるめの判定 (20)
+            if (dist < 22) { // ゆるめの判定
                 lastReachedIndex++;
                 foundNewPoint = true;
                 maxAdvance--;
@@ -252,22 +334,29 @@ document.addEventListener('DOMContentLoaded', () => {
         wordText.textContent = wordData.word;
         
         wordFinishOverlay.classList.remove('hidden');
-        soundClearVoice.play().catch(e=>{});
+        soundWordClear.play().catch(e=>{});
+        
+        // 単語の読み上げ
+        setTimeout(() => {
+            const wordVoice = new Audio(`../../static/sounds/voice/${wordData.voice}`);
+            wordVoice.play().catch(e => {});
+        }, 1000);
 
         setTimeout(() => {
             wordFinishOverlay.classList.add('hidden');
             currentWordIndex++;
-            if (currentWordIndex < WORDS.length) {
+            if (currentWordIndex < 3) { // 3単語でクリア
                 initWord();
             } else {
                 showFinalFinish();
             }
-        }, 3000);
+        }, 3500);
     }
 
     function showFinalFinish() {
         setTimeout(() => {
             soundClear.play().catch(e=>{});
+            soundGameClear.play().catch(e=>{});
         }, 300);
 
         setTimeout(() => {
@@ -306,10 +395,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let introPlayed = false;
     const playIntro = () => {
         if (!introPlayed) {
-            soundIntro.play().catch(e=>{});
             introPlayed = true;
+            // BGM等の初期化が必要ならここ
         }
     };
     document.body.addEventListener('click', playIntro, { once: true });
-    setTimeout(playIntro, 500);
 });
