@@ -58,7 +58,8 @@
             bgm.volume = 0.3;
             let bgmStarted = false;
 
-            const soundPeta = new Audio('static/sounds/staging/短い音-ポヨン.mp3'); // シールを貼る音
+            const soundGrab = new Audio('static/sounds/system/スイッチ3.mp3');
+            const soundRelease = new Audio('static/sounds/system/スイッチ5.mp3');
 
             const tryPlayBgm = () => {
                 if (!bgmStarted) {
@@ -118,6 +119,9 @@
                 el.addEventListener('pointerdown', (e) => {
                     isDragging = true;
                     el.setPointerCapture(e.pointerId);
+
+                    soundGrab.currentTime = 0;
+                    soundGrab.play().catch(e=>{});
                     
                     const rect = el.getBoundingClientRect();
                     const areaRect = area.getBoundingClientRect();
@@ -162,8 +166,8 @@
                     StickerSystem.updateStickerPosition(el.dataset.id, finalX, finalY, 0);
                     
                     // 音を鳴らす
-                    soundPeta.currentTime = 0;
-                    soundPeta.play().catch(e=>{});
+                    soundRelease.currentTime = 0;
+                    soundRelease.play().catch(e=>{});
                 });
             }
         });

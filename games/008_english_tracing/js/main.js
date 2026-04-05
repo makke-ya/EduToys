@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
-    const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
+    const soundSelect = new Audio('../../static/sounds/system/決定10.mp3');
     const soundIntro = new Audio('../../static/sounds/voice/008_intro.mp3');
     const soundWordClear = new Audio('../../static/sounds/system/正解1.mp3');
     const soundGameClear = new Audio('../../static/sounds/voice/008_clear.mp3');

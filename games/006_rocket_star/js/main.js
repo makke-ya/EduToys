@@ -9,10 +9,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const instruction = document.getElementById('instruction');
     const finishOverlay = document.getElementById('finish-overlay');
 
-    const soundTap = new Audio('../../static/sounds/staging/短い音-ポヨン.mp3');
+    const soundGrab = new Audio('../../static/sounds/system/スイッチ3.mp3');
+    const soundRelease = new Audio('../../static/sounds/system/スイッチ5.mp3');
     const soundCollect = new Audio('../../static/sounds/system/正解1.mp3');
     const soundClear = new Audio('../../static/sounds/staging/ジャジャーン1.mp3');
-    const soundSelect = new Audio('../../static/sounds/system/決定1.mp3');
+    const soundSelect = new Audio('../../static/sounds/system/決定10.mp3');
     const soundIntro = new Audio('../../static/sounds/voice/006_intro.mp3');
     const soundClearVoice = new Audio('../../static/sounds/voice/006_clear.mp3');
 
@@ -195,11 +196,16 @@ document.addEventListener('DOMContentLoaded', () => {
         isDragging = true;
         container.setPointerCapture(e.pointerId);
         onMove(e);
-        soundTap.play().catch(e => {});
+        soundGrab.currentTime = 0;
+        soundGrab.play().catch(e => {});
     });
 
     container.addEventListener('pointermove', onMove);
-    container.addEventListener('pointerup', () => isDragging = false);
+    container.addEventListener('pointerup', () => {
+        isDragging = false;
+        soundRelease.currentTime = 0;
+        soundRelease.play().catch(e => {});
+    });
 
     initRound();
     update();

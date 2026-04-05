@@ -1,0 +1,10 @@
+// Quick script to generate simple placeholder SVG paths for alphabet (A, a, B, b, C, c) in 109x109 viewBox
+const paths = {
+  'A': { paths: ['M 54.5 15 L 20 90', 'M 54.5 15 L 89 90', 'M 35 60 L 74 60'], voice: '008_A.mp3' },
+  'a': { paths: ['M 70 45 C 50 25, 20 40, 20 65 C 20 90, 50 100, 70 85', 'M 70 35 L 70 90 C 70 95, 80 95, 85 85'], voice: '008_a.mp3' },
+  'B': { paths: ['M 30 15 L 30 90', 'M 30 15 C 70 15, 80 30, 70 50 C 60 55, 30 50, 30 50', 'M 30 50 C 75 50, 85 70, 75 90 C 65 95, 30 90, 30 90'], voice: '008_B.mp3' },
+  'b': { paths: ['M 30 15 L 30 90', 'M 30 55 C 70 45, 80 75, 60 90 C 45 100, 30 90, 30 90'], voice: '008_b.mp3' },
+  'C': { paths: ['M 80 30 C 65 5, 20 15, 20 55 C 20 90, 60 100, 80 80'], voice: '008_C.mp3' },
+  'c': { paths: ['M 75 45 C 55 30, 25 40, 25 65 C 25 90, 60 95, 75 80'], voice: '008_c.mp3' }
+};
+console.log(JSON.stringify(paths, null, 2));
