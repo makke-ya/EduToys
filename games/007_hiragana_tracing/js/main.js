@@ -220,7 +220,7 @@
             { word: 'さかな', emoji: '🐟', voice: '007_word_sakana.mp3' },
             { word: 'うし', emoji: '🐮', voice: '007_word_ushi.mp3' },
             { word: 'とり', emoji: '🐦', voice: '007_word_tori.mp3' },
-            { word: 'かメ', emoji: '🐢', voice: '007_word_kame.mp3' },
+            { word: 'かめ', emoji: '🐢', voice: '007_word_kame.mp3' },
             { word: 'たこ', emoji: '🐙', voice: '007_word_tako.mp3' },
             { word: 'そら', emoji: '☀️', voice: '007_word_sora.mp3' },
             { word: 'なす', emoji: '🍆', voice: '007_word_nasu.mp3' },

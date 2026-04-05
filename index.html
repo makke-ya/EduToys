@@ -225,11 +225,18 @@
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(html, 'text/html');
                         
-                        // Base URLをセットして相対パスを解決しやすくする
                         const gameBase = url.substring(0, url.lastIndexOf('/') + 1);
                         
-                        // コンテンツの抽出 (bodyの中身)
-                        content.innerHTML = doc.body.innerHTML;
+                        // bodyのクラスをviewportにコピー (背景色やレイアウト維持のため)
+                        viewport.className = doc.body.className;
+                        viewport.classList.add('fixed', 'inset-0', 'z-[200]'); // bg-whiteはdoc.bodyから来るはず
+                        viewport.classList.remove('hidden'); // スクリプト実行前に表示 (ClientRect取得のため重要)
+                        
+                        // コンテンツの抽出とパスの置換
+                        let bodyHtml = doc.body.innerHTML;
+                        // 簡易的なパス置換 (img src, audio src, source src など)
+                        bodyHtml = bodyHtml.replace(/(src=["'])(?!(?:https?|static|\/))([^"']+)(["'])/g, `$1${gameBase}$2$3`);
+                        content.innerHTML = bodyHtml;
                         
                         // スタイルの移行
                         document.querySelectorAll('.game-style').forEach(el => el.remove());
@@ -237,27 +244,35 @@
                             const newLink = document.createElement('link');
                             newLink.rel = 'stylesheet';
                             newLink.className = 'game-style';
-                            newLink.href = link.getAttribute('href').startsWith('http') ? link.href : gameBase + link.getAttribute('href');
+                            newLink.href = link.getAttribute('href').startsWith('http') || link.getAttribute('href').startsWith('/') ? link.href : gameBase + link.getAttribute('href');
                             document.head.appendChild(newLink);
                         });
 
                         // スクリプトの実行
-                        // Note: innerHTMLではscriptは走らないので手動で追加
-                        doc.querySelectorAll('script').forEach(oldScript => {
+                        document.querySelectorAll('.game-script').forEach(el => el.remove());
+                        const scripts = Array.from(doc.querySelectorAll('script'));
+                        
+                        for (const oldScript of scripts) {
+                            const src = oldScript.getAttribute('src');
+                            if (src && (src.includes('game_utils.js') || src.includes('sticker_system.js'))) continue;
+
                             const newScript = document.createElement('script');
                             newScript.className = 'game-script';
-                            if (oldScript.src) {
-                                newScript.src = oldScript.src.startsWith('http') ? oldScript.src : gameBase + oldScript.getAttribute('src');
+                            if (src) {
+                                const fullSrc = src.startsWith('http') || src.startsWith('/') ? src : gameBase + src;
+                                await new Promise((resolve) => {
+                                    newScript.src = fullSrc;
+                                    newScript.onload = resolve;
+                                    newScript.onerror = resolve; // 失敗しても次に進む
+                                    document.body.appendChild(newScript);
+                                });
                             } else {
                                 newScript.textContent = oldScript.textContent;
+                                document.body.appendChild(newScript);
                             }
-                            document.body.appendChild(newScript);
-                        });
+                        }
 
-                        viewport.classList.remove('hidden');
                         history.pushState({view: 'game'}, '', '#' + url);
-                        
-                        // 読み込み完了後にBGMがあれば自動再生されるはず (前のクリックが有効)
                     } catch (e) {
                         console.error("Game load failed", e);
                         fadeInBgm(state.menuBgm);
@@ -265,7 +280,9 @@
                 },
 
                 closeGame: (updateHistory = true) => {
-                    document.getElementById('game-viewport').classList.add('hidden');
+                    const viewport = document.getElementById('game-viewport');
+                    viewport.classList.add('hidden');
+                    viewport.className = 'hidden'; // クラスをリセット
                     document.getElementById('game-content').innerHTML = '';
                     document.querySelectorAll('.game-style, .game-script').forEach(el => el.remove());
                     
