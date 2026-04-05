@@ -7,186 +7,284 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Hiragino Maru Gothic ProN', 'Rounded M+ 1c', 'Meiryo', sans-serif; }
+        .fade-enter { opacity: 0; }
+        .fade-enter-active { opacity: 1; transition: opacity 0.3s; }
+        #game-viewport { position: fixed; inset: 0; z-index: 200; background: white; overflow: hidden; }
+        /* ゲーム内からの絶対配置ボタンなどを考慮 */
+        #game-viewport .absolute { position: absolute; }
     </style>
 </head>
-<body class="bg-yellow-50 min-h-screen p-4 md:p-8 relative">
+<body class="bg-yellow-50 min-h-screen relative">
     
-    <!-- ゲーム表示用 Iframe オーバーレイ -->
-    <div id="game-overlay" class="hidden fixed inset-0 z-[200] bg-white">
-        <iframe id="game-frame" class="w-full h-full border-none"></iframe>
+    <!-- メインコンテンツ -->
+    <div id="view-menu" class="p-4 md:p-8">
+        <header class="text-center mb-10 relative">
+            <h1 class="text-5xl md:text-6xl font-black text-orange-500 mb-4 drop-shadow-md">
+                🌟 EduToys 🌟
+            </h1>
+            <p class="text-xl text-gray-600 font-bold mb-6">たのしくあそんで、ぐんぐんそだつ！</p>
+            
+            <button onclick="EduToys.loadGame('sticker_book.html')" class="inline-block bg-white text-orange-500 border-4 border-orange-400 px-6 py-3 rounded-full font-bold text-xl shadow-md hover:bg-orange-50 transition-colors">
+                📕 シールちょうをみる
+            </button>
+        </header>
+
+        <main class="max-w-5xl mx-auto">
+            <div id="game-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- ゲームカードはJSで生成、または直接記述 -->
+                <!-- 001_counting_apples -->
+                <button onclick="EduToys.loadGame('games/001_counting_apples/start.html')" class="group relative bg-white rounded-3xl shadow-lg border-4 border-orange-200 hover:border-orange-400 hover:-translate-y-2 transition-all duration-300 overflow-hidden text-left">
+                    <div class="h-40 bg-orange-50 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform">🍎</div>
+                    <div class="p-6">
+                        <span class="inline-block bg-orange-400 text-white text-xs font-black px-3 py-1 rounded-full mb-2 shadow-sm">かず</span>
+                        <h2 class="text-2xl font-black text-gray-800 mb-1">かずをかぞえよう</h2>
+                        <p class="text-gray-500 text-sm font-bold">1から5まで かぞえられるかな？</p>
+                    </div>
+                </button>
+
+                <!-- 002_compare_size -->
+                <button onclick="EduToys.loadGame('games/002_compare_size/start.html')" class="group relative bg-white rounded-3xl shadow-lg border-4 border-green-200 hover:border-green-400 hover:-translate-y-2 transition-all duration-300 overflow-hidden text-left">
+                    <div class="h-40 bg-green-50 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform">🐘</div>
+                    <div class="p-6">
+                        <span class="inline-block bg-green-500 text-white text-xs font-black px-3 py-1 rounded-full mb-2 shadow-sm">かず</span>
+                        <h2 class="text-2xl font-black text-gray-800 mb-1">どっちがおおい？</h2>
+                        <p class="text-gray-500 text-sm font-bold">たくさん あるほうを えらんでね！</p>
+                    </div>
+                </button>
+
+                <!-- 003_shape_match -->
+                <button onclick="EduToys.loadGame('games/003_shape_match/start.html')" class="group relative bg-white rounded-3xl shadow-lg border-4 border-yellow-200 hover:border-yellow-400 hover:-translate-y-2 transition-all duration-300 overflow-hidden text-left">
+                    <div class="h-40 bg-yellow-50 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform">🔺</div>
+                    <div class="p-6">
+                        <span class="inline-block bg-yellow-500 text-white text-xs font-black px-3 py-1 rounded-full mb-2 shadow-sm">ちえ</span>
+                        <h2 class="text-2xl font-black text-gray-800 mb-1">かたちあわせ</h2>
+                        <p class="text-gray-500 text-sm font-bold">かげに ぴったり はめてみよう！</p>
+                    </div>
+                </button>
+
+                <!-- 004_number_tracing -->
+                <button onclick="EduToys.loadGame('games/004_number_tracing/start.html')" class="group relative bg-white rounded-3xl shadow-lg border-4 border-pink-200 hover:border-pink-400 hover:-translate-y-2 transition-all duration-300 overflow-hidden text-left">
+                    <div class="h-40 bg-pink-50 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform">🖍️</div>
+                    <div class="p-6">
+                        <span class="inline-block bg-pink-500 text-white text-xs font-black px-3 py-1 rounded-full mb-2 shadow-sm">かず</span>
+                        <h2 class="text-2xl font-black text-gray-800 mb-1">すうじをなぞろう</h2>
+                        <p class="text-gray-500 text-sm font-bold">きれいに かけるかな？</p>
+                    </div>
+                </button>
+
+                <!-- 005_connect_dots -->
+                <button onclick="EduToys.loadGame('games/005_connect_dots/start.html')" class="group relative bg-white rounded-3xl shadow-lg border-4 border-green-200 hover:border-green-400 hover:-translate-y-2 transition-all duration-300 overflow-hidden text-left">
+                    <div class="h-40 bg-green-50 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform">✍️</div>
+                    <div class="p-6">
+                        <span class="inline-block bg-green-500 text-white text-xs font-black px-3 py-1 rounded-full mb-2 shadow-sm">かず</span>
+                        <h2 class="text-2xl font-black text-gray-800 mb-1">てんつなぎ</h2>
+                        <p class="text-gray-500 text-sm font-bold">じゅんばんに つないでみよう！</p>
+                    </div>
+                </button>
+
+                <!-- 006_rocket_star -->
+                <button onclick="EduToys.loadGame('games/006_rocket_star/start.html')" class="group relative bg-white rounded-3xl shadow-lg border-4 border-indigo-200 hover:border-indigo-400 hover:-translate-y-2 transition-all duration-300 overflow-hidden text-left">
+                    <div class="h-40 bg-[#000051] flex items-center justify-center text-7xl group-hover:scale-110 transition-transform shadow-inner">🚀</div>
+                    <div class="p-6">
+                        <span class="inline-block bg-indigo-500 text-white text-xs font-black px-3 py-1 rounded-full mb-2 shadow-sm">ちえ</span>
+                        <h2 class="text-2xl font-black text-gray-800 mb-1">ほしあつめロケット</h2>
+                        <p class="text-gray-500 text-sm font-bold">ロケットを うごかして ほしを あつめよう！</p>
+                    </div>
+                </button>
+
+                <!-- 007_hiragana_tracing -->
+                <button onclick="EduToys.loadGame('games/007_hiragana_tracing/start.html')" class="group relative bg-white rounded-3xl shadow-lg border-4 border-purple-200 hover:border-purple-400 hover:-translate-y-2 transition-all duration-300 overflow-hidden text-left">
+                    <div class="h-40 bg-purple-50 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform shadow-inner">📝</div>
+                    <div class="p-6">
+                        <span class="inline-block bg-purple-500 text-white text-xs font-black px-3 py-1 rounded-full mb-2 shadow-sm">もじ</span>
+                        <h2 class="text-2xl font-black text-gray-800 mb-1">ひらがななぞり</h2>
+                        <p class="text-gray-500 text-sm font-bold">ひらがなを なぞって ことばを つくろう！</p>
+                    </div>
+                </button>
+
+                <!-- 008_english_tracing -->
+                <button onclick="EduToys.loadGame('games/008_english_tracing/start.html')" class="group relative bg-white rounded-3xl shadow-lg border-4 border-cyan-200 hover:border-cyan-400 hover:-translate-y-2 transition-all duration-300 overflow-hidden text-left">
+                    <div class="h-40 bg-cyan-50 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform shadow-inner">🅰️</div>
+                    <div class="p-6">
+                        <span class="inline-block bg-cyan-500 text-white text-xs font-black px-3 py-1 rounded-full mb-2 shadow-sm">えいご</span>
+                        <h2 class="text-2xl font-black text-gray-800 mb-1">えいごなぞり</h2>
+                        <p class="text-gray-500 text-sm font-bold">アルファベットを なぞって あそぼう！</p>
+                    </div>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- ゲーム表示用コンテナ (iframeの代わり) -->
+    <div id="game-viewport" class="hidden">
+        <div id="game-content"></div>
     </div>
 
     <!-- スタートオーバーレイ -->
-    <div id="start-overlay" class="fixed inset-0 bg-yellow-50 z-[100] flex flex-col items-center justify-center transition-opacity duration-300">
+    <div id="start-overlay" class="fixed inset-0 bg-yellow-50 z-[300] flex flex-col items-center justify-center transition-opacity duration-500">
         <h1 class="text-6xl font-black text-orange-500 mb-8 animate-bounce drop-shadow-lg">EduToys</h1>
         <button id="btn-start" class="px-10 py-6 bg-yellow-400 hover:bg-yellow-500 text-white text-4xl font-bold rounded-full shadow-xl transition-transform active:scale-95 border-4 border-yellow-200">
             はじめる！ ▶
         </button>
     </div>
 
-    <header class="text-center mb-10 relative">
-        <h1 class="text-5xl md:text-6xl font-black text-orange-500 mb-4 drop-shadow-md">
-            🌟 EduToys 🌟
-        </h1>
-        <p class="text-xl text-gray-600 font-bold mb-6">たのしくあそんで、ぐんぐんそだつ！</p>
-        
-        <button onclick="openInIframe('sticker_book.html?autoplay=1')" class="inline-block bg-white text-orange-500 border-4 border-orange-400 px-6 py-3 rounded-full font-bold text-xl shadow-md hover:bg-orange-50 transition-colors">
-            📕 シールちょうをみる
-        </button>
-    </header>
-
-    <main class="max-w-5xl mx-auto">
-        <div id="game-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            
-            <!-- 001_counting_apples -->
-            <button onclick="openInIframe('games/001_counting_apples/start.html?autoplay=1')" class="group relative bg-white rounded-3xl shadow-lg border-4 border-orange-200 hover:border-orange-400 hover:-translate-y-2 transition-all duration-300 overflow-hidden text-left">
-                <div class="h-40 bg-orange-50 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform">🍎</div>
-                <div class="p-6">
-                    <span class="inline-block bg-orange-400 text-white text-xs font-black px-3 py-1 rounded-full mb-2 shadow-sm">かず</span>
-                    <h2 class="text-2xl font-black text-gray-800 mb-1">かずをかぞえよう</h2>
-                    <p class="text-gray-500 text-sm font-bold">1から5まで かぞえられるかな？</p>
-                </div>
-            </button>
-
-            <!-- 002_compare_size -->
-            <button onclick="openInIframe('games/002_compare_size/start.html?autoplay=1')" class="group relative bg-white rounded-3xl shadow-lg border-4 border-green-200 hover:border-green-400 hover:-translate-y-2 transition-all duration-300 overflow-hidden text-left">
-                <div class="h-40 bg-green-50 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform">🐘</div>
-                <div class="p-6">
-                    <span class="inline-block bg-green-500 text-white text-xs font-black px-3 py-1 rounded-full mb-2 shadow-sm">かず</span>
-                    <h2 class="text-2xl font-black text-gray-800 mb-1">どっちがおおい？</h2>
-                    <p class="text-gray-500 text-sm font-bold">たくさん あるほうを えらんでね！</p>
-                </div>
-            </button>
-
-            <!-- 003_shape_match -->
-            <button onclick="openInIframe('games/003_shape_match/start.html?autoplay=1')" class="group relative bg-white rounded-3xl shadow-lg border-4 border-yellow-200 hover:border-yellow-400 hover:-translate-y-2 transition-all duration-300 overflow-hidden text-left">
-                <div class="h-40 bg-yellow-50 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform">🔺</div>
-                <div class="p-6">
-                    <span class="inline-block bg-yellow-500 text-white text-xs font-black px-3 py-1 rounded-full mb-2 shadow-sm">ちえ</span>
-                    <h2 class="text-2xl font-black text-gray-800 mb-1">かたちあわせ</h2>
-                    <p class="text-gray-500 text-sm font-bold">かげに ぴったり はめてみよう！</p>
-                </div>
-            </button>
-
-            <!-- 004_number_tracing -->
-            <button onclick="openInIframe('games/004_number_tracing/start.html?autoplay=1')" class="group relative bg-white rounded-3xl shadow-lg border-4 border-pink-200 hover:border-pink-400 hover:-translate-y-2 transition-all duration-300 overflow-hidden text-left">
-                <div class="h-40 bg-pink-50 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform">🖍️</div>
-                <div class="p-6">
-                    <span class="inline-block bg-pink-500 text-white text-xs font-black px-3 py-1 rounded-full mb-2 shadow-sm">かず</span>
-                    <h2 class="text-2xl font-black text-gray-800 mb-1">すうじをなぞろう</h2>
-                    <p class="text-gray-500 text-sm font-bold">きれいに かけるかな？</p>
-                </div>
-            </button>
-
-            <!-- 005_connect_dots -->
-            <button onclick="openInIframe('games/005_connect_dots/start.html?autoplay=1')" class="group relative bg-white rounded-3xl shadow-lg border-4 border-green-200 hover:border-green-400 hover:-translate-y-2 transition-all duration-300 overflow-hidden text-left">
-                <div class="h-40 bg-green-50 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform">✍️</div>
-                <div class="p-6">
-                    <span class="inline-block bg-green-500 text-white text-xs font-black px-3 py-1 rounded-full mb-2 shadow-sm">かず</span>
-                    <h2 class="text-2xl font-black text-gray-800 mb-1">てんつなぎ</h2>
-                    <p class="text-gray-500 text-sm font-bold">じゅんばんに つないでみよう！</p>
-                </div>
-            </button>
-
-            <!-- 006_rocket_star -->
-            <button onclick="openInIframe('games/006_rocket_star/start.html?autoplay=1')" class="group relative bg-white rounded-3xl shadow-lg border-4 border-indigo-200 hover:border-indigo-400 hover:-translate-y-2 transition-all duration-300 overflow-hidden text-left">
-                <div class="h-40 bg-[#000051] flex items-center justify-center text-7xl group-hover:scale-110 transition-transform shadow-inner">🚀</div>
-                <div class="p-6">
-                    <span class="inline-block bg-indigo-500 text-white text-xs font-black px-3 py-1 rounded-full mb-2 shadow-sm">ちえ</span>
-                    <h2 class="text-2xl font-black text-gray-800 mb-1">ほしあつめロケット</h2>
-                    <p class="text-gray-500 text-sm font-bold">ロケットを うごかして ほしを あつめよう！</p>
-                </div>
-            </button>
-
-            <!-- 007_hiragana_tracing -->
-            <button onclick="openInIframe('games/007_hiragana_tracing/start.html?autoplay=1')" class="group relative bg-white rounded-3xl shadow-lg border-4 border-purple-200 hover:border-purple-400 hover:-translate-y-2 transition-all duration-300 overflow-hidden text-left">
-                <div class="h-40 bg-purple-50 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform shadow-inner">📝</div>
-                <div class="p-6">
-                    <span class="inline-block bg-purple-500 text-white text-xs font-black px-3 py-1 rounded-full mb-2 shadow-sm">もじ</span>
-                    <h2 class="text-2xl font-black text-gray-800 mb-1">ひらがななぞり</h2>
-                    <p class="text-gray-500 text-sm font-bold">ひらがなを なぞって ことばを つくろう！</p>
-                </div>
-            </button>
-
-            <!-- 008_english_tracing -->
-            <button onclick="openInIframe('games/008_english_tracing/start.html?autoplay=1')" class="group relative bg-white rounded-3xl shadow-lg border-4 border-cyan-200 hover:border-cyan-400 hover:-translate-y-2 transition-all duration-300 overflow-hidden text-left">
-                <div class="h-40 bg-cyan-50 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform shadow-inner">🅰️</div>
-                <div class="p-6">
-                    <span class="inline-block bg-cyan-500 text-white text-xs font-black px-3 py-1 rounded-full mb-2 shadow-sm">えいご</span>
-                    <h2 class="text-2xl font-black text-gray-800 mb-1">えいごなぞり</h2>
-                    <p class="text-gray-500 text-sm font-bold">アルファベットを なぞって あそぼう！</p>
-                </div>
-            </button>
-
-            <!-- 今後追加されるゲームのプレースホルダー -->
-            <div class="bg-gray-100 rounded-3xl border-4 border-dashed border-gray-300 flex flex-col items-center justify-center h-full min-h-[300px] text-gray-400">
-                <div class="text-5xl mb-4">🚀</div>
-                <p class="font-bold text-lg">あたらしいあそびを<br>つくっているよ！</p>
-            </div>
-
-        </div>
-    </main>
-
     <footer class="text-center mt-16 text-gray-500 font-medium pb-8">
         <p class="mb-2">&copy; EduToys Project.</p>
-        <p class="text-sm opacity-60">音源提供：Springin' Sound Stock / 音声合成：Google TTS</p>
+        <p class="text-sm opacity-60">音源提供：Springin' Sound Stock / 合成：VOICEVOX</p>
     </footer>
 
+    <script src="static/common/js/game_utils.js"></script>
+    <script src="static/common/js/sticker_system.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const bgm = new Audio('static/sounds/bgm/Pops_02.mp3');
-            bgm.loop = true;
-            const targetVolume = 0.4;
+        /**
+         * EduToys Core Manager
+         */
+        const EduToys = (() => {
+            const state = {
+                started: false,
+                currentBgm: null,
+                menuBgm: new Audio('static/sounds/bgm/Pops_02.mp3'),
+                activeGameBgm: null
+            };
 
-            const fadeInBgm = () => {
-                if (!bgm.paused && bgm.volume === targetVolume) return;
-                bgm.volume = 0;
-                bgm.play().then(() => {
+            state.menuBgm.loop = true;
+
+            const fadeInBgm = (audio, targetVol = 0.4) => {
+                if (!audio) return;
+                audio.volume = 0;
+                audio.play().then(() => {
                     let vol = 0;
-                    const fadeInterval = setInterval(() => {
-                        if (vol < targetVolume) {
-                            vol += 0.05;
-                            bgm.volume = Math.min(vol, targetVolume);
-                        } else {
-                            clearInterval(fadeInterval);
-                        }
+                    const interval = setInterval(() => {
+                        vol += 0.05;
+                        audio.volume = Math.min(vol, targetVol);
+                        if (vol >= targetVol) clearInterval(interval);
                     }, 100);
-                }).catch(e => console.log('BGM resume failed:', e));
+                }).catch(e => console.error("Play failed", e));
             };
 
-            const startOverlay = document.getElementById('start-overlay');
-            const btnStart = document.getElementById('btn-start');
-            const gameOverlay = document.getElementById('game-overlay');
-            const gameFrame = document.getElementById('game-frame');
-
-            btnStart.addEventListener('click', () => {
-                sessionStorage.setItem('edutoys_started', 'true');
-                fadeInBgm();
-                startOverlay.style.opacity = '0';
-                setTimeout(() => startOverlay.classList.add('hidden'), 300);
-            });
-
-            if (sessionStorage.getItem('edutoys_started') === 'true') {
-                startOverlay.classList.add('hidden');
-                document.body.addEventListener('click', () => {
-                    fadeInBgm();
-                }, { once: true });
-            }
-
-            window.openInIframe = (url) => {
-                gameFrame.src = url;
-                gameOverlay.classList.remove('hidden');
-                bgm.pause();
+            const fadeOutBgm = (audio) => {
+                if (!audio) return Promise.resolve();
+                return new Promise(resolve => {
+                    let vol = audio.volume;
+                    const interval = setInterval(() => {
+                        vol -= 0.05;
+                        audio.volume = Math.max(0, vol);
+                        if (vol <= 0) {
+                            clearInterval(interval);
+                            audio.pause();
+                            resolve();
+                        }
+                    }, 50);
+                });
             };
 
-            window.addEventListener('message', (event) => {
-                if (event.data === 'closeGame') {
-                    gameOverlay.classList.add('hidden');
-                    gameFrame.src = 'about:blank';
-                    fadeInBgm();
+            return {
+                init: () => {
+                    const btnStart = document.getElementById('btn-start');
+                    btnStart.addEventListener('click', () => {
+                        state.started = true;
+                        sessionStorage.setItem('edutoys_started', 'true');
+                        document.getElementById('start-overlay').style.opacity = '0';
+                        setTimeout(() => document.getElementById('start-overlay').classList.add('hidden'), 500);
+                        fadeInBgm(state.menuBgm);
+                    });
+
+                    if (sessionStorage.getItem('edutoys_started') === 'true') {
+                        document.getElementById('start-overlay').classList.add('hidden');
+                        document.body.addEventListener('click', () => {
+                            if (!state.started) {
+                                state.started = true;
+                                fadeInBgm(state.menuBgm);
+                            }
+                        }, { once: true });
+                    }
+
+                    // 戻るボタン等のメッセージ受け取り
+                    window.addEventListener('message', (e) => {
+                        if (e.data === 'closeGame') EduToys.closeGame();
+                    });
+                    
+                    // SPA内での戻るボタン対応
+                    window.addEventListener('popstate', () => {
+                        if (document.getElementById('game-viewport').classList.contains('hidden')) return;
+                        EduToys.closeGame(false);
+                    });
+                },
+
+                loadGame: async (url) => {
+                    console.log("Loading game:", url);
+                    const viewport = document.getElementById('game-viewport');
+                    const content = document.getElementById('game-content');
+                    
+                    // BGM切り替え
+                    await fadeOutBgm(state.menuBgm);
+
+                    try {
+                        const response = await fetch(url);
+                        const html = await response.text();
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        
+                        // Base URLをセットして相対パスを解決しやすくする
+                        const gameBase = url.substring(0, url.lastIndexOf('/') + 1);
+                        
+                        // コンテンツの抽出 (bodyの中身)
+                        content.innerHTML = doc.body.innerHTML;
+                        
+                        // スタイルの移行
+                        document.querySelectorAll('.game-style').forEach(el => el.remove());
+                        doc.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+                            const newLink = document.createElement('link');
+                            newLink.rel = 'stylesheet';
+                            newLink.className = 'game-style';
+                            newLink.href = link.getAttribute('href').startsWith('http') ? link.href : gameBase + link.getAttribute('href');
+                            document.head.appendChild(newLink);
+                        });
+
+                        // スクリプトの実行
+                        // Note: innerHTMLではscriptは走らないので手動で追加
+                        doc.querySelectorAll('script').forEach(oldScript => {
+                            const newScript = document.createElement('script');
+                            newScript.className = 'game-script';
+                            if (oldScript.src) {
+                                newScript.src = oldScript.src.startsWith('http') ? oldScript.src : gameBase + oldScript.getAttribute('src');
+                            } else {
+                                newScript.textContent = oldScript.textContent;
+                            }
+                            document.body.appendChild(newScript);
+                        });
+
+                        viewport.classList.remove('hidden');
+                        history.pushState({view: 'game'}, '', '#' + url);
+                        
+                        // 読み込み完了後にBGMがあれば自動再生されるはず (前のクリックが有効)
+                    } catch (e) {
+                        console.error("Game load failed", e);
+                        fadeInBgm(state.menuBgm);
+                    }
+                },
+
+                closeGame: (updateHistory = true) => {
+                    document.getElementById('game-viewport').classList.add('hidden');
+                    document.getElementById('game-content').innerHTML = '';
+                    document.querySelectorAll('.game-style, .game-script').forEach(el => el.remove());
+                    
+                    // 各ゲームのBGMを止めるためのクリーンアップが必要な場合がある
+                    // 今回はAudioオブジェクトを全て停止させる
+                    document.querySelectorAll('audio').forEach(a => {
+                        if (a !== state.menuBgm) {
+                            a.pause();
+                            a.remove();
+                        }
+                    });
+
+                    fadeInBgm(state.menuBgm);
+                    if (updateHistory) history.back();
                 }
-            });
-        });
+            };
+        })();
+
+        document.addEventListener('DOMContentLoaded', EduToys.init);
     </script>
 </body>
 </html>
