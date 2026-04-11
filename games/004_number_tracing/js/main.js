@@ -119,7 +119,7 @@
         }
 
         function updateTargetDot() {
-            const nextIndex = Math.min(lastReachedIndex + 3, samplingPoints.length - 1);
+            const nextIndex = Math.min(lastReachedIndex + 1, samplingPoints.length - 1);
             if (nextIndex >= 0 && nextIndex < samplingPoints.length) {
                 targetDot.setAttribute('cx', samplingPoints[nextIndex].x);
                 targetDot.setAttribute('cy', samplingPoints[nextIndex].y);
@@ -159,21 +159,28 @@
             if (!isDrawing) return;
             const pos = getMousePos(e);
             
+            
             let foundNewPoint = false;
-            let maxAdvance = 30;
+            const searchRange = 30;
+            const startSearch = lastReachedIndex + 1;
+            const endSearch = Math.min(startSearch + searchRange, samplingPoints.length);
 
-            while (maxAdvance > 0 && lastReachedIndex + 1 < samplingPoints.length) {
-                const p = samplingPoints[lastReachedIndex + 1];
+            let bestIndex = -1;
+            let minDist = 30;
+
+            for (let i = startSearch; i < endSearch; i++) {
+                const p = samplingPoints[i];
                 const dist = Math.hypot(p.x - pos.x, p.y - pos.y);
-                if (dist < 22) {
-                    lastReachedIndex++;
-                    foundNewPoint = true;
-                    maxAdvance--;
-                } else {
-                    break;
+                if (dist < minDist) {
+                    minDist = dist;
+                    bestIndex = i;
                 }
             }
 
+            if (bestIndex !== -1) {
+                lastReachedIndex = bestIndex;
+                foundNewPoint = true;
+            }
             if (foundNewPoint) {
                 renderTracedPath();
                 updateTargetDot();

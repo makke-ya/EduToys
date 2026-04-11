@@ -169,20 +169,28 @@
             if (!isDrawing) return;
             const pos = getMousePos(e);
             
+            
             let foundNewPoint = false;
-            const searchRange = 25;
+            const searchRange = 30;
             const startSearch = lastReachedIndex + 1;
             const endSearch = Math.min(startSearch + searchRange, samplingPoints.length);
+
+            let bestIndex = -1;
+            let minDist = 30;
 
             for (let i = startSearch; i < endSearch; i++) {
                 const p = samplingPoints[i];
                 const dist = Math.hypot(p.x - pos.x, p.y - pos.y);
-                if (dist < 18) {
-                    lastReachedIndex = i;
-                    foundNewPoint = true;
+                if (dist < minDist) {
+                    minDist = dist;
+                    bestIndex = i;
                 }
             }
 
+            if (bestIndex !== -1) {
+                lastReachedIndex = bestIndex;
+                foundNewPoint = true;
+            }
             if (foundNewPoint) {
                 renderTracedPath();
                 updateTargetDot();
