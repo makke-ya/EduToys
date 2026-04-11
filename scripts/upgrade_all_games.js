@@ -24,6 +24,14 @@ dirs.forEach(dir => {
         html = html.replace(/bg-yellow-400 hover:bg-yellow-500 text-white[^"]*font-bold rounded-full shadow-lg/g, 'btn-bubbly');
         html = html.replace(/bg-red-400 hover:bg-red-500 text-white[^"]*font-bold rounded-full shadow-xl/g, 'btn-bubbly');
 
+        // 結果画面（finish-overlay）のレスポンシブレイアウト修正
+        html = html.replace('text-6xl md:text-8xl', 'text-4xl sm:text-5xl md:text-7xl');
+        html = html.replace('text-3xl font-black text-gray-700', 'text-xl sm:text-2xl md:text-3xl font-black text-gray-700');
+        html = html.replace('text-4xl font-black text-orange-500', 'text-2xl sm:text-3xl md:text-4xl font-black text-orange-500');
+        html = html.replace('<div class="flex gap-8">', '<div class="flex flex-col sm:flex-row gap-4 sm:gap-8 w-full px-4 justify-center items-center">');
+        html = html.replace(/px-10 py-6/g, 'px-6 py-4 md:px-10 md:py-6 w-full sm:w-auto text-center justify-center');
+        html = html.replace(/text-3xl font-black rounded-full/g, 'text-xl md:text-3xl font-black rounded-full');
+
         fs.writeFileSync(htmlPath, html);
     }
 
