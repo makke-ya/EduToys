@@ -62,11 +62,11 @@
 
         function createItem(emoji) {
             const item = document.createElement('div');
-            item.className = 'item absolute cursor-pointer select-none text-[6rem] transition-all duration-700 ease-in-out scale-0 animate-bounce hover:scale-110 drop-shadow-md';
+            item.className = 'item absolute cursor-pointer select-none text-5xl md:text-[6rem] transition-all duration-700 ease-in-out scale-0 animate-bounce hover:scale-110 drop-shadow-md';
             item.innerHTML = emoji;
 
-            const x = Math.random() * 70 + 15;
-            const y = Math.random() * 50 + 15;
+            const x = Math.random() * 40 + 20;
+            const y = Math.random() * 40 + 20;
             item.style.left = `${x}%`;
             item.style.top = `${y}%`;
             item.dataset.tapped = 'false';

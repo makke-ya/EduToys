@@ -63,7 +63,7 @@
                 grid.className = 'grid grid-cols-3 gap-4 pointer-events-none w-full h-full content-center justify-items-center p-2';
                 for (let i = 0; i < count; i++) {
                     const span = document.createElement('span');
-                    span.className = 'text-6xl drop-shadow-md animate-bounce';
+                    span.className = 'text-3xl md:text-5xl lg:text-6xl drop-shadow-md animate-bounce';
                     span.style.animationDelay = `${i * 0.1}s`;
                     span.textContent = emoji;
                     grid.appendChild(span);
@@ -74,9 +74,9 @@
                 wrapper.className = 'absolute inset-0 pointer-events-none p-6';
                 for (let i = 0; i < count; i++) {
                     const span = document.createElement('span');
-                    span.className = 'absolute text-6xl drop-shadow-md animate-bounce';
-                    span.style.left = `${Math.random() * 60 + 10}%`;
-                    span.style.top = `${Math.random() * 60 + 10}%`;
+                    span.className = 'absolute text-3xl md:text-5xl lg:text-6xl drop-shadow-md animate-bounce';
+                    span.style.left = `${Math.random() * 50 + 10}%`;
+                    span.style.top = `${Math.random() * 50 + 10}%`;
                     span.style.animationDelay = `${i * 0.1}s`;
                     span.textContent = emoji;
                     wrapper.appendChild(span);
