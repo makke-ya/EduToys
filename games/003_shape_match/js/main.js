@@ -15,19 +15,22 @@
         const soundGrab = new Audio('static/sounds/system/スイッチ3.mp3');
         const soundRelease = new Audio('static/sounds/system/スイッチ5.mp3');
         const soundCorrect = new Audio('static/sounds/system/正解1.mp3');
-        const soundClear = new Audio('static/sounds/staging/ジャジャーン1.mp3');
+        const soundClear = new Audio('static/sounds/staging/ジャジャーン1.mp3');
         const soundSelect = new Audio('static/sounds/system/決定10.mp3');
-        const soundError = new Audio('static/sounds/staging/短い音-ズッコケ.mp3');
+        const soundError = new Audio('static/sounds/staging/短い音-ズッコケ.mp3');
 
         const soundIntro = new Audio('static/sounds/voice/003_intro.mp3');
         const soundClearVoice = new Audio('static/sounds/voice/clear.mp3');
         const soundSelectSticker = new Audio('static/sounds/voice/select_sticker.mp3');
 
+        // SVGイラストのバリエーション
         const ITEMS = [
-            { icon: '🍎', name: 'りんご' }, { icon: '🚗', name: 'くるま' },
-            { icon: '🐘', name: 'ぞう' }, { icon: '⭐', name: 'ほし' },
-            { icon: '🌻', name: 'ひまわり' }, { icon: '🎈', name: 'ふうせん' },
-            { icon: '🦁', name: 'らいおん' }, { icon: '🍰', name: 'けーき' }
+            { name: 'りんご', svg: `<svg viewBox="0 0 80 80"><ellipse cx="40" cy="46" rx="26" ry="26" fill="#e53935"/><ellipse cx="40" cy="46" rx="26" ry="26" fill="url(#s3a)" opacity="0.25"/><path d="M40,20 Q38,12 32,8" stroke="#5d4037" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="36" cy="15" rx="7" ry="4" fill="#66bb6a" transform="rotate(-25,36,15)"/><defs><radialGradient id="s3a" cx="38%" cy="32%"><stop offset="0%" stop-color="white"/><stop offset="100%" stop-color="transparent"/></radialGradient></defs></svg>` },
+            { name: 'くるま', svg: `<svg viewBox="0 0 96 64"><rect x="10" y="24" width="76" height="28" rx="10" fill="#1e88e5"/><path d="M24,24 L34,8 L62,8 L72,24" fill="#42a5f5"/><rect x="36" y="10" width="24" height="14" rx="3" fill="#bbdefb" opacity="0.6"/><circle cx="28" cy="52" r="9" fill="#424242"/><circle cx="28" cy="52" r="4.5" fill="#757575"/><circle cx="68" cy="52" r="9" fill="#424242"/><circle cx="68" cy="52" r="4.5" fill="#757575"/><rect x="76" y="32" width="8" height="5" rx="2" fill="#ffee58"/></svg>` },
+            { name: 'ぞう', svg: `<svg viewBox="0 0 80 80"><ellipse cx="40" cy="42" rx="24" ry="22" fill="#90a4ae"/><ellipse cx="40" cy="42" rx="24" ry="22" fill="url(#s3e)" opacity="0.2"/><ellipse cx="16" cy="38" rx="10" ry="14" fill="#90a4ae"/><ellipse cx="16" cy="38" rx="7" ry="10" fill="#b0bec5"/><ellipse cx="64" cy="38" rx="10" ry="14" fill="#90a4ae"/><ellipse cx="64" cy="38" rx="7" ry="10" fill="#b0bec5"/><path d="M28,50 Q20,72 26,76" stroke="#78909c" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="32" cy="36" r="3" fill="#37474f"/><circle cx="48" cy="36" r="3" fill="#37474f"/><circle cx="33" cy="35" r="1" fill="white"/><circle cx="49" cy="35" r="1" fill="white"/><defs><radialGradient id="s3e" cx="40%" cy="30%"><stop offset="0%" stop-color="white"/><stop offset="100%" stop-color="transparent"/></radialGradient></defs></svg>` },
+            { name: 'ほし', svg: `<svg viewBox="0 0 80 80"><polygon points="40,8 48,30 72,30 52,44 60,68 40,52 20,68 28,44 8,30 32,30" fill="#fdd835" stroke="#f9a825" stroke-width="2" stroke-linejoin="round"/><polygon points="40,16 46,30 58,30 48,40 52,56 40,46 28,56 32,40 22,30 34,30" fill="#ffee58" opacity="0.5"/></svg>` },
+            { name: 'ひまわり', svg: `<svg viewBox="0 0 80 80"><g transform="translate(40,40)"><ellipse rx="12" ry="5" fill="#fdd835" transform="rotate(0)"/><ellipse rx="12" ry="5" fill="#fdd835" transform="rotate(30)"/><ellipse rx="12" ry="5" fill="#fdd835" transform="rotate(60)"/><ellipse rx="12" ry="5" fill="#fdd835" transform="rotate(90)"/><ellipse rx="12" ry="5" fill="#fdd835" transform="rotate(120)"/><ellipse rx="12" ry="5" fill="#fdd835" transform="rotate(150)"/></g><circle cx="40" cy="40" r="10" fill="#795548"/><circle cx="40" cy="40" r="7" fill="#8d6e63"/></svg>` },
+            { name: 'ふうせん', svg: `<svg viewBox="0 0 64 80"><ellipse cx="32" cy="30" rx="20" ry="26" fill="#e53935"/><ellipse cx="32" cy="30" rx="20" ry="26" fill="url(#s3b)" opacity="0.3"/><path d="M32,56 L28,58 L36,58 Z" fill="#c62828"/><path d="M32,58 Q34,68 30,78" stroke="#bdbdbd" stroke-width="1.5" fill="none"/><defs><radialGradient id="s3b" cx="35%" cy="25%"><stop offset="0%" stop-color="white"/><stop offset="100%" stop-color="transparent"/></radialGradient></defs></svg>` }
         ];
 
         let currentRound = 0;
@@ -52,25 +55,25 @@
             const item = ITEMS[Math.floor(Math.random() * ITEMS.length)];
             correctAnswer = item;
             
-            silhouette.innerHTML = item.icon;
-            silhouette.className = 'text-[10rem] md:text-[12rem] filter brightness-0 opacity-20 transition-all duration-500 drop-shadow-lg leading-none';
+            silhouette.innerHTML = item.svg;
+            silhouette.className = 'silhouette-target';
             silhouette.style.transform = '';
             
-            silhouetteGuide.className = 'absolute inset-0 border-8 border-dashed border-gray-200 rounded-[40px] transition-all duration-300';
+            silhouetteGuide.className = 'silhouette-guide';
             
             const currentChoices = [item];
             while (currentChoices.length < 3) {
                 const dummy = ITEMS[Math.floor(Math.random() * ITEMS.length)];
-                if (!currentChoices.find(c => c.icon === dummy.icon)) currentChoices.push(dummy);
+                if (!currentChoices.find(c => c.name === dummy.name)) currentChoices.push(dummy);
             }
             currentChoices.sort(() => Math.random() - 0.5);
 
             choicesContainer.innerHTML = '';
             currentChoices.forEach(choice => {
                 const el = document.createElement('div');
-                el.className = 'text-7xl p-6 bg-white rounded-[32px] shadow-md border-4 border-yellow-200 cursor-grab select-none touch-none hover:scale-105 hover:bg-yellow-50 transition-all';
-                el.innerHTML = choice.icon;
-                el.dataset.icon = choice.icon;
+                el.className = 'choice-item';
+                el.innerHTML = choice.svg;
+                el.dataset.name = choice.name;
                 
                 el.addEventListener('pointerdown', handlePointerDown);
                 choicesContainer.appendChild(el);
@@ -85,7 +88,10 @@
             offsetX = e.clientX - rect.left;
             offsetY = e.clientY - rect.top;
             
-            el.classList.add('scale-110', 'z-50', 'absolute', 'shadow-2xl');
+            el.style.position = 'absolute';
+            el.style.zIndex = '50';
+            el.style.boxShadow = 'var(--shadow-xl)';
+            el.style.transform = 'scale(1.1)';
             el.style.left = `${rect.left}px`;
             el.style.top = `${rect.top}px`;
             document.body.appendChild(el);
@@ -107,7 +113,7 @@
             
             soundRelease.currentTime = 0; soundRelease.play().catch(e=>{});
 
-            const icon = draggingElement.dataset.icon;
+            const name = draggingElement.dataset.name;
             const silRect = silhouette.getBoundingClientRect();
             const elRect = draggingElement.getBoundingClientRect();
             const centerX = elRect.left + elRect.width / 2;
@@ -116,7 +122,7 @@
             const isOverlap = centerX > silRect.left - 40 && centerX < silRect.right + 40 && 
                               centerY > silRect.top - 40 && centerY < silRect.bottom + 40;
 
-            if (isOverlap && icon === correctAnswer.icon) {
+            if (isOverlap && name === correctAnswer.name) {
                 isTransitioning = true;
                 const targetX = silRect.left + (silRect.width - elRect.width) / 2;
                 const targetY = silRect.top + (silRect.height - elRect.height) / 2;
@@ -124,12 +130,12 @@
                 draggingElement.style.transition = 'all 0.3s ease-out';
                 draggingElement.style.left = `${targetX}px`;
                 draggingElement.style.top = `${targetY}px`;
-                draggingElement.classList.remove('bg-white', 'border-yellow-200', 'shadow-md', 'shadow-2xl');
-                draggingElement.classList.add('border-transparent', 'bg-transparent', 'shadow-none');
+                draggingElement.style.border = 'none';
+                draggingElement.style.background = 'transparent';
+                draggingElement.style.boxShadow = 'none';
                 
-                silhouette.classList.remove('filter', 'brightness-0', 'opacity-20');
-                silhouette.classList.add('scale-125');
-                silhouetteGuide.classList.add('opacity-0');
+                silhouette.classList.add('revealed');
+                silhouetteGuide.classList.add('matched');
                 
                 soundCorrect.currentTime = 0; soundCorrect.play().catch(e=>{});
                 try {
@@ -162,9 +168,9 @@
             const silRect = silhouette.getBoundingClientRect();
             const dist = Math.sqrt(Math.pow(clientX - (silRect.left + silRect.width/2), 2) + Math.pow(clientY - (silRect.top + silRect.height/2), 2));
             if (dist < 100) {
-                silhouetteGuide.classList.add('border-yellow-400', 'scale-110');
+                silhouetteGuide.classList.add('near');
             } else {
-                silhouetteGuide.classList.remove('border-yellow-400', 'scale-110');
+                silhouetteGuide.classList.remove('near');
             }
         }
 
@@ -174,7 +180,10 @@
             GameUtils.shakeElement(el);
             setTimeout(() => {
                 if (el && el.parentNode === document.body) {
-                    el.classList.remove('absolute', 'z-50', 'scale-110', 'shadow-2xl');
+                    el.style.position = '';
+                    el.style.zIndex = '';
+                    el.style.boxShadow = '';
+                    el.style.transform = '';
                     el.style.left = '';
                     el.style.top = '';
                     choicesContainer.appendChild(el);
@@ -189,7 +198,7 @@
                 soundClearVoice.play().catch(e=>{});
             }, 300);
             setTimeout(() => {
-                finishOverlay.classList.remove('hidden');
+                finishOverlay.classList.add('show');
                 soundSelectSticker.play().catch(e=>{});
                 setupStickers();
             }, 800);
@@ -201,8 +210,8 @@
             choices.innerHTML = '';
             StickerSystem.drawThree().forEach(sticker => {
                 const btn = document.createElement('button');
-                btn.className = `flex flex-col items-center justify-center p-8 rounded-[40px] border-4 ${sticker.data.color} shadow-2xl hover:scale-110 transition-transform bg-white/90`;
-                btn.innerHTML = `<div class="text-7xl mb-4">${sticker.item}</div><div class="text-lg font-black text-gray-800">${sticker.data.label}</div>`;
+                btn.className = `sticker-btn ${sticker.data.color}`;
+                btn.innerHTML = `<div class="text-5xl md:text-7xl mb-2 md:mb-4">${sticker.item}</div><div class="text-sm md:text-lg font-black" style="color:var(--color-text);">${sticker.data.label}</div>`;
                 btn.addEventListener('click', () => {
                     soundSelect.play().catch(e=>{});
                     StickerSystem.saveSticker(sticker);

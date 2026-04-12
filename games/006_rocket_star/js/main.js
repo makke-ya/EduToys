@@ -15,10 +15,13 @@
         const soundGrab = new Audio('static/sounds/system/スイッチ3.mp3');
         const soundRelease = new Audio('static/sounds/system/スイッチ5.mp3');
         const soundCollect = new Audio('static/sounds/system/正解1.mp3');
-        const soundClear = new Audio('static/sounds/staging/ジャジャーン1.mp3');
+        const soundClear = new Audio('static/sounds/staging/ジャジャーン1.mp3');
         const soundSelect = new Audio('static/sounds/system/決定10.mp3');
         const soundIntro = new Audio('static/sounds/voice/006_intro.mp3');
         const soundClearVoice = new Audio('static/sounds/voice/006_clear.mp3');
+
+        // SVGの星マークアップ
+        const starSvg = `<svg viewBox="0 0 48 48" width="100%" height="100%"><polygon points="24,2 30,18 48,18 34,28 38,46 24,34 10,46 14,28 0,18 18,18" fill="#fdd835" stroke="#f9a825" stroke-width="1.5" stroke-linejoin="round"/><polygon points="24,8 28,18 38,18 30,24 34,38 24,30 14,38 18,24 10,18 20,18" fill="#ffee58" opacity="0.6"/></svg>`;
 
         let currentRound = 0;
         const TOTAL_ROUNDS = 3;
@@ -60,7 +63,7 @@
         function createStar() {
             const star = document.createElement('div');
             star.className = 'star';
-            star.innerHTML = '⭐';
+            star.innerHTML = starSvg;
             const x = Math.random() * 80 + 10;
             const y = Math.random() * 65 + 15;
             star.style.left = `${x}%`;
@@ -85,8 +88,8 @@
                 rocketRotation += da * 0.2;
             }
 
-            rocket.style.left = `calc(${rocketX}% - 3rem)`;
-            rocket.style.top = `calc(${rocketY}% - 3rem)`;
+            rocket.style.left = `calc(${rocketX}% - 2.5rem)`;
+            rocket.style.top = `calc(${rocketY}% - 2.5rem)`;
             rocket.style.transform = `rotate(${rocketRotation}deg)`;
 
             if (!isTransitioning) {
@@ -162,7 +165,7 @@
             soundClear.play().catch(e => {});
             soundClearVoice.play().catch(e => {});
             setTimeout(() => {
-                finishOverlay.classList.remove('hidden');
+                finishOverlay.classList.add('show');
                 setupStickers();
             }, 1500);
         }
@@ -172,8 +175,8 @@
             choices.innerHTML = '';
             StickerSystem.drawThree().forEach(sticker => {
                 const btn = document.createElement('button');
-                btn.className = `flex flex-col items-center justify-center p-8 rounded-[40px] border-4 ${sticker.data.color} shadow-2xl hover:scale-110 transition-transform bg-white/90`;
-                btn.innerHTML = `<div class="text-7xl mb-4">${sticker.item}</div><div class="text-lg font-black text-gray-800">${sticker.data.label}</div>`;
+                btn.className = `sticker-btn ${sticker.data.color}`;
+                btn.innerHTML = `<div class="text-5xl md:text-7xl mb-2 md:mb-4">${sticker.item}</div><div class="text-sm md:text-lg font-black" style="color:var(--color-text);">${sticker.data.label}</div>`;
                 btn.addEventListener('click', () => {
                     soundSelect.play().catch(e => {});
                     StickerSystem.saveSticker(sticker);

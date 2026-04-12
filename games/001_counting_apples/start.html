@@ -5,60 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>かずをかぞえよう - EduToys</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="../../static/common/css/game_style.css">
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-blue-100 overflow-hidden flex flex-col items-center justify-center h-screen relative">
+<body class="game-body" style="--theme-color:#ef5350;--theme-color-light:#ffebee;--theme-color-border:#ef9a9a;--theme-color-dark:#c62828;">
     
-    <!-- 戻るボタン -->
-    <button onclick="parent.postMessage('closeGame', '*')" class="absolute top-2 left-2 md:top-4 md:left-4 z-[1000] bg-white/80 text-gray-700 px-4 py-2 md:px-6 md:py-3 text-sm md:text-base rounded-full font-black shadow-lg backdrop-blur-md transition-all border border-white/20 active:scale-95 hover:bg-white">
-        ◀ もどる
-    </button>
+    <button onclick="parent.postMessage('closeGame', '*')" class="game-back-btn">◀ もどる</button>
 
-    <div id="game-container" class="relative w-full max-w-2xl h-[80vh] bg-white rounded-3xl shadow-xl border-8 border-yellow-400 overflow-hidden mt-14 mb-4 mx-4 md:m-4">
-        <div id="header" class="absolute top-4 left-0 w-full text-center z-10">
-            <h1 id="instruction" class="text-lg md:text-2xl lg:text-3xl font-black text-red-500 bg-white/90 inline-block px-4 py-1 md:px-6 md:py-2 rounded-full shadow-md border-2 border-red-100">
-                リンゴを タップ してね！
-            </h1>
+    <div id="game-container" class="game-container">
+        <div id="header" class="game-header">
+            <h1 id="instruction">リンゴを タップ してね！</h1>
         </div>
         
         <div id="apple-stage" class="w-full h-full relative pt-16">
-            <!-- リンゴがここに配置される -->
+            <!-- アイテムがここに配置される -->
         </div>
 
-        <!-- カゴの追加 -->
-        <div id="basket" class="absolute bottom-4 left-6 text-7xl drop-shadow-lg transition-transform duration-300 z-10">
-            🧺
+        <!-- カゴ -->
+        <div id="basket" class="absolute bottom-4 left-4 md:left-6 z-10 transition-transform duration-300">
+            <svg class="w-16 h-16 md:w-20 md:h-20" viewBox="0 0 80 80" fill="none">
+                <path d="M10,35 Q10,30 15,28 L65,28 Q70,30 70,35 L68,65 Q67,72 60,72 L20,72 Q13,72 12,65 Z" fill="#d4a574" stroke="#b8845a" stroke-width="2"/>
+                <path d="M10,35 L70,35" stroke="#b8845a" stroke-width="2"/>
+                <path d="M15,35 L18,65 M30,35 L31,65 M50,35 L49,65 M65,35 L62,65" stroke="#c4956a" stroke-width="1.5" opacity="0.5"/>
+                <path d="M25,28 Q40,10 55,28" fill="none" stroke="#b8845a" stroke-width="3" stroke-linecap="round"/>
+            </svg>
         </div>
 
-        <div id="footer" class="absolute bottom-4 right-6">
-            <div id="counter" class="text-6xl font-black text-orange-500 bg-white px-6 py-3 rounded-[32px] border-4 border-orange-300 shadow-inner">
+        <div id="footer" class="absolute bottom-3 right-4 md:right-6">
+            <div id="counter" class="text-5xl md:text-6xl font-black bg-white px-5 py-2.5 md:px-6 md:py-3 rounded-[32px] border-4 shadow-inner select-none" style="color:var(--theme-color);border-color:var(--theme-color-border);">
                 0
             </div>
         </div>
 
         <!-- 終了画面オーバーレイ -->
-        <div id="finish-overlay" class="hidden absolute inset-0 bg-white/95 flex flex-col items-center justify-center z-[2000] backdrop-blur-sm">
-            <h2 class="text-4xl sm:text-5xl md:text-7xl font-black text-pink-500 animate-bounce mb-12 drop-shadow-[0_4px_10px_rgba(236,72,153,0.3)]">よくできました！</h2>
+        <div id="finish-overlay" class="finish-overlay">
+            <h2 class="finish-title">よくできました！</h2>
             
             <div id="sticker-selection" class="w-full max-w-2xl text-center">
-                <p class="text-xl sm:text-2xl md:text-3xl font-black text-gray-700 mb-10 bg-yellow-200/80 py-4 rounded-full mx-8 border-4 border-yellow-300 shadow-lg">
+                <p class="text-xl sm:text-2xl md:text-3xl font-black mb-8 py-3 rounded-full mx-6 border-4 shadow-md" style="color:var(--color-text);background:var(--theme-color-light);border-color:var(--theme-color-border);">
                     すきなシールを えらんでね！
                 </p>
-                <div id="sticker-choices" class="flex justify-center gap-8 mb-16">
-                    <!-- シールが動的に生成されます -->
-                </div>
+                <div id="sticker-choices" class="flex justify-center gap-4 md:gap-8 mb-12 px-4"></div>
             </div>
 
             <div id="after-selection" class="hidden flex flex-col items-center">
-                <p class="text-2xl sm:text-3xl md:text-4xl font-black text-orange-500 mb-12 drop-shadow-md">シールをゲットしたよ！</p>
-                <div class="flex flex-col sm:flex-row gap-4 sm:gap-8 w-full px-4 justify-center items-center">
-                    <a href="../../sticker_book.html?autoplay=1" class="px-6 py-4 md:px-10 md:py-6 w-full sm:w-auto text-center justify-center bg-white text-orange-500 border-4 border-orange-400 text-xl md:text-3xl font-black rounded-full shadow-[0_10px_0_#fb923c] hover:translate-y-1 hover:shadow-[0_6px_0_#fb923c] transition-all active:translate-y-2 active:shadow-none">
-                        📕 シールちょう
-                    </a>
-                    <button onclick="location.reload()" class="px-6 py-4 md:px-10 md:py-6 w-full sm:w-auto text-center justify-center bg-yellow-400 text-white text-xl md:text-3xl font-black rounded-full shadow-[0_10px_0_#eab308] hover:translate-y-1 hover:shadow-[0_6px_0_#eab308] transition-all active:translate-y-2 active:shadow-none">
-                        もういっかい！
-                    </button>
+                <p class="text-2xl sm:text-3xl md:text-4xl font-black mb-10 drop-shadow-md" style="color:var(--color-primary);">シールをゲットしたよ！</p>
+                <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full px-6 justify-center items-center">
+                    <a href="../../sticker_book.html?autoplay=1" class="btn-outline">📕 シールちょう</a>
+                    <button onclick="location.reload()" class="btn-primary">もういっかい！</button>
                 </div>
             </div>
         </div>

@@ -12,12 +12,24 @@
 
         if (!stage) return; // コンテンツがまだロードされていない場合は中断
 
-        // オブジェクトのバリエーション
+        // SVGイラストのバリエーション
         const VARIATIONS = [
-            { name: 'リンゴ', emoji: '🍎' },
-            { name: 'イチゴ', emoji: '🍓' },
-            { name: 'くるま', emoji: '🚗' },
-            { name: 'ひよこ', emoji: '🐤' }
+            {
+                name: 'りんご',
+                svg: `<svg viewBox="0 0 64 64" class="svg-item"><ellipse cx="32" cy="38" rx="22" ry="22" fill="#e53935"/><ellipse cx="32" cy="38" rx="22" ry="22" fill="url(#apple-shine)" opacity="0.3"/><path d="M32,16 Q30,8 24,6" stroke="#4e342e" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="28" cy="12" rx="6" ry="4" fill="#66bb6a" transform="rotate(-30,28,12)"/><defs><radialGradient id="apple-shine" cx="40%" cy="35%"><stop offset="0%" stop-color="white"/><stop offset="100%" stop-color="transparent"/></radialGradient></defs></svg>`
+            },
+            {
+                name: 'いちご',
+                svg: `<svg viewBox="0 0 64 64" class="svg-item"><path d="M32,14 Q18,22 16,40 Q16,56 32,58 Q48,56 48,40 Q46,22 32,14Z" fill="#e53935"/><path d="M32,14 Q18,22 16,40 Q16,56 32,58 Q48,56 48,40 Q46,22 32,14Z" fill="url(#berry-shine)" opacity="0.25"/><circle cx="26" cy="30" r="1.2" fill="#ffcdd2"/><circle cx="38" cy="30" r="1.2" fill="#ffcdd2"/><circle cx="32" cy="38" r="1.2" fill="#ffcdd2"/><circle cx="24" cy="42" r="1.2" fill="#ffcdd2"/><circle cx="40" cy="42" r="1.2" fill="#ffcdd2"/><circle cx="32" cy="48" r="1.2" fill="#ffcdd2"/><path d="M26,14 L32,18 L38,14" stroke="#66bb6a" stroke-width="3" fill="#66bb6a" stroke-linejoin="round"/><defs><radialGradient id="berry-shine" cx="35%" cy="30%"><stop offset="0%" stop-color="white"/><stop offset="100%" stop-color="transparent"/></radialGradient></defs></svg>`
+            },
+            {
+                name: 'くるま',
+                svg: `<svg viewBox="0 0 80 56" class="svg-item"><rect x="8" y="20" width="64" height="24" rx="8" fill="#1e88e5"/><path d="M20,20 L28,6 L52,6 L60,20" fill="#42a5f5"/><rect x="30" y="8" width="20" height="12" rx="2" fill="#bbdefb" opacity="0.7"/><circle cx="22" cy="44" r="8" fill="#424242"/><circle cx="22" cy="44" r="4" fill="#757575"/><circle cx="58" cy="44" r="8" fill="#424242"/><circle cx="58" cy="44" r="4" fill="#757575"/><rect x="62" y="26" width="8" height="4" rx="2" fill="#ffee58"/></svg>`
+            },
+            {
+                name: 'ひよこ',
+                svg: `<svg viewBox="0 0 64 64" class="svg-item"><ellipse cx="32" cy="38" rx="20" ry="20" fill="#fdd835"/><ellipse cx="32" cy="38" rx="20" ry="20" fill="url(#chick-shine)" opacity="0.25"/><circle cx="24" cy="32" r="3" fill="#4e342e"/><circle cx="40" cy="32" r="3" fill="#4e342e"/><circle cx="24.5" cy="31" r="1" fill="white"/><circle cx="40.5" cy="31" r="1" fill="white"/><path d="M30,38 L32,42 L34,38" fill="#ff8f00" stroke="#ff8f00" stroke-width="1" stroke-linejoin="round"/><path d="M28,14 Q32,6 36,14" fill="#fdd835" stroke="#fbc02d" stroke-width="1.5"/><path d="M14,42 Q6,40 10,48" fill="#fdd835" stroke="#fbc02d" stroke-width="1.5"/><path d="M50,42 Q58,40 54,48" fill="#fdd835" stroke="#fbc02d" stroke-width="1.5"/><defs><radialGradient id="chick-shine" cx="40%" cy="30%"><stop offset="0%" stop-color="white"/><stop offset="100%" stop-color="transparent"/></radialGradient></defs></svg>`
+            }
         ];
 
         // 音声ファイルの準備 (パスをルート相対に変更)
@@ -25,8 +37,8 @@
         bgm.loop = true;
         bgm.volume = 0.3;
 
-        const soundTap = new Audio('static/sounds/staging/短い音-ポヨン.mp3');
-        const soundClear = new Audio('static/sounds/staging/ジャジャーン1.mp3');
+        const soundTap = new Audio('static/sounds/staging/短い音-ポヨン.mp3');
+        const soundClear = new Audio('static/sounds/staging/ジャジャーン1.mp3');
         const soundSelect = new Audio('static/sounds/system/決定10.mp3');
         const soundIntro = new Audio('static/sounds/voice/001_intro.mp3');
         const soundClearVoice = new Audio('static/sounds/voice/clear.mp3');
@@ -55,15 +67,15 @@
             instruction.textContent = `${itemType.name}を タップ してね！ (${currentRound + 1}/${TOTAL_ROUNDS})`;
 
             for (let i = 0; i < totalItemsInRound; i++) {
-                createItem(itemType.emoji);
+                createItem(itemType.svg);
                 await new Promise(r => setTimeout(r, 200));
             }
         }
 
-        function createItem(emoji) {
+        function createItem(svgMarkup) {
             const item = document.createElement('div');
-            item.className = 'item absolute cursor-pointer select-none text-5xl md:text-[6rem] transition-all duration-700 ease-in-out scale-0 animate-bounce hover:scale-110 drop-shadow-md';
-            item.innerHTML = emoji;
+            item.className = 'item absolute cursor-pointer select-none transition-all duration-700 ease-in-out scale-0 animate-bounce hover:scale-110 drop-shadow-md';
+            item.innerHTML = svgMarkup;
 
             const x = Math.random() * 40 + 20;
             const y = Math.random() * 40 + 20;
@@ -127,7 +139,8 @@
         function showNumberAt(rect, numberToShow) {
             const stageRect = stage.getBoundingClientRect();
             const num = document.createElement('div');
-            num.className = 'absolute text-6xl font-black text-orange-500 animate-bounce z-50 pointer-events-none drop-shadow-md';
+            num.className = 'absolute text-5xl md:text-6xl font-black animate-bounce z-50 pointer-events-none drop-shadow-md';
+            num.style.color = 'var(--theme-color)';
             num.textContent = numberToShow;
             num.style.left = `${rect.left - stageRect.left}px`;
             num.style.top = `${rect.top - stageRect.top - 40}px`;
@@ -164,7 +177,7 @@
             }, 300);
 
             setTimeout(() => {
-                finishOverlay.classList.remove('hidden');
+                finishOverlay.classList.add('show');
                 soundSelectSticker.play().catch(e=>{});
                 setupStickers();
             }, 1500);
@@ -179,8 +192,8 @@
             
             StickerSystem.drawThree().forEach((sticker) => {
                 const btn = document.createElement('button');
-                btn.className = `flex flex-col items-center justify-center p-8 rounded-[40px] border-4 ${sticker.data.color} shadow-2xl hover:scale-110 transition-transform bg-white/90`;
-                btn.innerHTML = `<div class="text-7xl mb-4">${sticker.item}</div><div class="text-lg font-black text-gray-800">${sticker.data.label}</div>`;
+                btn.className = `sticker-btn ${sticker.data.color}`;
+                btn.innerHTML = `<div class="text-5xl md:text-7xl mb-2 md:mb-4">${sticker.item}</div><div class="text-sm md:text-lg font-black" style="color:var(--color-text);">${sticker.data.label}</div>`;
                 btn.addEventListener('click', () => {
                     soundSelect.play().catch(e => {});
                     StickerSystem.saveSticker(sticker);
