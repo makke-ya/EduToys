@@ -6,62 +6,42 @@
     <title>てんつなぎ - EduToys</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="../../static/common/css/game_style.css">
-    <style>
-        #dots-svg { touch-action: none; cursor: crosshair; }
-        .dot-marker { pointer-events: none; transition: all 0.3s; }
-        #target-dot, #traced-path, #guide-path, #goal-illustration { pointer-events: none; }
-        .dot-active { filter: drop-shadow(0 0 8px #fbc02d); transform: scale(1.2); }
-        .dot-reached { fill: #4caf50 !important; stroke: #2e7d32 !important; }
-        .illustration-fadein { opacity: 1 !important; }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
-<body class="bg-green-100 overflow-hidden flex flex-col items-center justify-center h-screen relative">
+<body class="game-body" style="--theme-color:#43a047;--theme-color-light:#e8f5e9;--theme-color-border:#a5d6a7;--theme-color-dark:#2e7d32;">
     
-    <button onclick="parent.postMessage('closeGame', '*')" class="absolute top-2 left-2 md:top-4 md:left-4 z-40 bg-white/80 text-gray-700 px-4 py-2 rounded-full font-bold shadow-sm hover:bg-white transition-colors border-2 border-green-200">
-        ◀ もどる
-    </button>
+    <button onclick="parent.postMessage('closeGame', '*')" class="game-back-btn">◀ もどる</button>
 
-    <div id="game-container" class="relative w-full max-w-2xl h-[80vh] bg-white rounded-3xl shadow-xl border-8 border-green-400 overflow-hidden mt-14 mb-4 mx-4 md:m-4">
-        <div id="header" class="absolute top-4 left-0 w-full text-center z-10">
-            <h1 id="instruction" class="text-3xl font-bold text-green-600 bg-white/80 inline-block px-4 py-1 md:px-6 md:py-2 rounded-full shadow-md">
-                かたちを なぞってみよう！
-            </h1>
+    <div id="game-container" class="game-container">
+        <div id="header" class="game-header">
+            <h1 id="instruction">かたちを なぞってみよう！</h1>
         </div>
         
-        <div id="dots-stage" class="w-full h-full relative p-8">
-            <svg id="dots-svg" viewBox="0 0 100 100" class="w-full h-full">
-                <!-- 完成イラストのベース（背景） -->
+        <div id="dots-stage" class="w-full h-full relative p-6 md:p-8 pt-14 md:pt-16">
+            <svg id="dots-svg" viewBox="0 0 100 100" class="tracing-canvas w-full h-full">
                 <path id="goal-illustration" d="" fill="#fff9c4" stroke="#fbc02d" stroke-width="1" class="opacity-0 transition-opacity duration-1000" />
-                
-                <!-- 背景ガイド（極太） -->
-                <path id="bg-path" d="" fill="none" stroke="#f0f0f0" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" />
-                <!-- ガイドパス（点線） -->
-                <path id="guide-path" d="" fill="none" stroke="#e0e0e0" stroke-width="2" stroke-dasharray="2,2" stroke-linecap="round" />
-                <!-- なぞった跡（着色） -->
-                <path id="traced-path" d="" fill="none" stroke="orange" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
-                
-                <!-- ターゲット地点（ヒント） -->
-                <circle id="target-dot" cx="0" cy="0" r="10" fill="#ff4081" class="hidden" />
-
-                <!-- 点のマーカー用グループ -->
+                <path id="bg-path" d="" fill="none" stroke="#e8f5e9" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" />
+                <path id="guide-path" d="" fill="none" stroke="#c8e6c9" stroke-width="2" stroke-dasharray="2,2" stroke-linecap="round" />
+                <path id="traced-path" d="" fill="none" stroke="#ff8f00" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" />
+                <circle id="target-dot" cx="0" cy="0" r="10" fill="#43a047" class="hidden" />
                 <g id="dots-group"></g>
             </svg>
         </div>
 
         <!-- 終了画面オーバーレイ -->
-        <div id="finish-overlay" class="hidden absolute inset-0 bg-white/95 flex flex-col items-center justify-center z-50">
-            <h2 class="text-5xl md:text-6xl font-black text-pink-500 animate-bounce mb-4">よくできました！</h2>
-            <div id="sticker-selection" class="w-full max-w-xl text-center">
-                <p class="text-2xl font-bold text-gray-700 mb-6 bg-yellow-100 py-2 rounded-full mx-8 border-2 border-yellow-300">
-                    シールを 1つ えらんでね！
+        <div id="finish-overlay" class="finish-overlay">
+            <h2 class="finish-title">よくできました！</h2>
+            <div id="sticker-selection" class="w-full max-w-2xl text-center">
+                <p class="text-xl sm:text-2xl md:text-3xl font-black mb-8 py-3 rounded-full mx-6 border-4 shadow-md" style="color:var(--color-text);background:var(--theme-color-light);border-color:var(--theme-color-border);">
+                    すきなシールを えらんでね！
                 </p>
-                <div id="sticker-choices" class="flex justify-center gap-6 mb-8"></div>
+                <div id="sticker-choices" class="flex justify-center gap-4 md:gap-8 mb-12 px-4"></div>
             </div>
             <div id="after-selection" class="hidden flex flex-col items-center">
-                <p class="text-2xl font-bold text-orange-500 mb-8">シールをゲットしたよ！</p>
-                <div class="flex gap-4">
-                    <a href="../../sticker_book.html?autoplay=1" class="px-6 py-4 bg-white text-orange-500 border-4 border-orange-400 text-xl font-bold rounded-full shadow-lg">📕 シールちょう</a>
-                    <button onclick="location.reload()" class="px-6 py-4 bg-orange-400 text-white text-xl font-bold rounded-full shadow-lg">もういっかい！</button>
+                <p class="text-2xl sm:text-3xl md:text-4xl font-black mb-10 drop-shadow-md" style="color:var(--color-primary);">シールをゲットしたよ！</p>
+                <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full px-6 justify-center items-center">
+                    <a href="../../sticker_book.html?autoplay=1" class="btn-outline">📕 シールちょう</a>
+                    <button onclick="location.reload()" class="btn-primary">もういっかい！</button>
                 </div>
             </div>
         </div>

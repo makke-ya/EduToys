@@ -363,7 +363,7 @@
         }
 
         svg.addEventListener('pointerdown', (e) => {
-            if (!finishOverlay.classList.contains('hidden') || !wordFinishOverlay.classList.contains('hidden')) return;
+            if (finishOverlay.classList.contains('show') || wordFinishOverlay.classList.contains('show')) return;
             isDrawing = true;
             startSynth();
             handleMove(e);
@@ -456,13 +456,13 @@
             const wordData = WORDS[currentWordIndex];
             wordEmoji.textContent = wordData.emoji;
             wordText.textContent = wordData.word;
-            wordFinishOverlay.classList.remove('hidden');
+            wordFinishOverlay.classList.add('show');
             soundWordClear.play().catch(e=>{});
             setTimeout(() => {
                 new Audio(`static/sounds/voice/${wordData.voice}`).play().catch(e => {});
             }, 1000);
             setTimeout(() => {
-                wordFinishOverlay.classList.add('hidden');
+                wordFinishOverlay.classList.remove('show');
                 currentWordIndex++;
                 if (currentWordIndex < 3) {
                     initWord();
@@ -478,7 +478,7 @@
                 soundGameClear.play().catch(e=>{});
             }, 300);
             setTimeout(() => {
-                finishOverlay.classList.remove('hidden');
+                finishOverlay.classList.add('show');
                 setupStickers();
             }, 1000);
         }
@@ -489,8 +489,8 @@
             choices.innerHTML = '';
             StickerSystem.drawThree().forEach(sticker => {
                 const btn = document.createElement('button');
-                btn.className = `flex flex-col items-center justify-center p-8 rounded-[40px] border-4 ${sticker.data.color} shadow-2xl hover:scale-110 transition-transform bg-white/90`;
-                btn.innerHTML = `<div class="text-7xl mb-4">${sticker.item}</div><div class="text-lg font-black text-gray-800">${sticker.data.label}</div>`;
+                btn.className = `sticker-btn ${sticker.data.color}`;
+                btn.innerHTML = `<div class="text-5xl md:text-7xl mb-2 md:mb-4">${sticker.item}</div><div class="text-sm md:text-lg font-black" style="color:var(--color-text);">${sticker.data.label}</div>`;
                 btn.addEventListener('click', () => {
                     soundSelect.play().catch(e=>{});
                     StickerSystem.saveSticker(sticker);
