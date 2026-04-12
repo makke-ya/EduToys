@@ -7,16 +7,20 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: 'Hiragino Maru Gothic ProN', 'Rounded M+ 1c', 'Meiryo', sans-serif; }
-        .fade-enter { opacity: 0; }
-        .fade-enter-active { opacity: 1; transition: opacity 0.3s; }
-        #game-viewport { position: fixed; inset: 0; z-index: 200; background: white; overflow: hidden; }
-        /* ゲーム内からの絶対配置ボタンなどを考慮 */
-        #game-viewport .absolute { position: absolute; }
+        #game-viewport { 
+            position: fixed; 
+            inset: 0; 
+            z-index: 200; 
+            background: white; 
+            overflow: hidden; 
+            display: none; 
+        }
+        #game-viewport.active { display: block; }
     </style>
 </head>
-<body class="bg-yellow-50 min-h-screen relative">
+<body class="bg-yellow-50 min-h-screen relative overflow-x-hidden">
     
-    <!-- メインコンテンツ -->
+    <!-- メインメニュー -->
     <div id="view-menu" class="p-4 md:p-8">
         <header class="text-center mb-10 relative">
             <h1 class="text-5xl md:text-6xl font-black text-orange-500 mb-4 drop-shadow-md">
@@ -31,7 +35,6 @@
 
         <main class="max-w-5xl mx-auto">
             <div id="game-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- ゲームカードはJSで生成、または直接記述 -->
                 <!-- 001_counting_apples -->
                 <button onclick="EduToys.loadGame('games/001_counting_apples/start.html')" class="group relative bg-white rounded-3xl shadow-lg border-4 border-orange-200 hover:border-orange-400 hover:-translate-y-2 transition-all duration-300 overflow-hidden text-left">
                     <div class="h-40 bg-orange-50 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform">🍎</div>
@@ -115,10 +118,8 @@
         </main>
     </div>
 
-    <!-- ゲーム表示用コンテナ (iframeの代わり) -->
-    <div id="game-viewport" class="hidden">
-        <div id="game-content" class="contents"></div>
-    </div>
+    <!-- ゲーム表示用コンテナ -->
+    <div id="game-viewport"></div>
 
     <!-- スタートオーバーレイ -->
     <div id="start-overlay" class="fixed inset-0 bg-yellow-50 z-[300] flex flex-col items-center justify-center transition-opacity duration-500">
@@ -133,49 +134,70 @@
         <p class="text-sm opacity-60">音源提供：Springin' Sound Stock / 合成：VOICEVOX</p>
     </footer>
 
+    <!-- ライブラリ -->
     <script src="static/common/js/game_utils.js"></script>
     <script src="static/common/js/sticker_system.js"></script>
+
     <script>
-        /**
-         * EduToys Core Manager
-         */
         const EduToys = (() => {
             const state = {
                 started: false,
-                currentBgm: null,
+                isGameLoading: false,
                 menuBgm: new Audio('static/sounds/bgm/Pops_02.mp3'),
-                activeGameBgm: null
+                fadeInterval: null,
+                activeAudios: new Set()
             };
 
             state.menuBgm.loop = true;
 
+            const originalAudio = window.Audio;
+            window.Audio = function(src) {
+                const audio = new originalAudio(src);
+                state.activeAudios.add(audio);
+                return audio;
+            };
+
             const fadeInBgm = (audio, targetVol = 0.4) => {
                 if (!audio) return;
+                clearInterval(state.fadeInterval);
                 audio.volume = 0;
                 audio.play().then(() => {
                     let vol = 0;
-                    const interval = setInterval(() => {
+                    state.fadeInterval = setInterval(() => {
                         vol += 0.05;
                         audio.volume = Math.min(vol, targetVol);
-                        if (vol >= targetVol) clearInterval(interval);
+                        if (vol >= targetVol) clearInterval(state.fadeInterval);
                     }, 100);
-                }).catch(e => console.error("Play failed", e));
+                }).catch(e => console.warn("BGM blocked", e));
             };
 
             const fadeOutBgm = (audio) => {
-                if (!audio) return Promise.resolve();
+                clearInterval(state.fadeInterval);
+                if (!audio || audio.paused) return Promise.resolve();
                 return new Promise(resolve => {
                     let vol = audio.volume;
-                    const interval = setInterval(() => {
-                        vol -= 0.05;
+                    state.fadeInterval = setInterval(() => {
+                        vol -= 0.1;
                         audio.volume = Math.max(0, vol);
                         if (vol <= 0) {
-                            clearInterval(interval);
+                            clearInterval(state.fadeInterval);
                             audio.pause();
                             resolve();
                         }
                     }, 50);
                 });
+            };
+
+            const cleanupResources = () => {
+                state.activeAudios.forEach(audio => {
+                    if (audio !== state.menuBgm) {
+                        audio.pause();
+                        audio.src = "";
+                        audio.load();
+                    }
+                });
+                state.activeAudios.clear();
+                state.activeAudios.add(state.menuBgm);
             };
 
             return {
@@ -199,71 +221,65 @@
                         }, { once: true });
                     }
 
-                    // 戻るボタン等のメッセージ受け取り
                     window.addEventListener('message', (e) => {
                         if (e.data === 'closeGame') EduToys.closeGame();
                     });
                     
-                    // SPA内での戻るボタン対応
-                    window.addEventListener('popstate', () => {
-                        if (document.getElementById('game-viewport').classList.contains('hidden')) return;
+                    window.addEventListener('popstate', (e) => {
                         EduToys.closeGame(false);
                     });
+
+                    if (!history.state) {
+                        history.replaceState({view: 'menu'}, '', '');
+                    }
                 },
 
                 loadGame: async (url) => {
-                    console.log("Loading game:", url);
+                    if (state.isGameLoading) return;
+                    state.isGameLoading = true;
+
                     const viewport = document.getElementById('game-viewport');
-                    const content = document.getElementById('game-content');
-                    
-                    // BGM切り替え
                     await fadeOutBgm(state.menuBgm);
+                    cleanupResources();
 
                     try {
                         const response = await fetch(url);
                         const html = await response.text();
                         const parser = new DOMParser();
                         const doc = parser.parseFromString(html, 'text/html');
-                        
                         const gameBase = url.substring(0, url.lastIndexOf('/') + 1);
                         
-                        // bodyのクラスをviewportにコピー (背景色やレイアウト維持のため)
-                        viewport.className = doc.body.className;
-                        viewport.classList.add('fixed', 'inset-0', 'z-[200]'); // bg-whiteはdoc.bodyから来るはず
-                        viewport.classList.remove('hidden'); // スクリプト実行前に表示 (ClientRect取得のため重要)
+                        viewport.innerHTML = '<div id="game-content" class="contents"></div>';
+                        const newContent = document.getElementById('game-content');
                         
-                        // コンテンツの抽出とパスの置換
-                        let bodyHtml = doc.body.innerHTML;
-                        // 簡易的なパス置換 (img src, audio src, source src など)
-                        bodyHtml = bodyHtml.replace(/(src=["'])(?!(?:https?|static|\/))([^"']+)(["'])/g, `$1${gameBase}$2$3`);
-                        content.innerHTML = bodyHtml;
-                        
-                        // スタイルの移行
-                        document.querySelectorAll('.game-style').forEach(el => el.remove());
+                        document.querySelectorAll('.game-resource').forEach(el => el.remove());
                         doc.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
                             const newLink = document.createElement('link');
                             newLink.rel = 'stylesheet';
-                            newLink.className = 'game-style';
-                            newLink.href = link.getAttribute('href').startsWith('http') || link.getAttribute('href').startsWith('/') ? link.href : gameBase + link.getAttribute('href');
+                            newLink.className = 'game-resource';
+                            newLink.href = link.getAttribute('href').startsWith('http') ? link.href : gameBase + link.getAttribute('href');
                             document.head.appendChild(newLink);
                         });
 
-                        // スクリプトの実行
-                        document.querySelectorAll('.game-script').forEach(el => el.remove());
-                        const scripts = Array.from(doc.querySelectorAll('script'));
+                        viewport.className = doc.body.className;
+                        viewport.classList.add('active', 'fixed', 'inset-0', 'z-[200]');
+                        viewport.style.display = 'block';
                         
+                        let bodyHtml = doc.body.innerHTML;
+                        bodyHtml = bodyHtml.replace(/(src=["'])(?!(?:https?|static|data:|\/))([^"']+)(["'])/g, `$1${gameBase}$2$3`);
+                        newContent.innerHTML = bodyHtml;
+
+                        const scripts = Array.from(doc.querySelectorAll('script'));
                         for (const oldScript of scripts) {
                             const src = oldScript.getAttribute('src');
                             if (src && (src.includes('game_utils.js') || src.includes('sticker_system.js'))) continue;
-
                             const newScript = document.createElement('script');
-                            newScript.className = 'game-script';
+                            newScript.className = 'game-resource';
                             if (src) {
-                                const fullSrc = src.startsWith('http') || src.startsWith('/') ? src : gameBase + src;
                                 await new Promise((resolve) => {
-                                    newScript.src = fullSrc;
+                                    newScript.src = src.startsWith('http') ? src : gameBase + src;
                                     newScript.onload = resolve;
-                                    newScript.onerror = resolve; // 失敗しても次に進む
+                                    newScript.onerror = resolve;
                                     document.body.appendChild(newScript);
                                 });
                             } else {
@@ -271,36 +287,32 @@
                                 document.body.appendChild(newScript);
                             }
                         }
-
-                        history.pushState({view: 'game'}, '', '#' + url);
+                        history.pushState({view: 'game', url: url}, '', '#' + url);
                     } catch (e) {
-                        console.error("Game load failed", e);
-                        fadeInBgm(state.menuBgm);
+                        console.error("Load failed", e);
+                        EduToys.closeGame(false);
+                    } finally {
+                        state.isGameLoading = false;
                     }
                 },
 
                 closeGame: (updateHistory = true) => {
+                    if (updateHistory && window.location.hash) {
+                        history.back();
+                        return;
+                    }
                     const viewport = document.getElementById('game-viewport');
-                    viewport.classList.add('hidden');
-                    viewport.className = 'hidden'; // クラスをリセット
-                    document.getElementById('game-content').innerHTML = '';
-                    document.querySelectorAll('.game-style, .game-script').forEach(el => el.remove());
-                    
-                    // 各ゲームのBGMを止めるためのクリーンアップが必要な場合がある
-                    // 今回はAudioオブジェクトを全て停止させる
-                    document.querySelectorAll('audio').forEach(a => {
-                        if (a !== state.menuBgm) {
-                            a.pause();
-                            a.remove();
-                        }
-                    });
-
+                    if (!viewport.classList.contains('active')) return;
+                    viewport.classList.remove('active');
+                    viewport.style.display = 'none';
+                    viewport.className = "";
+                    viewport.innerHTML = "";
+                    document.querySelectorAll('.game-resource').forEach(el => el.remove());
+                    cleanupResources();
                     fadeInBgm(state.menuBgm);
-                    if (updateHistory) history.back();
                 }
             };
         })();
-
         document.addEventListener('DOMContentLoaded', EduToys.init);
     </script>
 </body>
