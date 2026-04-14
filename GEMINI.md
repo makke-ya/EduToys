@@ -37,6 +37,18 @@
 - **Gitでの追跡**: `static/sounds/` などの大容量アセットフォルダ全体は `.gitignore` で無視されています。
 - **個別追加の原則**: ゲーム等で実際に使用する音源ファイルのみをGitの追跡対象にしてください。使用する際は、`git add -f path/to/sound.mp3` を使って強制的に個別追加してください。
 
+### 5.1 VOICEVOX の利用
+- **ゲーム固有の音声**: `games/000_game_name/voices/`に配置
+- **共通音声**: `static/voices/`に配置
+- **音声生成**: ナレーションやボイスの生成には、`voicevox-generator` スキルを使用します。
+- **メインキャラクター**: 原則として「**四国めたん**」（Speaker ID: `2` (あまあま) 推奨）を使用してください。
+- **生成方法**: 以下のコマンド形式で音声を生成してください。
+  ```bash
+  node .gemini/skills/voicevox-generator/scripts/generate.cjs "喋らせたいテキスト" 2 static/voices/filename.mp3
+  ```
+- **クレジット表記**: ゲーム画面のどこか（または共通のクレジット領域）に、以下のクレジットを必ず記載してください。
+  > VOICEVOX:四国めたん
+
 ## 6. デザインガイドライン
 
 ### 6.1 目指すクオリティ
