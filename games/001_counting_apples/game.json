@@ -1,6 +1,0 @@
-{
-  "name": "かずをかぞえよう",
-  "description": "リンゴをタップして、1から10まで数える練習をするゲームです。",
-  "entry_point": "start.html",
-  "thumbnail": "images/thumbnail.png"
-}
