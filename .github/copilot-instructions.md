@@ -1,4 +1,4 @@
-# GEMINI.md - 開発ガイドライン for AI (EduToys)
+# 開発ガイドライン for AI (EduToys)
 
 ## 1. はじめに
 - このドキュメントは、AI開発エージェントが本プロジェクトで開発を行うためのガイドラインです。
@@ -44,7 +44,7 @@
 - **メインキャラクター**: 原則として「**四国めたん**」（Speaker ID: `2` (あまあま) 推奨）を使用してください。
 - **生成方法**: 以下のコマンド形式で音声を生成してください。
   ```bash
-  node .gemini/skills/voicevox-generator/scripts/generate.cjs "喋らせたいテキスト" 2 static/voices/filename.mp3
+  node voicevox-generator/scripts/generate.cjs "喋らせたいテキスト" 2 static/voices/filename.mp3
   ```
 - **クレジット表記**: ゲーム画面のどこか（または共通のクレジット領域）に、以下のクレジットを必ず記載してください。
   > VOICEVOX:四国めたん
