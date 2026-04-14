@@ -4,6 +4,33 @@ window.EduToys = {
     vueApp: null,
     pixiApp: null,
 
+    audio: {
+        bgm: null,
+        seTap: null,
+        seTransition: null,
+        initialized: false,
+        init() {
+            if (this.initialized || typeof window.Howl === 'undefined') return;
+            // 既存のアセットを利用
+            this.bgm = new window.Howl({ src: ['static/sounds/bgm/ゆったりお散歩.mp3'], loop: true, volume: 0.2 });
+            this.seTap = new window.Howl({ src: ['static/sounds/system/決定1.mp3'], volume: 0.8 });
+            this.seTransition = new window.Howl({ src: ['static/sounds/staging/短い音-フワ.mp3'], volume: 0.8 });
+            this.initialized = true;
+        },
+        playBGM() {
+            if (!this.initialized) this.init();
+            if (this.bgm && !this.bgm.playing()) this.bgm.play();
+        },
+        stopBGM() {
+            if (this.bgm) this.bgm.stop();
+        },
+        playSE(type) {
+            if (!this.initialized) this.init();
+            if (type === 'tap' && this.seTap) this.seTap.play();
+            if (type === 'transition' && this.seTransition) this.seTransition.play();
+        }
+    },
+
     init() {
         if (!window.Vue) {
             console.error('Vue.js is not loaded.');
@@ -13,27 +40,43 @@ window.EduToys = {
         const App = {
             data() {
                 return {
+                    isStarted: false,
                     currentView: 'home', // 'home', 'sticker_book', 'game'
                     currentGameId: null,
                     games: [
-                        { id: '001_hiragana', name: 'ひらがなきそ', category: 'もじ', thumbnail: 'static/thumbnails/001_hiragana.jpg' },
-                        { id: '002_count', name: 'かぞえてタップ', category: 'かず', thumbnail: 'static/thumbnails/002_count.jpg' },
+                        { id: '001_count_tap', name: 'かぞえてタップ', category: 'かず', thumbnail: 'static/thumbnails/001_count_tap.jpg' },
                         // ダミーデータ。実際にはサーバーから取得するなどの拡張が可能
                     ]
                 };
             },
             methods: {
+                startGame() {
+                    this.isStarted = true;
+                    window.EduToys.audio.playBGM();
+                    window.EduToys.audio.playSE('transition');
+                },
+                playTap() {
+                    window.EduToys.audio.playSE('tap');
+                },
+                playTransition() {
+                    window.EduToys.audio.playSE('transition');
+                },
                 showHome() {
+                    this.playTransition();
                     window.EduToys.cleanupGame();
+                    window.EduToys.audio.playBGM(); // ホームに戻ったらBGM再開
                     this.currentView = 'home';
                     this.currentGameId = null;
                 },
                 showStickerBook() {
+                    this.playTransition();
                     window.EduToys.cleanupGame();
                     this.currentView = 'sticker_book';
                     this.currentGameId = null;
                 },
                 loadGame(gameId) {
+                    this.playTap();
+                    window.EduToys.audio.stopBGM(); // ゲーム中はゲーム専用BGMに切り替える想定
                     this.currentView = 'game';
                     this.currentGameId = gameId;
                     

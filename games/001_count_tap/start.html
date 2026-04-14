@@ -1,0 +1,26 @@
+<div id="count-tap-app" class="w-full h-full flex flex-col relative">
+    <!-- UI レイヤー (DOM) -->
+    <div class="absolute top-0 left-0 w-full p-4 flex justify-between items-center z-10 pointer-events-none">
+        <div class="bg-white px-6 py-2 rounded-full shadow-md border-4 border-edu-orange font-bold text-2xl text-edu-text pointer-events-auto">
+            ぜんぶ タップしてね！
+        </div>
+        <div class="bg-white px-6 py-2 rounded-full shadow-md border-4 border-edu-green font-bold text-3xl text-edu-green pointer-events-auto flex items-center gap-2">
+            <span id="ui-current-count">0</span> / <span id="ui-total-count">0</span>
+        </div>
+    </div>
+
+    <!-- クリア時オーバーレイ -->
+    <div id="clear-overlay" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex-col items-center justify-center hidden pointer-events-auto transition-opacity duration-500 opacity-0">
+        <h2 class="text-5xl font-bold text-edu-orange mb-12 drop-shadow-md animate-bounce">クリア！</h2>
+        <div class="flex gap-8">
+            <button id="btn-replay" class="edu-btn bg-white text-edu-orange px-8 py-4 rounded-full text-2xl font-bold shadow-lg border-4 border-edu-orange">
+                もういっかい！
+            </button>
+            <button id="btn-to-home" class="edu-btn bg-edu-green text-white px-8 py-4 rounded-full text-2xl font-bold shadow-lg">
+                ホームにもどる
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="games/001_count_tap/js/game.js"></script>

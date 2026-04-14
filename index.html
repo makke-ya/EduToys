@@ -39,6 +39,14 @@
 <body class="bg-edu-bg text-edu-text font-sans overflow-hidden select-none">
     <div id="app" class="h-screen w-full flex flex-col items-center justify-center relative">
         
+        <!-- スタート画面 (AudioContext許可のため) -->
+        <div v-if="!isStarted" @click="startGame" class="absolute inset-0 bg-edu-bg z-50 flex flex-col items-center justify-center cursor-pointer">
+            <h1 class="text-4xl font-bold text-edu-orange mb-8 animate-bounce">すくすく ぷれー</h1>
+            <button class="edu-btn bg-edu-green text-white px-8 py-4 rounded-full text-2xl font-bold animate-pulse pointer-events-none">
+                はじめる
+            </button>
+        </div>
+
         <!-- ヘッダー (ホーム・シールちょう画面で表示) -->
         <header v-if="currentView !== 'game'" class="w-full max-w-4xl px-6 py-4 flex justify-between items-center absolute top-0 z-10">
             <h1 class="text-3xl font-bold text-edu-orange drop-shadow-sm">すくすく ぷれー</h1>

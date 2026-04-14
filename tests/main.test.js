@@ -26,6 +26,12 @@ describe('EduToys main.js', () => {
         window.Howler = {
             unload: jest.fn()
         };
+
+        window.Howl = jest.fn(() => ({
+            play: jest.fn(),
+            stop: jest.fn(),
+            playing: jest.fn(() => false)
+        }));
         
         window.gsap = {
             killTweensOf: jest.fn()

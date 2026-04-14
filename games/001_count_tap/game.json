@@ -1,0 +1,6 @@
+{
+  "name": "かぞえてタップ",
+  "description": "がめんのアイテムをぜんぶタップしよう！",
+  "entry_point": "start.html",
+  "thumbnail": "static/thumbnails/001_count_tap.jpg"
+}
