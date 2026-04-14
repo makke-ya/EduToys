@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>すくすく ぷれー</title>
+    
+    <!-- 外部ライブラリ (CDN) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
+
+    <!-- 共通CSS -->
+    <link rel="stylesheet" href="static/common/css/game_style.css">
+
+    <!-- フォント -->
+    <style>
+        body {
+            font-family: 'Hiragino Maru Gothic ProN', 'Rounded M+ 1c', 'Meiryo', sans-serif;
+        }
+        /* Tailwind設定の拡張 */
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'edu-bg': '#fdfaf0',
+                        'edu-text': '#5a4b41',
+                        'edu-orange': '#ff8c00',
+                        'edu-green': '#4caf50',
+                        'edu-pink': '#f48fb1',
+                    }
+                }
+            }
+        }
+    </style>
+</head>
+<body class="bg-edu-bg text-edu-text font-sans overflow-hidden select-none">
+    <div id="app" class="h-screen w-full flex flex-col items-center justify-center relative">
+        
+        <!-- ヘッダー (ホーム・シールちょう画面で表示) -->
+        <header v-if="currentView !== 'game'" class="w-full max-w-4xl px-6 py-4 flex justify-between items-center absolute top-0 z-10">
+            <h1 class="text-3xl font-bold text-edu-orange drop-shadow-sm">すくすく ぷれー</h1>
+            <button @click="showStickerBook" v-if="currentView === 'home'" class="edu-btn bg-edu-pink text-white px-6 py-3 rounded-full text-xl font-bold shadow-lg transform transition active:scale-95">
+                シールちょう
+            </button>
+            <button @click="showHome" v-if="currentView === 'sticker_book'" class="edu-btn bg-white text-edu-text px-6 py-3 rounded-full text-xl font-bold shadow-lg border-4 border-gray-200 transform transition active:scale-95">
+                ◀ もどる
+            </button>
+        </header>
+
+        <!-- メインコンテンツ -->
+        <main class="w-full max-w-4xl flex-1 flex flex-col pt-24 pb-8 px-4">
+            
+            <!-- ホームビュー (ゲーム選択) -->
+            <div v-show="currentView === 'home'" class="flex-1 flex flex-col">
+                <h2 class="text-2xl mb-6 text-center">あそぶゲームをえらんでね！</h2>
+                
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-6 overflow-y-auto pb-8 p-2">
+                    <div v-for="game in games" :key="game.id" @click="loadGame(game.id)" class="bg-white rounded-3xl p-4 shadow-md border-4 border-gray-100 cursor-pointer transform transition hover:-translate-y-1 active:scale-95 flex flex-col items-center justify-center aspect-square">
+                        <div class="w-24 h-24 bg-gray-200 rounded-2xl mb-4 flex items-center justify-center text-gray-400">
+                            <!-- 本来はimgタグでサムネイル表示 -->
+                            がぞう
+                        </div>
+                        <span class="text-lg font-bold text-center">{{ game.name }}</span>
+                        <span class="text-sm bg-edu-orange text-white px-3 py-1 rounded-full mt-2">{{ game.category }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- シールちょうビュー -->
+            <div v-show="currentView === 'sticker_book'" class="flex-1 flex flex-col items-center justify-center bg-white rounded-3xl border-8 border-edu-green shadow-inner">
+                <h2 class="text-3xl font-bold text-edu-green mb-8">シールちょう</h2>
+                <p class="text-xl">あつめたシールがここにひょうじされるよ</p>
+            </div>
+
+            <!-- ゲームプレイビュー (動的コンテナ) -->
+            <div v-show="currentView === 'game'" class="flex-1 w-full max-w-2xl mx-auto flex flex-col relative">
+                <!-- もどるボタン (ゲーム外レイヤー) -->
+                <button @click="showHome" class="absolute -top-16 left-0 edu-btn bg-white text-edu-text px-4 py-2 rounded-full text-lg font-bold shadow border-4 border-gray-200 z-50 active:scale-95">
+                    ◀ もどる
+                </button>
+
+                <!-- ゲームUIコンテナ (DOM) -->
+                <div id="game-ui-container" class="absolute inset-0 pointer-events-none z-10 flex flex-col">
+                    <!-- start.html のUI要素がここにロードされる -->
+                </div>
+
+                <!-- ゲームキャンバスコンテナ (PixiJS) -->
+                <div id="game-canvas-container" class="flex-1 w-full bg-white rounded-3xl overflow-hidden border-8 border-edu-orange shadow-lg relative z-0 pointer-events-auto">
+                    <!-- PixiJSのCanvasがここに展開される -->
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- メインロジック -->
+    <script src="js/main.js"></script>
+</body>
+</html>

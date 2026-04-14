@@ -1,0 +1,52 @@
+/* static/common/css/game_style.css */
+
+/* ぷっくりした3Dボタンの基本スタイル */
+.edu-btn {
+    position: relative;
+    border: none;
+    outline: none;
+    transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.15), 0 8px 10px rgba(0, 0, 0, 0.1);
+}
+
+.edu-btn:active {
+    transform: translateY(4px) scale(0.95);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.15), 0 4px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* 揺れるアニメーション (不正解時など) */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px) rotate(-2deg); }
+    50% { transform: translateX(5px) rotate(2deg); }
+    75% { transform: translateX(-5px) rotate(-2deg); }
+}
+
+.animate-shake {
+    animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+/* ポップアップアニメーション (正解時、表示時など) */
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    40% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.animate-pop-in {
+    animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* 背景パターン (微細なドット) */
+body.bg-edu-bg {
+    background-image: radial-gradient(#e5dfc9 2px, transparent 2px);
+    background-size: 30px 30px;
+}
+
+/* キャンバスコンテナ内のタッチアクション制御（誤スクロール防止） */
+#game-canvas-container canvas {
+    touch-action: none;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
