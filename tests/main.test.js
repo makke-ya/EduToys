@@ -54,4 +54,31 @@ describe('EduToys main.js', () => {
         window.EduToys.init();
         expect(window.Vue.createApp).toHaveBeenCalled();
     });
+
+    it('should reset audio state on cleanup', () => {
+        window.EduToys.audio.init();
+
+        expect(window.EduToys.audio.initialized).toBe(true);
+        expect(window.EduToys.audio.bgm).toBeDefined();
+
+        window.EduToys.cleanupGame();
+
+        expect(window.Howler.unload).toHaveBeenCalled();
+        expect(window.EduToys.audio.initialized).toBe(false);
+        expect(window.EduToys.audio.bgm).toBeNull();
+        expect(window.EduToys.audio.seTap).toBeNull();
+        expect(window.EduToys.audio.seTransition).toBeNull();
+    });
+
+    it('should recreate audio objects after cleanup when playing BGM again', () => {
+        window.EduToys.audio.init();
+        const firstBgm = window.EduToys.audio.bgm;
+
+        window.EduToys.cleanupGame();
+        window.EduToys.audio.playBGM();
+
+        expect(window.EduToys.audio.initialized).toBe(true);
+        expect(window.EduToys.audio.bgm).not.toBe(firstBgm);
+        expect(window.EduToys.audio.bgm.play).toHaveBeenCalled();
+    });
 });

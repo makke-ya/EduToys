@@ -17,6 +17,12 @@ window.EduToys = {
             this.seTransition = new window.Howl({ src: ['static/sounds/staging/短い音-フワ.mp3'], volume: 0.8 });
             this.initialized = true;
         },
+        reset() {
+            this.bgm = null;
+            this.seTap = null;
+            this.seTransition = null;
+            this.initialized = false;
+        },
         playBGM() {
             if (!this.initialized) this.init();
             if (this.bgm && !this.bgm.playing()) this.bgm.play();
@@ -91,24 +97,61 @@ window.EduToys = {
         this.vueApp = window.Vue.createApp(App).mount('#app');
     },
 
-    loadGame(gameId) {
-        console.log(`Loading game: ${gameId}`);
-        // 1. game.jsonをfetch (モック実装)
-        // 2. start.htmlをfetchして #game-ui-container に挿入
-        // 3. PixiJS の初期化など
+    async loadGame(gameId) {
+        console.log(`[DEBUG] loadGame started for: ${gameId}`);
+        const uiContainer = document.getElementById('game-ui-container');
+        const canvasContainer = document.getElementById('game-canvas-container');
+        
+        if (!uiContainer || !canvasContainer) {
+            console.error('[DEBUG] Game containers not found');
+            return;
+        }
 
-        const container = document.getElementById('game-canvas-container');
-        if (container && window.PIXI) {
-             // PixiJSのモック初期化（実際のゲーム側で初期化される想定だがプレースホルダーとして）
-             /*
-             this.pixiApp = new window.PIXI.Application({
-                 resizeTo: container,
-                 backgroundColor: 0xffffff,
-                 resolution: window.devicePixelRatio || 1,
-                 autoDensity: true,
-             });
-             container.appendChild(this.pixiApp.view);
-             */
+        try {
+            console.log(`[DEBUG] Fetching: games/${gameId}/start.html`);
+            const response = await fetch(`games/${gameId}/start.html`);
+            console.log(`[DEBUG] Fetch response status: ${response.status}`);
+            if (!response.ok) throw new Error(`Failed to load game HTML: ${response.status}`);
+            
+            const html = await response.text();
+            console.log(`[DEBUG] HTML length: ${html.length}`);
+            
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            uiContainer.innerHTML = '';
+            let nodeCount = 0;
+            Array.from(doc.body.childNodes).forEach(node => {
+                if (node.tagName !== 'SCRIPT') {
+                    uiContainer.appendChild(node.cloneNode(true));
+                    nodeCount++;
+                }
+            });
+            console.log(`[DEBUG] Injected ${nodeCount} nodes into uiContainer`);
+
+            const scripts = doc.querySelectorAll('script');
+            console.log(`[DEBUG] Found ${scripts.length} scripts`);
+            for (const script of scripts) {
+                const newScript = document.createElement('script');
+                if (script.src) {
+                    console.log(`[DEBUG] Executing external script: ${script.src}`);
+                    // キャッシュ回避のためにタイムスタンプを付与
+                    const url = new URL(script.src, window.location.href);
+                    url.searchParams.set('t', Date.now());
+                    newScript.src = url.toString();
+                } else {
+                    console.log(`[DEBUG] Executing inline script`);
+                    newScript.textContent = script.textContent;
+                }
+                document.body.appendChild(newScript);
+                newScript.dataset.gameScript = gameId;
+            }
+            console.log(`[DEBUG] loadGame completed successfully`);
+
+        } catch (error) {
+            console.error('[DEBUG] Error loading game:', error);
+            alert('ゲームの読み込みに失敗しました。');
+            if (this.vueApp) this.vueApp.showHome();
         }
     },
 
@@ -117,7 +160,11 @@ window.EduToys = {
         
         // PixiJSのクリーンアップ
         if (this.pixiApp) {
-            this.pixiApp.destroy(true, { children: true, texture: true, baseTexture: true });
+            try {
+                this.pixiApp.destroy(true, { children: true, texture: true, baseTexture: true });
+            } catch (e) {
+                console.warn('PixiJS destroy error:', e);
+            }
             this.pixiApp = null;
         }
 
@@ -125,11 +172,16 @@ window.EduToys = {
         if (window.Howler) {
             window.Howler.unload();
         }
+        this.audio.reset();
 
         // GSAPのクリーンアップ
         if (window.gsap) {
             window.gsap.killTweensOf("*");
         }
+
+        // 動的に追加したスクリプトの削除
+        const scripts = document.querySelectorAll('script[data-game-script]');
+        scripts.forEach(s => s.remove());
 
         // UIコンテナのクリア
         const uiContainer = document.getElementById('game-ui-container');
