@@ -1,0 +1,40 @@
+{
+  "stickers": [
+    { "id": "animals_rabbit", "name": "うさぎ", "category": "animals", "path": "static/stickers/animals/rabbit.svg" },
+    { "id": "animals_cat", "name": "ねこ", "category": "animals", "path": "static/stickers/animals/cat.svg" },
+    { "id": "animals_dog", "name": "いぬ", "category": "animals", "path": "static/stickers/animals/dog.svg" },
+    { "id": "animals_elephant", "name": "ぞう", "category": "animals", "path": "static/stickers/animals/elephant.svg" },
+    { "id": "food_apple", "name": "りんご", "category": "food", "path": "static/stickers/food/apple.svg" },
+    { "id": "food_cake", "name": "けーき", "category": "food", "path": "static/stickers/food/cake.svg" },
+    { "id": "food_icecream", "name": "あいす", "category": "food", "path": "static/stickers/food/icecream.svg" },
+    { "id": "food_onigiri", "name": "おにぎり", "category": "food", "path": "static/stickers/food/onigiri.svg" },
+    { "id": "vehicles_car", "name": "くるま", "category": "vehicles", "path": "static/stickers/vehicles/car.svg" },
+    { "id": "vehicles_train", "name": "でんしゃ", "category": "vehicles", "path": "static/stickers/vehicles/train.svg" },
+    { "id": "vehicles_airplane", "name": "ひこうき", "category": "vehicles", "path": "static/stickers/vehicles/airplane.svg" },
+    { "id": "vehicles_ship", "name": "ふね", "category": "vehicles", "path": "static/stickers/vehicles/ship.svg" },
+    { "id": "nature_flower", "name": "はな", "category": "nature", "path": "static/stickers/nature/flower.svg" },
+    { "id": "nature_star", "name": "ほし", "category": "nature", "path": "static/stickers/nature/star.svg" },
+    { "id": "nature_rainbow", "name": "にじ", "category": "nature", "path": "static/stickers/nature/rainbow.svg" },
+    { "id": "nature_sun", "name": "おひさま", "category": "nature", "path": "static/stickers/nature/sun.svg" }
+  ],
+  "gameStickerPools": {
+    "001_count_tap": [
+      "animals_rabbit",
+      "animals_cat",
+      "animals_dog",
+      "animals_elephant",
+      "food_apple",
+      "food_cake",
+      "food_icecream",
+      "food_onigiri",
+      "vehicles_car",
+      "vehicles_train",
+      "vehicles_airplane",
+      "vehicles_ship",
+      "nature_flower",
+      "nature_star",
+      "nature_rainbow",
+      "nature_sun"
+    ]
+  }
+}

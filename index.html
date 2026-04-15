@@ -14,6 +14,7 @@
 
     <!-- 共通CSS -->
     <link rel="stylesheet" href="static/common/css/game_style.css">
+    <link rel="stylesheet" href="static/common/css/sticker.css">
 
     <!-- フォント -->
     <style>
@@ -88,9 +89,71 @@
             </div>
 
             <!-- シールちょうビュー -->
-            <div v-show="currentView === 'sticker_book'" class="flex-1 flex flex-col items-center justify-center bg-white rounded-3xl border-8 border-edu-green shadow-inner">
-                <h2 class="text-3xl font-bold text-edu-green mb-8">シールちょう</h2>
-                <p class="text-xl">あつめたシールがここにひょうじされるよ</p>
+            <div
+                v-show="currentView === 'sticker_book'"
+                class="sticker-book-shell flex-1 flex flex-col"
+                @pointermove="onStickerBookPointerMove"
+                @pointerup="onStickerBookPointerUp"
+                @pointercancel="cancelStickerDrag"
+                @pointerleave="cancelStickerDrag"
+            >
+                <div class="sticker-book-panel flex-1 flex flex-col">
+                    <div class="sticker-book-header">
+                        <div>
+                            <h2 class="text-3xl md:text-4xl font-bold text-edu-green">シールちょう</h2>
+                            <p class="text-lg md:text-xl text-edu-text mt-2">あつめた シールを ぺたっと はろう！</p>
+                        </div>
+                        <div class="sticker-page-chip">{{ currentStickerPage + 1 }} / {{ stickerPageCount }} ぺーじ</div>
+                    </div>
+
+                    <div class="sticker-board-row">
+                        <button type="button" @click="changeStickerPage(-1)" class="sticker-nav-btn edu-btn">◀</button>
+
+                        <div ref="stickerBoard" class="sticker-board">
+                            <div v-if="!placedStickers.length" class="sticker-book-empty">
+                                まだ はっていないよ
+                            </div>
+
+                            <div
+                                v-for="sticker in placedStickers"
+                                :key="sticker.key"
+                                class="sticker-board__item"
+                                :style="placedStickerStyle(sticker)"
+                            >
+                                <img :src="sticker.path" :alt="sticker.name" class="sticker-board__image">
+                            </div>
+
+                            <div class="sticker-book-hint">
+                                {{ draggingSticker ? 'たいしに はなして はろう！' : 'したの シールを つかんで はろう！' }}
+                            </div>
+                        </div>
+
+                        <button type="button" @click="changeStickerPage(1)" class="sticker-nav-btn edu-btn">▶</button>
+                    </div>
+
+                    <p v-if="stickerCatalogError" class="sticker-book-error">{{ stickerCatalogError }}</p>
+
+                    <div class="sticker-tray">
+                        <div class="sticker-tray__header">まだ はっていない シール</div>
+                        <div v-if="availableStickerEntries.length" class="sticker-tray__grid">
+                            <button
+                                v-for="sticker in availableStickerEntries"
+                                :key="sticker.key"
+                                type="button"
+                                class="sticker-tray__item edu-btn"
+                                @pointerdown="startStickerDrag(sticker, $event)"
+                            >
+                                <img :src="sticker.path" :alt="sticker.name" class="sticker-tray__image">
+                                <span class="sticker-tray__label">{{ sticker.name }}</span>
+                            </button>
+                        </div>
+                        <p v-else class="sticker-tray__empty">あたらしい シールを あつめてね！</p>
+                    </div>
+                </div>
+
+                <div v-if="dragPreview.visible" class="sticker-drag-preview" :style="dragPreviewStyle">
+                    <img :src="dragPreview.path" :alt="dragPreview.name" class="sticker-drag-preview__image">
+                </div>
             </div>
 
             <!-- ゲームプレイビュー (動的コンテナ) -->
@@ -115,6 +178,8 @@
     </div>
 
     <!-- メインロジック -->
+    <script src="js/storage.js"></script>
+    <script src="js/sticker-book.js"></script>
     <script src="js/main.js"></script>
 </body>
 </html>

@@ -49,6 +49,11 @@
     const voiceClear = new Howl({ src: ['games/001_count_tap/voices/clear.mp3'] });
     const sePop = new Howl({ src: ['static/sounds/staging/短い音-ポヨン.mp3'], volume: 0.8 }); // 既存の音を流用
     const seClear = new Howl({ src: ['static/sounds/staging/ジャジャーン1.mp3'], volume: 0.6 }); // 既存の音を流用
+    const seReward = new Howl({ src: ['static/sounds/system/完了3.mp3'], volume: 0.78 });
+
+    const rewardState = {
+        selectedStickerId: null
+    };
 
     function drawCloud(layer, x, y, scale) {
         const cloud = new window.PIXI.Graphics();
@@ -129,6 +134,105 @@
 
         app.stage.addChildAt(layer, 0);
         state.backgroundLayer = layer;
+    }
+
+    function resetRewardOverlay() {
+        rewardState.selectedStickerId = null;
+
+        const optionsContainer = document.getElementById('reward-sticker-options');
+        const rewardMessage = document.getElementById('reward-message');
+        const actionRow = document.getElementById('reward-action-row');
+
+        if (optionsContainer) {
+            optionsContainer.innerHTML = '';
+        }
+        if (rewardMessage) {
+            rewardMessage.textContent = 'ごほうび シールを えらんでね！';
+        }
+        if (actionRow) {
+            actionRow.classList.add('hidden');
+        }
+    }
+
+    function hideOverlay() {
+        const overlay = document.getElementById('clear-overlay');
+        overlay.classList.remove('opacity-100');
+        overlay.classList.add('opacity-0');
+
+        setTimeout(() => {
+            overlay.classList.remove('flex');
+            overlay.classList.add('hidden');
+            resetRewardOverlay();
+        }, 500);
+    }
+
+    function handleRewardSelected(sticker, selectedButton) {
+        if (rewardState.selectedStickerId) {
+            return;
+        }
+
+        rewardState.selectedStickerId = sticker.id;
+        const rewardMessage = document.getElementById('reward-message');
+        const actionRow = document.getElementById('reward-action-row');
+        const optionButtons = document.querySelectorAll('.reward-sticker-option');
+
+        try {
+            if (window.EduToys && window.EduToys.storage) {
+                window.EduToys.storage.awardSticker(sticker.id);
+            } else {
+                throw new Error('EduToys storage is not available.');
+            }
+
+            seReward.play();
+            optionButtons.forEach((button) => button.classList.remove('reward-sticker-option--selected'));
+            selectedButton.classList.add('reward-sticker-option--selected');
+            rewardMessage.textContent = `${sticker.name} を げっと！`;
+        } catch (error) {
+            console.error('Failed to award sticker:', error);
+            rewardMessage.textContent = 'シールを ほぞん できなかったよ';
+        }
+
+        actionRow.classList.remove('hidden');
+    }
+
+    async function populateRewardOptions() {
+        const optionsContainer = document.getElementById('reward-sticker-options');
+        const rewardMessage = document.getElementById('reward-message');
+        const actionRow = document.getElementById('reward-action-row');
+
+        resetRewardOverlay();
+
+        if (!window.EduToys || !window.EduToys.stickerBook) {
+            rewardMessage.textContent = 'シールを よみこめなかったよ';
+            actionRow.classList.remove('hidden');
+            return;
+        }
+
+        try {
+            const options = await window.EduToys.stickerBook.getRewardOptions('001_count_tap', 3);
+
+            if (!options.length) {
+                rewardMessage.textContent = 'シールを よみこめなかったよ';
+                actionRow.classList.remove('hidden');
+                return;
+            }
+
+            options.forEach((sticker) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'reward-sticker-option edu-btn';
+                button.innerHTML = `
+                    <img src="${sticker.path}" alt="${sticker.name}">
+                    <span class="text-lg font-bold">${sticker.name}</span>
+                `;
+                button.addEventListener('click', () => handleRewardSelected(sticker, button));
+                optionsContainer.appendChild(button);
+            });
+        } catch (error) {
+            console.error('Failed to prepare reward stickers:', error);
+            rewardMessage.textContent = 'シールを よみこめなかったよ';
+            actionRow.classList.remove('hidden');
+        }
     }
 
     // ゲームの初期化
@@ -263,18 +367,13 @@
             overlay.classList.remove('opacity-0');
             overlay.classList.add('opacity-100');
         }, 100);
+
+        populateRewardOptions();
     }
 
     // イベントリスナーの登録
     document.getElementById('btn-replay').addEventListener('click', () => {
-        // オーバーレイを隠す
-        const overlay = document.getElementById('clear-overlay');
-        overlay.classList.remove('opacity-100');
-        overlay.classList.add('opacity-0');
-        setTimeout(() => {
-            overlay.classList.remove('flex');
-            overlay.classList.add('hidden');
-        }, 500);
+        hideOverlay();
 
         // ステージをクリアして再初期化
         app.stage.removeChildren();
@@ -284,22 +383,9 @@
         initGame();
     });
 
-    document.getElementById('btn-to-home').addEventListener('click', () => {
-        if (window.EduToys && window.EduToys.vueApp) {
-            // Vueコンポーネントのメソッドを呼び出してホームに戻る
-            // ※実際には $root などを経由して showHome を呼ぶ
-            const el = document.getElementById('app');
-            if (el && el.__vue_app__) {
-                // Vue 3 のコンポーネントインスタンスにアクセスするハック的アプローチ
-                // main.js側で expose などの対処が必要になる場合あり
-                if (window.EduToys.vueApp._instance.ctx.showHome) {
-                    window.EduToys.vueApp._instance.ctx.showHome();
-                }
-            } else {
-                // フォールバック
-                 window.EduToys.cleanupGame();
-                 window.location.reload();
-            }
+    document.getElementById('btn-open-sticker-book').addEventListener('click', () => {
+        if (window.EduToys && typeof window.EduToys.showStickerBook === 'function') {
+            window.EduToys.showStickerBook();
         }
     });
 

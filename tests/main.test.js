@@ -9,6 +9,7 @@ describe('EduToys main.js', () => {
     beforeEach(() => {
         // Setup simple DOM
         document.body.innerHTML = '<div id="app"></div>';
+        global.fetch = jest.fn();
         
         // Mock external libraries
         window.Vue = {
@@ -39,6 +40,8 @@ describe('EduToys main.js', () => {
 
         // Load main.js
         jest.isolateModules(() => {
+            require('../js/storage.js');
+            require('../js/sticker-book.js');
             require('../js/main.js');
         });
     });
@@ -80,5 +83,14 @@ describe('EduToys main.js', () => {
         expect(window.EduToys.audio.initialized).toBe(true);
         expect(window.EduToys.audio.bgm).not.toBe(firstBgm);
         expect(window.EduToys.audio.bgm.play).toHaveBeenCalled();
+    });
+
+    it('should delegate sticker book navigation through the mounted Vue app', () => {
+        const showStickerBook = jest.fn();
+        window.EduToys.vueApp = { showStickerBook };
+
+        window.EduToys.showStickerBook();
+
+        expect(showStickerBook).toHaveBeenCalled();
     });
 });

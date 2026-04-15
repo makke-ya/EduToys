@@ -11,13 +11,15 @@
 
     <!-- クリア時オーバーレイ -->
     <div id="clear-overlay" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex-col items-center justify-center hidden pointer-events-auto transition-opacity duration-500 opacity-0">
-        <h2 class="text-5xl font-bold text-edu-orange mb-12 drop-shadow-md animate-bounce">クリア！</h2>
-        <div class="flex gap-8">
+        <h2 class="text-5xl font-bold text-edu-orange mb-6 drop-shadow-md animate-bounce">クリア！</h2>
+        <p id="reward-message" class="text-2xl text-edu-text font-bold mb-6 text-center px-6">ごほうび シールを えらんでね！</p>
+        <div id="reward-sticker-options" class="reward-sticker-grid"></div>
+        <div id="reward-action-row" class="reward-action-row hidden">
+            <button id="btn-open-sticker-book" class="edu-btn bg-edu-pink text-white px-8 py-4 rounded-full text-2xl font-bold shadow-lg">
+                シールちょう
+            </button>
             <button id="btn-replay" class="edu-btn bg-white text-edu-orange px-8 py-4 rounded-full text-2xl font-bold shadow-lg border-4 border-edu-orange">
                 もういっかい！
-            </button>
-            <button id="btn-to-home" class="edu-btn bg-edu-green text-white px-8 py-4 rounded-full text-2xl font-bold shadow-lg">
-                ホームにもどる
             </button>
         </div>
     </div>
