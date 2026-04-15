@@ -39,9 +39,16 @@
 </head>
 <body class="bg-edu-bg text-edu-text font-sans overflow-hidden select-none">
     <div id="app" class="h-screen w-full flex flex-col items-center justify-center relative">
+        <div class="app-background pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+            <div class="app-background__orb app-background__orb--orange"></div>
+            <div class="app-background__orb app-background__orb--green"></div>
+            <div class="app-background__orb app-background__orb--pink"></div>
+            <div class="app-background__cloud app-background__cloud--left"></div>
+            <div class="app-background__cloud app-background__cloud--right"></div>
+        </div>
         
         <!-- スタート画面 (AudioContext許可のため) -->
-        <div v-if="!isStarted" @click="startGame" class="absolute inset-0 bg-edu-bg z-50 flex flex-col items-center justify-center cursor-pointer">
+        <div v-if="!isStarted" @click="startGame" class="start-screen absolute inset-0 z-50 flex flex-col items-center justify-center cursor-pointer">
             <h1 class="text-4xl font-bold text-edu-orange mb-8 animate-bounce">すくすく ぷれー</h1>
             <button class="edu-btn bg-edu-green text-white px-8 py-4 rounded-full text-2xl font-bold animate-pulse pointer-events-none">
                 はじめる
@@ -60,19 +67,22 @@
         </header>
 
         <!-- メインコンテンツ -->
-        <main class="w-full max-w-4xl flex-1 flex flex-col pt-24 pb-8 px-4">
+        <main class="w-full max-w-4xl flex-1 flex flex-col pt-24 pb-8 px-4 relative z-10">
             
             <!-- ホームビュー (ゲーム選択) -->
-            <div v-show="currentView === 'home'" class="flex-1 flex flex-col">
-                <h2 class="text-2xl mb-6 text-center">あそぶゲームをえらんでね！</h2>
-                
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-6 overflow-y-auto pb-8 p-2">
-                    <div v-for="game in games" :key="game.id" @click="loadGame(game.id)" class="bg-white rounded-3xl p-4 shadow-md border-4 border-gray-100 cursor-pointer transform transition hover:-translate-y-1 active:scale-95 flex flex-col items-center justify-center aspect-square">
-                        <div class="w-24 h-24 bg-orange-50 rounded-2xl mb-4 flex items-center justify-center overflow-hidden border-2 border-orange-100">
-                            <img :src="game.thumbnail" :alt="game.name" class="w-full h-full object-cover">
+            <div v-show="currentView === 'home'" class="flex-1 flex flex-col relative">
+                <div class="home-panel" aria-hidden="true"></div>
+                <div class="relative flex-1 flex flex-col p-4 md:p-6">
+                    <h2 class="text-2xl md:text-3xl mb-6 text-center font-bold">あそぶゲームをえらんでね！</h2>
+                    
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-6 overflow-y-auto pb-4 p-2">
+                        <div v-for="game in games" :key="game.id" @click="loadGame(game.id)" class="bg-white/95 rounded-3xl p-4 shadow-md border-4 border-white cursor-pointer transform transition hover:-translate-y-1 active:scale-95 flex flex-col items-center justify-center aspect-square">
+                            <div class="w-24 h-24 bg-orange-50 rounded-2xl mb-4 flex items-center justify-center overflow-hidden border-2 border-orange-100">
+                                <img :src="game.thumbnail" :alt="game.name" class="w-full h-full object-cover">
+                            </div>
+                            <span class="text-lg font-bold text-center">{{ game.name }}</span>
+                            <span class="text-sm bg-edu-orange text-white px-3 py-1 rounded-full mt-2">{{ game.category }}</span>
                         </div>
-                        <span class="text-lg font-bold text-center">{{ game.name }}</span>
-                        <span class="text-sm bg-edu-orange text-white px-3 py-1 rounded-full mt-2">{{ game.category }}</span>
                     </div>
                 </div>
             </div>
