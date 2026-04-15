@@ -41,6 +41,11 @@
     for(let i=1; i<=10; i++) {
         voices[i] = new Howl({ src: [`games/001_count_tap/voices/${i}.mp3`] }); // エラーにならないよう事前準備
     }
+    const bgmGame = new Howl({
+        src: ['static/sounds/bgm/Pops_01.mp3'],
+        loop: true,
+        volume: 0.22
+    });
     const voiceClear = new Howl({ src: ['games/001_count_tap/voices/clear.mp3'] });
     const sePop = new Howl({ src: ['static/sounds/staging/短い音-ポヨン.mp3'], volume: 0.8 }); // 既存の音を流用
     const seClear = new Howl({ src: ['static/sounds/staging/ジャジャーン1.mp3'], volume: 0.6 }); // 既存の音を流用
@@ -306,6 +311,9 @@
                 await window.PIXI.Assets.init();
             }
             await window.PIXI.Assets.load([...state.textures, state.backgroundTexture]);
+            if (!bgmGame.playing()) {
+                bgmGame.play();
+            }
             drawBackground();
             initGame();
         } catch (e) {
