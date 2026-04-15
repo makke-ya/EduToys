@@ -1,10 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
-  <circle cx="60" cy="60" r="50" fill="#fff9f4" stroke="#efcfaa" stroke-width="4"/>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="34%" r="62%">
+      <stop offset="0" stop-color="#fffaf2"/>
+      <stop offset="1" stop-color="#ffe5bf"/>
+    </radialGradient>
+  </defs>
+  <circle cx="60" cy="60" r="52" fill="url(#bg)" stroke="#efcfaa" stroke-width="4"/>
+  <circle cx="60" cy="62" r="40" fill="#fffdf8" opacity=".92"/>
   <rect x="34" y="38" width="52" height="38" rx="10" fill="#81c784" stroke="#8c6d63" stroke-width="4"/>
   <rect x="42" y="46" width="14" height="12" rx="4" fill="#dff4ff" stroke="#8c6d63" stroke-width="3"/>
   <rect x="62" y="46" width="14" height="12" rx="4" fill="#dff4ff" stroke="#8c6d63" stroke-width="3"/>
-  <path d="M48 32 H60 V38 H48 Z" fill="#ff8c00" stroke="#8c6d63" stroke-width="3"/>
+  <path d="M48 32H60V38H48Z" fill="#ff8c00" stroke="#8c6d63" stroke-width="3"/>
   <circle cx="46" cy="82" r="7" fill="#4b5563" stroke="#8c6d63" stroke-width="4"/>
   <circle cx="74" cy="82" r="7" fill="#4b5563" stroke="#8c6d63" stroke-width="4"/>
-  <path d="M32 92 H88" stroke="#8c6d63" stroke-width="4" stroke-linecap="round"/>
+  <path d="M32 92H88" stroke="#8c6d63" stroke-width="4" stroke-linecap="round"/>
+  <path d="M22 54H30" stroke="#ffd56f" stroke-width="4" stroke-linecap="round"/>
 </svg>

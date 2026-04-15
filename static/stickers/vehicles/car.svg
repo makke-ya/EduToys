@@ -1,7 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
-  <circle cx="60" cy="60" r="50" fill="#f7fbff" stroke="#c7ddf3" stroke-width="4"/>
-  <path d="M34 68 H86 Q90 68 90 72 V80 H30 V72 Q30 68 34 68 Z" fill="#ffb347" stroke="#8c6d63" stroke-width="4" stroke-linejoin="round"/>
-  <path d="M42 68 L52 54 H76 L84 68 Z" fill="#9fd3ff" stroke="#8c6d63" stroke-width="4" stroke-linejoin="round"/>
-  <circle cx="44" cy="82" r="8" fill="#4b5563" stroke="#8c6d63" stroke-width="4"/>
-  <circle cx="76" cy="82" r="8" fill="#4b5563" stroke="#8c6d63" stroke-width="4"/>
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="34%" r="64%">
+      <stop offset="0" stop-color="#f8fcff"/>
+      <stop offset="1" stop-color="#d9efff"/>
+    </radialGradient>
+    <linearGradient id="car" x1="32" y1="60" x2="86" y2="86" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffc365"/>
+      <stop offset="1" stop-color="#ff8c00"/>
+    </linearGradient>
+  </defs>
+  <circle cx="60" cy="60" r="52" fill="url(#bg)" stroke="#c7ddf3" stroke-width="4"/>
+  <circle cx="60" cy="62" r="40" fill="#ffffff" opacity=".92"/>
+  <path d="M34 70H86C89 70 92 73 92 76V82H28V76C28 73 31 70 34 70Z" fill="url(#car)" stroke="#8c6d63" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M42 70L52 56H76L84 70Z" fill="#bfe4ff" stroke="#8c6d63" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="44" cy="82" r="8" fill="#495463" stroke="#8c6d63" stroke-width="4"/>
+  <circle cx="76" cy="82" r="8" fill="#495463" stroke="#8c6d63" stroke-width="4"/>
+  <path d="M24 76H16M24 84H12" stroke="#9bd6ff" stroke-width="4" stroke-linecap="round"/>
 </svg>

@@ -74,4 +74,25 @@ describe('EduToys stickerBook helpers', () => {
         expect(window.EduToys.stickerBook.pointToPercent(300, 150, board)).toEqual({ x: 50, y: 50 });
         expect(window.EduToys.stickerBook.pointToPercent(40, 400, board)).toEqual({ x: 0, y: 100 });
     });
+
+    it('should detect whether a pointer is inside the board', () => {
+        jest.isolateModules(() => {
+            require('../js/sticker-book.js');
+        });
+
+        const board = {
+            getBoundingClientRect: () => ({
+                left: 100,
+                top: 50,
+                right: 500,
+                bottom: 250,
+                width: 400,
+                height: 200
+            })
+        };
+
+        expect(window.EduToys.stickerBook.isPointInsideElement(120, 90, board)).toBe(true);
+        expect(window.EduToys.stickerBook.isPointInsideElement(40, 90, board)).toBe(false);
+        expect(window.EduToys.stickerBook.isPointInsideElement(120, 290, board)).toBe(false);
+    });
 });

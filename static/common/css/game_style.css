@@ -48,13 +48,13 @@ body.bg-edu-bg {
 .app-background {
     background:
         linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.08)),
-        url("../../images/home_background.svg") center center / cover no-repeat;
+        url("../../images/home_background.svg") center top / cover no-repeat;
 }
 
 .start-screen {
     background:
         linear-gradient(180deg, rgba(255, 248, 232, 0.72), rgba(253, 250, 240, 0.82)),
-        url("../../images/home_background.svg") center center / cover no-repeat;
+        url("../../images/home_background.svg") center top / cover no-repeat;
 }
 
 .app-background__orb,

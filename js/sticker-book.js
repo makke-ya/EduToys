@@ -14,6 +14,17 @@
         return Math.min(Math.max(value, min), max);
     }
 
+    function pointInRect(clientX, clientY, rect) {
+        if (!rect) {
+            return false;
+        }
+
+        return clientX >= rect.left
+            && clientX <= rect.right
+            && clientY >= rect.top
+            && clientY <= rect.bottom;
+    }
+
     function shuffle(items) {
         const nextItems = [...items];
 
@@ -95,6 +106,14 @@
                 x: Math.round(clamp(x, 0, 100)),
                 y: Math.round(clamp(y, 0, 100))
             };
+        },
+
+        isPointInsideElement(clientX, clientY, element) {
+            if (!element || typeof element.getBoundingClientRect !== 'function') {
+                return false;
+            }
+
+            return pointInRect(clientX, clientY, element.getBoundingClientRect());
         },
 
         randomRotation() {

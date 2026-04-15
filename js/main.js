@@ -123,6 +123,7 @@
                         currentStickerPage: 0,
                         stickerCatalogError: '',
                         draggingSticker: null,
+                        dragPointerId: null,
                         dragPreview: {
                             visible: false,
                             x: 0,
@@ -174,6 +175,18 @@
                             top: `${this.dragPreview.y}px`
                         };
                     }
+                },
+
+                mounted() {
+                    window.addEventListener('pointermove', this.onGlobalPointerMove);
+                    window.addEventListener('pointerup', this.onGlobalPointerUp);
+                    window.addEventListener('pointercancel', this.onGlobalPointerCancel);
+                },
+
+                beforeUnmount() {
+                    window.removeEventListener('pointermove', this.onGlobalPointerMove);
+                    window.removeEventListener('pointerup', this.onGlobalPointerUp);
+                    window.removeEventListener('pointercancel', this.onGlobalPointerCancel);
                 },
 
                 methods: {
@@ -279,7 +292,16 @@
                         }
 
                         event.preventDefault();
+                        if (event.currentTarget && typeof event.currentTarget.setPointerCapture === 'function') {
+                            try {
+                                event.currentTarget.setPointerCapture(event.pointerId);
+                            } catch (error) {
+                                // setPointerCapture can fail on some browsers; window listeners still handle drag.
+                            }
+                        }
+
                         this.draggingSticker = sticker;
+                        this.dragPointerId = typeof event.pointerId === 'number' ? event.pointerId : null;
                         this.dragPreview = {
                             visible: true,
                             x: event.clientX,
@@ -290,8 +312,20 @@
                         window.EduToys.audio.playSE('tap');
                     },
 
+                    onGlobalPointerMove(event) {
+                        if (this.currentView !== 'sticker_book') {
+                            return;
+                        }
+
+                        this.onStickerBookPointerMove(event);
+                    },
+
                     onStickerBookPointerMove(event) {
                         if (!this.draggingSticker) {
+                            return;
+                        }
+
+                        if (this.dragPointerId !== null && event.pointerId !== this.dragPointerId) {
                             return;
                         }
 
@@ -303,8 +337,25 @@
                         };
                     },
 
+                    async onGlobalPointerUp(event) {
+                        if (!this.draggingSticker) {
+                            return;
+                        }
+
+                        if (this.currentView !== 'sticker_book') {
+                            this.cancelStickerDrag();
+                            return;
+                        }
+
+                        await this.onStickerBookPointerUp(event);
+                    },
+
                     async onStickerBookPointerUp(event) {
                         if (!this.draggingSticker) {
+                            return;
+                        }
+
+                        if (this.dragPointerId !== null && event.pointerId !== this.dragPointerId) {
                             return;
                         }
 
@@ -313,12 +364,9 @@
                         const point = board && window.EduToys.stickerBook
                             ? window.EduToys.stickerBook.pointToPercent(event.clientX, event.clientY, board)
                             : null;
-                        const rect = board ? board.getBoundingClientRect() : null;
-                        const canPlace = rect
-                            && event.clientX >= rect.left
-                            && event.clientX <= rect.right
-                            && event.clientY >= rect.top
-                            && event.clientY <= rect.bottom;
+                        const canPlace = board && window.EduToys.stickerBook
+                            ? window.EduToys.stickerBook.isPointInsideElement(event.clientX, event.clientY, board)
+                            : false;
 
                         this.cancelStickerDrag();
 
@@ -339,8 +387,13 @@
                         }
                     },
 
+                    onGlobalPointerCancel() {
+                        this.cancelStickerDrag();
+                    },
+
                     cancelStickerDrag() {
                         this.draggingSticker = null;
+                        this.dragPointerId = null;
                         this.dragPreview = {
                             visible: false,
                             x: 0,

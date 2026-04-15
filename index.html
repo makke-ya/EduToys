@@ -38,8 +38,8 @@
         };
     </script>
 </head>
-<body class="bg-edu-bg text-edu-text font-sans overflow-hidden select-none">
-    <div id="app" class="h-screen w-full flex flex-col items-center justify-center relative">
+<body class="bg-edu-bg text-edu-text font-sans overflow-x-hidden select-none">
+    <div id="app" class="min-h-screen min-h-[100dvh] w-full flex flex-col items-center justify-start relative">
         <div class="app-background pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
             <div class="app-background__orb app-background__orb--orange"></div>
             <div class="app-background__orb app-background__orb--green"></div>
@@ -57,7 +57,7 @@
         </div>
 
         <!-- ヘッダー (ホーム・シールちょう画面で表示) -->
-        <header v-if="currentView !== 'game'" class="w-full max-w-4xl px-6 py-4 flex justify-between items-center absolute top-0 z-10">
+        <header v-if="currentView !== 'game'" class="w-full max-w-4xl px-6 py-4 flex justify-between items-center absolute top-0 z-40">
             <h1 class="text-3xl font-bold text-edu-orange drop-shadow-sm">すくすく ぷれー</h1>
             <button @click="showStickerBook" v-if="currentView === 'home'" class="edu-btn bg-edu-pink text-white px-6 py-3 rounded-full text-xl font-bold shadow-lg transform transition active:scale-95">
                 シールちょう
@@ -68,10 +68,10 @@
         </header>
 
         <!-- メインコンテンツ -->
-        <main class="w-full max-w-4xl flex-1 flex flex-col pt-24 pb-8 px-4 relative z-10">
+        <main class="w-full max-w-4xl flex-1 min-h-0 flex flex-col pt-24 pb-6 px-4 relative z-10">
             
             <!-- ホームビュー (ゲーム選択) -->
-            <div v-show="currentView === 'home'" class="flex-1 flex flex-col relative">
+            <div v-show="currentView === 'home'" class="flex-1 min-h-0 flex flex-col relative">
                 <div class="home-panel" aria-hidden="true"></div>
                 <div class="relative flex-1 flex flex-col p-4 md:p-6">
                     <h2 class="text-2xl md:text-3xl mb-6 text-center font-bold">あそぶゲームをえらんでね！</h2>
@@ -91,11 +91,7 @@
             <!-- シールちょうビュー -->
             <div
                 v-show="currentView === 'sticker_book'"
-                class="sticker-book-shell flex-1 flex flex-col"
-                @pointermove="onStickerBookPointerMove"
-                @pointerup="onStickerBookPointerUp"
-                @pointercancel="cancelStickerDrag"
-                @pointerleave="cancelStickerDrag"
+                class="sticker-book-shell flex-1 min-h-0 flex flex-col"
             >
                 <div class="sticker-book-panel flex-1 flex flex-col">
                     <div class="sticker-book-header">
