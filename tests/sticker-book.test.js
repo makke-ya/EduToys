@@ -10,7 +10,7 @@ describe('EduToys stickerBook helpers', () => {
 
     it('should load and cache the sticker catalog', async () => {
         const sampleCatalog = {
-            stickers: [{ id: 'nature_star', name: 'ほし', path: 'static/stickers/nature/star.svg' }],
+            stickers: [{ id: 'nature_star', name: 'ほし', path: 'static/stickers/nature/star.png' }],
             gameStickerPools: { '001_count_tap': ['nature_star'] }
         };
 
@@ -36,10 +36,10 @@ describe('EduToys stickerBook helpers', () => {
             ok: true,
             json: () => Promise.resolve({
                 stickers: [
-                    { id: 'nature_star', name: 'ほし', path: 'a.svg' },
-                    { id: 'nature_sun', name: 'おひさま', path: 'b.svg' },
-                    { id: 'food_apple', name: 'りんご', path: 'c.svg' },
-                    { id: 'animals_cat', name: 'ねこ', path: 'd.svg' }
+                    { id: 'nature_star', name: 'ほし', path: 'a.png' },
+                    { id: 'nature_sun', name: 'おひさま', path: 'b.png' },
+                    { id: 'food_apple', name: 'りんご', path: 'c.png' },
+                    { id: 'animals_cat', name: 'ねこ', path: 'd.png' }
                 ],
                 gameStickerPools: {
                     '001_count_tap': ['nature_star', 'nature_sun', 'food_apple', 'animals_cat']
