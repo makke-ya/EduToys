@@ -18,6 +18,7 @@ const titleAliases = new Map([
 function parseArgs(argv) {
     return {
         dryRun: argv.includes('--dry-run'),
+        repairExisting: argv.includes('--repair-existing'),
     };
 }
 
@@ -31,6 +32,45 @@ function parsePrompts(markdown) {
 
 function normalizeTitle(title) {
     return titleAliases.get(title) ?? title;
+}
+
+function getImageSize(imagePath) {
+    const dims = execFileSync('identify', ['-format', '%w %h', imagePath], { encoding: 'utf8' }).trim();
+    const [width, height] = dims.split(' ').map(Number);
+    return { width, height };
+}
+
+function normalizeToTransparentPng(sourcePath, targetPath) {
+    const { width, height } = getImageSize(sourcePath);
+    const workingTargetPath = sourcePath === targetPath
+        ? path.join(os.tmpdir(), `edutoys-sticker-normalized-${process.pid}-${Date.now()}.png`)
+        : targetPath;
+
+    execFileSync('convert', [
+        sourcePath,
+        '-alpha',
+        'set',
+        '-channel',
+        'RGBA',
+        '-fuzz',
+        '12%',
+        '-fill',
+        'none',
+        '-draw',
+        'color 0,0 floodfill',
+        '-draw',
+        `color 0,${height - 1} floodfill`,
+        '-draw',
+        `color ${width - 1},0 floodfill`,
+        '-draw',
+        `color ${width - 1},${height - 1} floodfill`,
+        workingTargetPath,
+    ], { stdio: 'ignore' });
+
+    if (workingTargetPath !== targetPath) {
+        fs.copyFileSync(workingTargetPath, targetPath);
+        fs.rmSync(workingTargetPath, { force: true });
+    }
 }
 
 function buildGenerationPlan() {
@@ -104,16 +144,10 @@ function writePng(targetPath, inlineData) {
     fs.mkdirSync(path.dirname(targetPath), { recursive: true });
     const mimeType = inlineData.mimeType ?? 'image/png';
     const buffer = Buffer.from(inlineData.data, 'base64');
-
-    if (mimeType === 'image/png') {
-        fs.writeFileSync(targetPath, buffer);
-        return;
-    }
-
     const tempExt = mimeType.split('/')[1] ?? 'img';
     const tempPath = path.join(os.tmpdir(), `edutoys-sticker-${process.pid}-${Date.now()}.${tempExt}`);
     fs.writeFileSync(tempPath, buffer);
-    execFileSync('convert', [tempPath, targetPath], { stdio: 'ignore' });
+    normalizeToTransparentPng(tempPath, targetPath);
     fs.rmSync(tempPath, { force: true });
 }
 
@@ -128,14 +162,20 @@ async function main() {
         return;
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-        throw new Error('GEMINI_API_KEY が設定されていません。');
-    }
-
     let failures = 0;
 
     for (const entry of plan) {
         try {
+            if (options.repairExisting) {
+                normalizeToTransparentPng(entry.targetPath, entry.targetPath);
+                console.log(`OK\t${entry.title}\t${entry.sticker.path}\trepair-existing`);
+                continue;
+            }
+
+            if (!process.env.GEMINI_API_KEY) {
+                throw new Error('GEMINI_API_KEY が設定されていません。');
+            }
+
             const { model, inlineData } = await generateImage(entry.prompt);
             writePng(entry.targetPath, inlineData);
             console.log(`OK\t${entry.title}\t${entry.sticker.path}\t${model}`);

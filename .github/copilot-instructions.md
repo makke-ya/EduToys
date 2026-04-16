@@ -55,6 +55,7 @@
 - **モデル**: まず `gemini-3-pro-image-preview` を使い、失敗時のみ `gemini-3.1-flash-image-preview` にフォールバックしてください。
 - **保存先**: `static/stickers/nanobanana-output/` のような中間出力フォルダは使わず、`static/stickers/stickers.json` に定義された既存 PNG (`static/stickers/{category}/{name}.png`) を直接更新してください。
 - **形式統一**: API の返却が JPEG でも、最終保存形式は必ず PNG に統一してください。
+- **透過処理**: API の返却が透過でない場合でも、そのまま保存せず、四隅の背景色から透過化した PNG に正規化してください。
 - **命名**: ファイル名は `stickers.json` の既存パスを正とし、新しい命名規則や別ディレクトリを追加しないでください。
 
 ## 6. デザインガイドライン
