@@ -49,6 +49,14 @@
 - **クレジット表記**: ゲーム画面のどこか（または共通のクレジット領域）に、以下のクレジットを必ず記載してください。
   > VOICEVOX:四国めたん
 
+### 5.2 Nano Banana によるシール画像生成
+- **生成対象**: `static/stickers/pixel_sticker_prompts.md` に定義されたシール画像
+- **実行コマンド**: `npm run generate:stickers`
+- **モデル**: まず `gemini-3-pro-image-preview` を使い、失敗時のみ `gemini-3.1-flash-image-preview` にフォールバックしてください。
+- **保存先**: `static/stickers/nanobanana-output/` のような中間出力フォルダは使わず、`static/stickers/stickers.json` に定義された既存 PNG (`static/stickers/{category}/{name}.png`) を直接更新してください。
+- **形式統一**: API の返却が JPEG でも、最終保存形式は必ず PNG に統一してください。
+- **命名**: ファイル名は `stickers.json` の既存パスを正とし、新しい命名規則や別ディレクトリを追加しないでください。
+
 ## 6. デザインガイドライン
 
 ### 6.1 目指すクオリティ

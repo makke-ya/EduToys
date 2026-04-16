@@ -1,6 +1,8 @@
 # シール画像生成プロンプト集
 
 ## 共通ルール
+- 生成コマンドは `npm run generate:stickers`
+- 出力先は別フォルダではなく、`static/stickers/...` の既存 PNG を直接更新する
 - 透過背景
 - PNG 出力
 - **ドット絵**

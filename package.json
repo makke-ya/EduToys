@@ -7,7 +7,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:integration": "jest -c jest.integration.config.js",
-    "start": "python3 scripts/preview_server.py"
+    "start": "python3 scripts/preview_server.py",
+    "generate:stickers": "node scripts/generate_sticker_images.mjs"
   },
   "keywords": [
     "education",
