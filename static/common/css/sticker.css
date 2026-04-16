@@ -65,9 +65,13 @@
     min-height: 280px;
     border-radius: 28px;
     border: 5px solid rgba(213, 167, 104, 0.4);
-    background:
+    background-color: #fffaf1;
+    background-image:
         linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.18)),
-        url("../../images/sticker_page_bg.svg") center center / cover no-repeat;
+        url("../../images/sticker_page_bg.png");
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: auto, contain;
     overflow: hidden;
     touch-action: none;
 }
@@ -120,6 +124,7 @@
     border: 4px solid rgba(255, 255, 255, 0.9);
     padding: 16px;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    touch-action: none;
 }
 
 .sticker-tray__header {
@@ -146,6 +151,9 @@
     border: 4px solid #ffe0b6;
     padding: 12px 10px;
     color: #5a4b41;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
 }
 
 .sticker-tray__image {

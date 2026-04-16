@@ -6,16 +6,22 @@ const fs = require('fs');
 const path = require('path');
 
 describe('EduToys main.js', () => {
+    let capturedAppOptions;
+
     beforeEach(() => {
         // Setup simple DOM
         document.body.innerHTML = '<div id="app"></div>';
         global.fetch = jest.fn();
+        capturedAppOptions = null;
         
         // Mock external libraries
         window.Vue = {
-            createApp: jest.fn(() => ({
-                mount: jest.fn()
-            }))
+            createApp: jest.fn((options) => {
+                capturedAppOptions = options;
+                return {
+                    mount: jest.fn()
+                };
+            })
         };
         
         window.PIXI = {
@@ -92,5 +98,38 @@ describe('EduToys main.js', () => {
         window.EduToys.showStickerBook();
 
         expect(showStickerBook).toHaveBeenCalled();
+    });
+
+    it('should normalize touch events into drag coordinates', () => {
+        expect(window.EduToys.stickerBook.getClientPoint({
+            touches: [{ clientX: 120, clientY: 240 }]
+        })).toEqual({ clientX: 120, clientY: 240 });
+
+        expect(window.EduToys.stickerBook.getClientPoint({
+            changedTouches: [{ clientX: 180, clientY: 320 }]
+        })).toEqual({ clientX: 180, clientY: 320 });
+    });
+
+    it('should cleanup the previous game before loading a new one', () => {
+        window.EduToys.init();
+
+        const cleanupGame = jest.spyOn(window.EduToys, 'cleanupGame').mockImplementation(() => {});
+        const loadGame = jest.spyOn(window.EduToys, 'loadGame').mockImplementation(() => {});
+        const stopBGM = jest.spyOn(window.EduToys.audio, 'stopBGM').mockImplementation(() => {});
+
+        const vm = {
+            ...capturedAppOptions.data(),
+            cancelStickerDrag: jest.fn(),
+            playTap: jest.fn(),
+            $nextTick: (callback) => callback()
+        };
+
+        capturedAppOptions.methods.loadGame.call(vm, '001_count_tap');
+
+        expect(cleanupGame).toHaveBeenCalled();
+        expect(stopBGM).toHaveBeenCalled();
+        expect(loadGame).toHaveBeenCalledWith('001_count_tap');
+        expect(vm.currentView).toBe('game');
+        expect(vm.currentGameId).toBe('001_count_tap');
     });
 });

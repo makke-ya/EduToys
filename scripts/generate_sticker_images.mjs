@@ -10,6 +10,9 @@ const repoRoot = path.resolve(__dirname, '..');
 const promptsPath = path.join(repoRoot, 'static', 'stickers', 'pixel_sticker_prompts.md');
 const catalogPath = path.join(repoRoot, 'static', 'stickers', 'stickers.json');
 const modelPriority = ['gemini-3-pro-image-preview', 'gemini-3.1-flash-image-preview'];
+export const STICKER_OUTPUT_SIZE = 256;
+const STICKER_CONTENT_SIZE = 208;
+const SIZE_HINT = `Compose the subject centered with consistent padding so it normalizes cleanly into a ${STICKER_OUTPUT_SIZE}x${STICKER_OUTPUT_SIZE} square sticker canvas.`;
 const titleAliases = new Map([
     ['ケーキ', 'けーき'],
     ['アイス', 'あいす'],
@@ -46,7 +49,7 @@ function normalizeToTransparentPng(sourcePath, targetPath) {
         ? path.join(os.tmpdir(), `edutoys-sticker-normalized-${process.pid}-${Date.now()}.png`)
         : targetPath;
 
-    execFileSync('convert', [
+    const normalizedBuffer = execFileSync('convert', [
         sourcePath,
         '-alpha',
         'set',
@@ -64,8 +67,20 @@ function normalizeToTransparentPng(sourcePath, targetPath) {
         `color ${width - 1},0 floodfill`,
         '-draw',
         `color ${width - 1},${height - 1} floodfill`,
-        workingTargetPath,
-    ], { stdio: 'ignore' });
+        '-trim',
+        '+repage',
+        '-resize',
+        `${STICKER_CONTENT_SIZE}x${STICKER_CONTENT_SIZE}`,
+        '-gravity',
+        'center',
+        '-background',
+        'none',
+        '-extent',
+        `${STICKER_OUTPUT_SIZE}x${STICKER_OUTPUT_SIZE}`,
+        'PNG32:-',
+    ], { encoding: 'buffer', stdio: ['ignore', 'pipe', 'ignore'] });
+
+    fs.writeFileSync(workingTargetPath, normalizedBuffer);
 
     if (workingTargetPath !== targetPath) {
         fs.copyFileSync(workingTargetPath, targetPath);
@@ -86,7 +101,7 @@ function buildGenerationPlan() {
 
         return {
             title,
-            prompt,
+            prompt: `${prompt} ${SIZE_HINT}`,
             sticker,
             targetPath: path.join(repoRoot, sticker.path),
         };
@@ -191,7 +206,9 @@ async function main() {
     }
 }
 
-main().catch((error) => {
-    console.error(error.message);
-    process.exit(1);
-});
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
+    main().catch((error) => {
+        console.error(error.message);
+        process.exit(1);
+    });
+}

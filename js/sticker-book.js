@@ -36,6 +36,18 @@
         return nextItems;
     }
 
+    function getTouchPoint(event) {
+        const touch = event?.touches?.[0] || event?.changedTouches?.[0];
+        if (!touch) {
+            return null;
+        }
+
+        return {
+            clientX: touch.clientX,
+            clientY: touch.clientY
+        };
+    }
+
     const root = typeof window !== 'undefined' ? window : globalThis;
     root.EduToys = root.EduToys || {};
 
@@ -95,6 +107,21 @@
         async getStickerDefinition(stickerId) {
             const catalog = await this.loadCatalog();
             return catalog.stickers.find((sticker) => sticker.id === stickerId) || null;
+        },
+
+        getClientPoint(event) {
+            if (!event) {
+                return null;
+            }
+
+            if (typeof event.clientX === 'number' && typeof event.clientY === 'number') {
+                return {
+                    clientX: event.clientX,
+                    clientY: event.clientY
+                };
+            }
+
+            return getTouchPoint(event);
         },
 
         pointToPercent(clientX, clientY, element) {

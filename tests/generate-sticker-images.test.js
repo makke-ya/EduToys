@@ -13,4 +13,17 @@ describe('sticker generation script', () => {
         expect(output).toContain('static/stickers/food/cake.png');
         expect(output).not.toContain('nanobanana-output');
     });
+
+    it('should expose a fixed square sticker output size', async () => {
+        const modulePath = path.resolve(__dirname, '../scripts/generate_sticker_images.mjs');
+        const output = execFileSync('node', [
+            '--input-type=module',
+            '-e',
+            `import { STICKER_OUTPUT_SIZE } from ${JSON.stringify(`file://${modulePath}`)}; console.log(STICKER_OUTPUT_SIZE);`
+        ], {
+            encoding: 'utf8'
+        });
+
+        expect(output.trim()).toBe('256');
+    });
 });

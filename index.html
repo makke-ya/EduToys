@@ -138,6 +138,7 @@
                                 type="button"
                                 class="sticker-tray__item edu-btn"
                                 @pointerdown="startStickerDrag(sticker, $event)"
+                                @touchstart.prevent="startStickerDrag(sticker, $event)"
                             >
                                 <img :src="sticker.path" :alt="sticker.name" class="sticker-tray__image">
                                 <span class="sticker-tray__label">{{ sticker.name }}</span>

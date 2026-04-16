@@ -181,12 +181,18 @@
                     window.addEventListener('pointermove', this.onGlobalPointerMove);
                     window.addEventListener('pointerup', this.onGlobalPointerUp);
                     window.addEventListener('pointercancel', this.onGlobalPointerCancel);
+                    window.addEventListener('touchmove', this.onGlobalTouchMove, { passive: false });
+                    window.addEventListener('touchend', this.onGlobalTouchEnd);
+                    window.addEventListener('touchcancel', this.onGlobalTouchCancel);
                 },
 
                 beforeUnmount() {
                     window.removeEventListener('pointermove', this.onGlobalPointerMove);
                     window.removeEventListener('pointerup', this.onGlobalPointerUp);
                     window.removeEventListener('pointercancel', this.onGlobalPointerCancel);
+                    window.removeEventListener('touchmove', this.onGlobalTouchMove);
+                    window.removeEventListener('touchend', this.onGlobalTouchEnd);
+                    window.removeEventListener('touchcancel', this.onGlobalTouchCancel);
                 },
 
                 methods: {
@@ -256,6 +262,7 @@
                     loadGame(gameId) {
                         this.cancelStickerDrag();
                         this.playTap();
+                        window.EduToys.cleanupGame();
                         window.EduToys.audio.stopBGM();
                         this.currentView = 'game';
                         this.currentGameId = gameId;
@@ -291,8 +298,17 @@
                             return;
                         }
 
+                        const point = window.EduToys.stickerBook
+                            ? window.EduToys.stickerBook.getClientPoint(event)
+                            : null;
+                        if (!point) {
+                            return;
+                        }
+
                         event.preventDefault();
-                        if (event.currentTarget && typeof event.currentTarget.setPointerCapture === 'function') {
+                        if (typeof event.pointerId === 'number'
+                            && event.currentTarget
+                            && typeof event.currentTarget.setPointerCapture === 'function') {
                             try {
                                 event.currentTarget.setPointerCapture(event.pointerId);
                             } catch (error) {
@@ -304,8 +320,8 @@
                         this.dragPointerId = typeof event.pointerId === 'number' ? event.pointerId : null;
                         this.dragPreview = {
                             visible: true,
-                            x: event.clientX,
-                            y: event.clientY,
+                            x: point.clientX,
+                            y: point.clientY,
                             path: sticker.path,
                             name: sticker.name
                         };
@@ -329,11 +345,18 @@
                             return;
                         }
 
+                        const point = window.EduToys.stickerBook
+                            ? window.EduToys.stickerBook.getClientPoint(event)
+                            : null;
+                        if (!point) {
+                            return;
+                        }
+
                         this.dragPreview = {
                             ...this.dragPreview,
                             visible: true,
-                            x: event.clientX,
-                            y: event.clientY
+                            x: point.clientX,
+                            y: point.clientY
                         };
                     },
 
@@ -359,13 +382,21 @@
                             return;
                         }
 
+                        const pointEvent = window.EduToys.stickerBook
+                            ? window.EduToys.stickerBook.getClientPoint(event)
+                            : null;
+                        if (!pointEvent) {
+                            this.cancelStickerDrag();
+                            return;
+                        }
+
                         const sticker = this.draggingSticker;
                         const board = this.$refs.stickerBoard;
                         const point = board && window.EduToys.stickerBook
-                            ? window.EduToys.stickerBook.pointToPercent(event.clientX, event.clientY, board)
+                            ? window.EduToys.stickerBook.pointToPercent(pointEvent.clientX, pointEvent.clientY, board)
                             : null;
                         const canPlace = board && window.EduToys.stickerBook
-                            ? window.EduToys.stickerBook.isPointInsideElement(event.clientX, event.clientY, board)
+                            ? window.EduToys.stickerBook.isPointInsideElement(pointEvent.clientX, pointEvent.clientY, board)
                             : false;
 
                         this.cancelStickerDrag();
@@ -388,6 +419,23 @@
                     },
 
                     onGlobalPointerCancel() {
+                        this.cancelStickerDrag();
+                    },
+
+                    onGlobalTouchMove(event) {
+                        if (!this.draggingSticker || this.currentView !== 'sticker_book') {
+                            return;
+                        }
+
+                        event.preventDefault();
+                        this.onStickerBookPointerMove(event);
+                    },
+
+                    async onGlobalTouchEnd(event) {
+                        await this.onGlobalPointerUp(event);
+                    },
+
+                    onGlobalTouchCancel() {
                         this.cancelStickerDrag();
                     },
 
@@ -445,6 +493,7 @@
                 const scripts = doc.querySelectorAll('script');
                 for (const script of scripts) {
                     const newScript = document.createElement('script');
+                    newScript.dataset.gameScript = gameId;
                     if (script.src) {
                         const url = new URL(script.src, window.location.href);
                         url.searchParams.set('t', Date.now());
@@ -453,7 +502,6 @@
                         newScript.textContent = script.textContent;
                     }
                     document.body.appendChild(newScript);
-                    newScript.dataset.gameScript = gameId;
                 }
             } catch (error) {
                 console.error('Error loading game:', error);

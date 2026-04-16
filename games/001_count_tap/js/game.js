@@ -393,8 +393,11 @@
     async function start() {
         try {
             // PixiJS 7.x では Assets.init() は関数（非同期）
-            if (window.PIXI.Assets.init) {
+            if (window.PIXI.Assets.init && !(window.EduToys && window.EduToys.pixiAssetsInitialized)) {
                 await window.PIXI.Assets.init();
+                if (window.EduToys) {
+                    window.EduToys.pixiAssetsInitialized = true;
+                }
             }
             await window.PIXI.Assets.load([...state.textures, state.backgroundTexture]);
             if (!bgmGame.playing()) {
