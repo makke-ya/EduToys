@@ -26,4 +26,17 @@ describe('sticker generation script', () => {
 
         expect(output.trim()).toBe('256');
     });
+
+    it('should expose the chroma key background color', async () => {
+        const modulePath = path.resolve(__dirname, '../scripts/generate_sticker_images.mjs');
+        const output = execFileSync('node', [
+            '--input-type=module',
+            '-e',
+            `import { CHROMA_KEY_COLOR } from ${JSON.stringify(`file://${modulePath}`)}; console.log(CHROMA_KEY_COLOR);`
+        ], {
+            encoding: 'utf8'
+        });
+
+        expect(output.trim()).toBe('#00FF66');
+    });
 });

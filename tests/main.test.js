@@ -70,8 +70,13 @@ describe('EduToys main.js', () => {
         expect(window.EduToys.audio.initialized).toBe(true);
         expect(window.EduToys.audio.bgm).toBeDefined();
 
+        const pixiApp = {
+            destroy: jest.fn()
+        };
+        window.EduToys.pixiApp = pixiApp;
         window.EduToys.cleanupGame();
 
+        expect(pixiApp.destroy).toHaveBeenCalledWith(true, { children: true });
         expect(window.Howler.unload).toHaveBeenCalled();
         expect(window.EduToys.audio.initialized).toBe(false);
         expect(window.EduToys.audio.bgm).toBeNull();

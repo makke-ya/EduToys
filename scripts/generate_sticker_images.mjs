@@ -11,8 +11,10 @@ const promptsPath = path.join(repoRoot, 'static', 'stickers', 'pixel_sticker_pro
 const catalogPath = path.join(repoRoot, 'static', 'stickers', 'stickers.json');
 const modelPriority = ['gemini-3-pro-image-preview', 'gemini-3.1-flash-image-preview'];
 export const STICKER_OUTPUT_SIZE = 256;
+export const CHROMA_KEY_COLOR = '#00FF66';
 const STICKER_CONTENT_SIZE = 208;
 const SIZE_HINT = `Compose the subject centered with consistent padding so it normalizes cleanly into a ${STICKER_OUTPUT_SIZE}x${STICKER_OUTPUT_SIZE} square sticker canvas.`;
+const CHROMA_KEY_HINT = `Do not use a transparent background. Instead, render the entire background as one flat solid chroma key color ${CHROMA_KEY_COLOR} with no gradients, no shadows, and no extra objects in the background. Keep the subject separate from the edges so the chroma key background stays clearly visible around it.`;
 const titleAliases = new Map([
     ['ケーキ', 'けーき'],
     ['アイス', 'あいす'],
@@ -101,7 +103,7 @@ function buildGenerationPlan() {
 
         return {
             title,
-            prompt: `${prompt} ${SIZE_HINT}`,
+            prompt: `${prompt} ${SIZE_HINT} ${CHROMA_KEY_HINT}`,
             sticker,
             targetPath: path.join(repoRoot, sticker.path),
         };

@@ -515,7 +515,7 @@
         cleanupGame() {
             if (this.pixiApp) {
                 try {
-                    this.pixiApp.destroy(true, { children: true, texture: true, baseTexture: true });
+                    this.pixiApp.destroy(true, { children: true });
                 } catch (error) {
                     console.warn('PixiJS destroy error:', error);
                 }
