@@ -185,6 +185,38 @@
             };
         },
 
+        updateStickerPlacement(pageIndex, stickerIndex, x, y, rotation) {
+            const normalizedPageIndex = Math.max(0, Math.floor(normalizeNumber(pageIndex, 'pageIndex')));
+            const normalizedStickerIndex = Math.max(0, Math.floor(normalizeNumber(stickerIndex, 'stickerIndex')));
+            const normalizedX = normalizeNumber(x, 'x');
+            const normalizedY = normalizeNumber(y, 'y');
+            const nextState = this.load();
+            const page = nextState.pages[normalizedPageIndex];
+
+            if (!page || !Array.isArray(page.stickers) || !page.stickers[normalizedStickerIndex]) {
+                throw new Error(`Sticker at page ${normalizedPageIndex}, index ${normalizedStickerIndex} does not exist.`);
+            }
+
+            const currentSticker = page.stickers[normalizedStickerIndex];
+            const nextRotation = rotation === undefined
+                ? currentSticker.rotation
+                : normalizeNumber(rotation, 'rotation');
+
+            page.stickers[normalizedStickerIndex] = {
+                ...currentSticker,
+                x: normalizedX,
+                y: normalizedY,
+                rotation: nextRotation
+            };
+
+            this.save(nextState);
+
+            return {
+                ...page.stickers[normalizedStickerIndex],
+                pageIndex: normalizedPageIndex
+            };
+        },
+
         clearAll() {
             state = createDefaultState();
             getStorageTarget().removeItem(STORAGE_KEY);

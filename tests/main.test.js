@@ -137,4 +137,112 @@ describe('EduToys main.js', () => {
         expect(vm.currentView).toBe('game');
         expect(vm.currentGameId).toBe('001_count_tap');
     });
+
+    it('should expose the shape fit game in the home game list', () => {
+        window.EduToys.init();
+
+        const vm = {
+            ...capturedAppOptions.data()
+        };
+
+        expect(vm.games).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                id: '002_shape_fit',
+                name: 'かたちぴったん',
+                category: 'かず',
+                thumbnail: 'static/thumbnails/002_shape_fit.jpg'
+            })
+        ]));
+    });
+
+    it('should expose the hiragana tracing game in the home game list', () => {
+        window.EduToys.init();
+
+        const vm = {
+            ...capturedAppOptions.data()
+        };
+
+        expect(vm.games).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                id: '003_hiragana_suisui',
+                name: 'ひらがなすいすい',
+                category: 'もじ',
+                thumbnail: 'static/thumbnails/003_hiragana_suisui.jpg'
+            })
+        ]));
+    });
+
+    it('should hide the sticker book hint when stickers are already placed and no drag is active', () => {
+        window.EduToys.init();
+
+        expect(capturedAppOptions.computed.showStickerBookHint.call({
+            placedStickers: [{ id: 'nature_star' }],
+            draggingSticker: null
+        })).toBe(false);
+
+        expect(capturedAppOptions.computed.showStickerBookHint.call({
+            placedStickers: [],
+            draggingSticker: null
+        })).toBe(true);
+
+        expect(capturedAppOptions.computed.showStickerBookHint.call({
+            placedStickers: [{ id: 'nature_star' }],
+            draggingSticker: { id: 'nature_star' }
+        })).toBe(true);
+    });
+
+    it('should use だいし wording in the sticker book drag hint', () => {
+        const indexHtml = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+
+        expect(indexHtml).toContain("だいしに はなして はろう！");
+        expect(indexHtml).not.toContain("たいしに はなして はろう！");
+    });
+
+    it('should reposition a placed sticker when dropped back onto the board', async () => {
+        window.EduToys.init();
+
+        jest.spyOn(window.EduToys.stickerBook, 'getClientPoint').mockReturnValue({ clientX: 260, clientY: 170 });
+        jest.spyOn(window.EduToys.stickerBook, 'pointToPercent').mockReturnValue({ x: 60, y: 44 });
+        jest.spyOn(window.EduToys.stickerBook, 'isPointInsideElement').mockReturnValue(true);
+
+        const updateStickerPlacement = jest.spyOn(window.EduToys.storage, 'updateStickerPlacement').mockReturnValue({
+            id: 'nature_star',
+            pageIndex: 0,
+            x: 60,
+            y: 44,
+            rotation: 8
+        });
+        const addSticker = jest.spyOn(window.EduToys.storage, 'addSticker').mockImplementation(() => {
+            throw new Error('should not add a new sticker while repositioning');
+        });
+
+        const vm = {
+            currentView: 'sticker_book',
+            draggingSticker: {
+                id: 'nature_star',
+                name: 'ほし',
+                path: 'static/stickers/nature/star.png',
+                pageIndex: 0,
+                stickerIndex: 1,
+                rotation: 8,
+                dragSource: 'placed'
+            },
+            dragPointerId: null,
+            currentStickerPage: 0,
+            $refs: {
+                stickerBoard: {}
+            },
+            cancelStickerDrag: jest.fn(function cancelStickerDrag() {
+                this.draggingSticker = null;
+            }),
+            syncStickerBookState: jest.fn().mockResolvedValue(undefined)
+        };
+
+        await capturedAppOptions.methods.onStickerBookPointerUp.call(vm, { clientX: 260, clientY: 170 });
+
+        expect(updateStickerPlacement).toHaveBeenCalledWith(0, 1, 60, 44, 8);
+        expect(addSticker).not.toHaveBeenCalled();
+        expect(vm.cancelStickerDrag).toHaveBeenCalled();
+        expect(vm.syncStickerBookState).toHaveBeenCalled();
+    });
 });

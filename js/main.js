@@ -23,6 +23,7 @@
     Object.assign(window.EduToys, {
         vueApp: null,
         pixiApp: null,
+        gameCleanup: null,
 
         audio: {
             bgm: null,
@@ -115,7 +116,9 @@
                         currentView: 'home',
                         currentGameId: null,
                         games: [
-                            { id: '001_count_tap', name: 'かぞえてたっぷ', category: 'かず', thumbnail: 'static/thumbnails/001_count_tap.jpg' }
+                            { id: '001_count_tap', name: 'かぞえてたっぷ', category: 'かず', thumbnail: 'static/thumbnails/001_count_tap.jpg' },
+                            { id: '002_shape_fit', name: 'かたちぴったん', category: 'かず', thumbnail: 'static/thumbnails/002_shape_fit.jpg' },
+                            { id: '003_hiragana_suisui', name: 'ひらがなすいすい', category: 'もじ', thumbnail: 'static/thumbnails/003_hiragana_suisui.jpg' }
                         ],
                         stickerCatalog: clone(EMPTY_STICKER_CATALOG),
                         stickerPages: [{ stickers: [] }],
@@ -150,6 +153,8 @@
 
                         return page.stickers.map((sticker, index) => ({
                             ...sticker,
+                            pageIndex: this.currentStickerPage,
+                            stickerIndex: index,
                             key: `${sticker.id}-${this.currentStickerPage}-${index}`,
                             ...(this.stickerDefinitionMap[sticker.id] || {
                                 name: 'シール',
@@ -174,6 +179,10 @@
                             left: `${this.dragPreview.x}px`,
                             top: `${this.dragPreview.y}px`
                         };
+                    },
+
+                    showStickerBookHint() {
+                        return Boolean(this.draggingSticker) || this.placedStickers.length === 0;
                     }
                 },
 
@@ -293,7 +302,7 @@
                         }
                     },
 
-                    startStickerDrag(sticker, event) {
+                    beginStickerDrag(sticker, event, dragSource = 'tray') {
                         if (!sticker || !event) {
                             return;
                         }
@@ -325,7 +334,19 @@
                             path: sticker.path,
                             name: sticker.name
                         };
+                        this.draggingSticker = {
+                            ...sticker,
+                            dragSource
+                        };
                         window.EduToys.audio.playSE('tap');
+                    },
+
+                    startStickerDrag(sticker, event) {
+                        this.beginStickerDrag(sticker, event, 'tray');
+                    },
+
+                    startPlacedStickerDrag(sticker, event) {
+                        this.beginStickerDrag(sticker, event, 'placed');
                     },
 
                     onGlobalPointerMove(event) {
@@ -406,11 +427,21 @@
                         }
 
                         try {
-                            const rotation = window.EduToys.stickerBook && typeof window.EduToys.stickerBook.randomRotation === 'function'
-                                ? window.EduToys.stickerBook.randomRotation()
-                                : 0;
+                            if (sticker.dragSource === 'placed') {
+                                window.EduToys.storage.updateStickerPlacement(
+                                    sticker.pageIndex,
+                                    sticker.stickerIndex,
+                                    point.x,
+                                    point.y,
+                                    sticker.rotation
+                                );
+                            } else {
+                                const rotation = window.EduToys.stickerBook && typeof window.EduToys.stickerBook.randomRotation === 'function'
+                                    ? window.EduToys.stickerBook.randomRotation()
+                                    : 0;
 
-                            window.EduToys.storage.addSticker(sticker.id, this.currentStickerPage, point.x, point.y, rotation);
+                                window.EduToys.storage.addSticker(sticker.id, this.currentStickerPage, point.x, point.y, rotation);
+                            }
                             window.EduToys.audio.playSE('sticker');
                             await this.syncStickerBookState();
                         } catch (error) {
@@ -513,6 +544,15 @@
         },
 
         cleanupGame() {
+            if (typeof this.gameCleanup === 'function') {
+                try {
+                    this.gameCleanup();
+                } catch (error) {
+                    console.warn('Game cleanup hook error:', error);
+                }
+            }
+            this.gameCleanup = null;
+
             if (this.pixiApp) {
                 try {
                     this.pixiApp.destroy(true, { children: true });

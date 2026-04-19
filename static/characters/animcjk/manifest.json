@@ -1,0 +1,31 @@
+{
+  "source": "animCJK",
+  "repository": "https://github.com/parsimonhi/animCJK",
+  "extractedAt": "2026-04-18T18:06:02.725Z",
+  "license": "LGPL-3.0-or-later for kana SVG files",
+  "notice": "Kana SVG files from animCJK are reusable under the GNU Lesser General Public License version 3 or later according to licenses/COPYING.txt in the upstream repository.",
+  "datasets": {
+    "hiragana": {
+      "path": "static/characters/animcjk/hiragana.json",
+      "count": 86,
+      "firstCharacters": [
+        "ぁ",
+        "あ",
+        "ぃ",
+        "い",
+        "ぅ"
+      ]
+    },
+    "katakana": {
+      "path": "static/characters/animcjk/katakana.json",
+      "count": 90,
+      "firstCharacters": [
+        "ァ",
+        "ア",
+        "ィ",
+        "イ",
+        "ゥ"
+      ]
+    }
+  }
+}

@@ -1,0 +1,101 @@
+#shape-fit-app {
+    isolation: isolate;
+}
+
+.shape-fit-chip,
+.shape-fit-status,
+.shape-fit-credit {
+    border-radius: 9999px;
+    border: 4px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 12px 24px rgba(90, 75, 65, 0.12);
+    backdrop-filter: blur(4px);
+}
+
+.shape-fit-chip {
+    background: rgba(255, 255, 255, 0.94);
+    color: #5a4b41;
+    font-size: clamp(1.1rem, 2vw, 1.6rem);
+    font-weight: 700;
+    line-height: 1.3;
+    padding: 0.85rem 1.2rem;
+}
+
+.shape-fit-chip--instruction {
+    max-width: min(62%, 22rem);
+    border-color: rgba(255, 140, 0, 0.28);
+}
+
+.shape-fit-status {
+    min-width: 8.5rem;
+    background: rgba(255, 255, 255, 0.96);
+    color: #5a4b41;
+    padding: 0.75rem 1rem;
+    text-align: center;
+}
+
+.shape-fit-status__level {
+    font-size: clamp(1rem, 1.8vw, 1.25rem);
+    font-weight: 700;
+}
+
+.shape-fit-status__progress {
+    color: #ff8c00;
+    font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+    font-weight: 800;
+}
+
+.shape-fit-banner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    border-radius: 9999px;
+    padding: 1rem 1.8rem;
+    background: rgba(255, 255, 255, 0.95);
+    border: 6px solid #ffd180;
+    color: #ff8c00;
+    font-size: clamp(1.35rem, 2.2vw, 2rem);
+    font-weight: 800;
+    line-height: 1.2;
+    box-shadow: 0 16px 32px rgba(90, 75, 65, 0.16);
+    transition: opacity 180ms ease;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.shape-fit-banner--warning {
+    color: #5a4b41;
+    border-color: #ffd6dd;
+    background: rgba(255, 245, 247, 0.96);
+}
+
+.shape-fit-credit {
+    background: rgba(255, 255, 255, 0.86);
+    color: #5a4b41;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 0.55rem 1rem;
+}
+
+@media (max-width: 768px) {
+    .shape-fit-chip--instruction {
+        max-width: 58%;
+    }
+
+    .shape-fit-status {
+        min-width: 7rem;
+        padding: 0.6rem 0.8rem;
+    }
+
+    .shape-fit-banner {
+        max-width: calc(100% - 2rem);
+        white-space: normal;
+        text-align: center;
+    }
+
+    .shape-fit-credit {
+        font-size: 0.875rem;
+        padding: 0.45rem 0.85rem;
+    }
+}

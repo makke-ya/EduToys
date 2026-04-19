@@ -1,0 +1,6 @@
+{
+  "name": "ひらがなすいすい",
+  "description": "もじを すいすい なぞろう！",
+  "entry_point": "start.html",
+  "thumbnail": "static/thumbnails/003_hiragana_suisui.jpg"
+}

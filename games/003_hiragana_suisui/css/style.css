@@ -1,0 +1,103 @@
+#hiragana-suisui-app {
+    isolation: isolate;
+}
+
+.hiragana-chip,
+.hiragana-status,
+.hiragana-credit {
+    border-radius: 9999px;
+    border: 4px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 12px 24px rgba(90, 75, 65, 0.12);
+    backdrop-filter: blur(4px);
+}
+
+.hiragana-chip {
+    background: rgba(255, 255, 255, 0.94);
+    color: #5a4b41;
+    font-size: clamp(1.05rem, 2vw, 1.55rem);
+    font-weight: 700;
+    line-height: 1.35;
+    padding: 0.85rem 1.2rem;
+}
+
+.hiragana-chip--instruction {
+    max-width: min(62%, 23rem);
+    border-color: rgba(244, 143, 177, 0.3);
+}
+
+.hiragana-status {
+    min-width: 8.75rem;
+    background: rgba(255, 255, 255, 0.96);
+    color: #5a4b41;
+    padding: 0.75rem 1rem;
+    text-align: center;
+}
+
+.hiragana-status__letter {
+    color: #f48fb1;
+    font-size: clamp(1.45rem, 2.6vw, 2rem);
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.hiragana-status__progress {
+    color: #ff8c00;
+    font-size: clamp(1rem, 1.8vw, 1.3rem);
+    font-weight: 800;
+}
+
+.hiragana-banner {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    border-radius: 9999px;
+    padding: 1rem 1.8rem;
+    background: rgba(255, 255, 255, 0.95);
+    border: 6px solid #ffd180;
+    color: #ff8c00;
+    font-size: clamp(1.3rem, 2.3vw, 2rem);
+    font-weight: 800;
+    line-height: 1.2;
+    box-shadow: 0 16px 32px rgba(90, 75, 65, 0.16);
+    transition: opacity 180ms ease;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+.hiragana-banner--warning {
+    color: #5a4b41;
+    border-color: #ffd6dd;
+    background: rgba(255, 245, 247, 0.96);
+}
+
+.hiragana-credit {
+    background: rgba(255, 255, 255, 0.88);
+    color: #5a4b41;
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 0.55rem 1rem;
+}
+
+@media (max-width: 768px) {
+    .hiragana-chip--instruction {
+        max-width: 58%;
+    }
+
+    .hiragana-status {
+        min-width: 7rem;
+        padding: 0.6rem 0.8rem;
+    }
+
+    .hiragana-banner {
+        max-width: calc(100% - 2rem);
+        white-space: normal;
+        text-align: center;
+    }
+
+    .hiragana-credit {
+        font-size: 0.875rem;
+        padding: 0.45rem 0.85rem;
+    }
+}

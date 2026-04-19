@@ -18,6 +18,7 @@ describe('EduToys storage', () => {
         expect(typeof window.EduToys.storage.load).toBe('function');
         expect(typeof window.EduToys.storage.save).toBe('function');
         expect(typeof window.EduToys.storage.addSticker).toBe('function');
+        expect(typeof window.EduToys.storage.updateStickerPlacement).toBe('function');
         expect(typeof window.EduToys.storage.getStickers).toBe('function');
         expect(typeof window.EduToys.storage.getAvailableStickers).toBe('function');
         expect(typeof window.EduToys.storage.awardSticker).toBe('function');
@@ -87,6 +88,31 @@ describe('EduToys storage', () => {
                 ]
             }
         ]);
+    });
+
+    it('should update the placement of an existing sticker without returning it to the tray', () => {
+        window.EduToys.storage.awardSticker('nature_star');
+        window.EduToys.storage.addSticker('nature_star', 0, 42, 55, 8);
+
+        const moved = window.EduToys.storage.updateStickerPlacement(0, 0, 70, 18, -4);
+
+        expect(moved).toEqual({
+            id: 'nature_star',
+            pageIndex: 0,
+            x: 70,
+            y: 18,
+            rotation: -4
+        });
+        expect(window.EduToys.storage.getStickers()).toEqual([
+            {
+                id: 'nature_star',
+                pageIndex: 0,
+                x: 70,
+                y: 18,
+                rotation: -4
+            }
+        ]);
+        expect(window.EduToys.storage.getAvailableStickers()).toEqual([]);
     });
 
     it('should recover from invalid saved data', () => {

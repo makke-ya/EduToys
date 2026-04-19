@@ -1,0 +1,39 @@
+<link rel="stylesheet" href="games/002_shape_fit/css/style.css">
+
+<div id="shape-fit-app" class="w-full h-full flex flex-col relative">
+    <div class="absolute inset-x-0 top-0 z-10 p-3 md:p-4 pointer-events-none">
+        <div class="flex items-start justify-between gap-3">
+            <div class="shape-fit-chip shape-fit-chip--instruction pointer-events-auto">
+                かたちを はめてね！
+            </div>
+            <div class="shape-fit-status pointer-events-auto">
+                <div id="ui-level-label" class="shape-fit-status__level">れべる 1</div>
+                <div id="ui-progress-label" class="shape-fit-status__progress">0 / 3</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="shape-fit-banner" class="shape-fit-banner hidden opacity-0">
+        <span id="shape-fit-banner-text">ぴったん！</span>
+    </div>
+
+    <div id="clear-overlay" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex-col items-center justify-center hidden pointer-events-auto transition-opacity duration-500 opacity-0">
+        <h2 class="text-5xl font-bold text-edu-orange mb-6 drop-shadow-md animate-bounce">クリア！</h2>
+        <p id="reward-message" class="text-2xl text-edu-text font-bold mb-6 text-center px-6">ごほうび シールを えらんでね！</p>
+        <div id="reward-sticker-options" class="reward-sticker-grid"></div>
+        <div id="reward-action-row" class="reward-action-row hidden">
+            <button id="btn-open-sticker-book" class="edu-btn bg-edu-pink text-white px-8 py-4 rounded-full text-2xl font-bold shadow-lg">
+                シールちょう
+            </button>
+            <button id="btn-replay" class="edu-btn bg-white text-edu-orange px-8 py-4 rounded-full text-2xl font-bold shadow-lg border-4 border-edu-orange">
+                もういっかい！
+            </button>
+        </div>
+    </div>
+
+    <div class="absolute inset-x-0 bottom-3 z-10 flex justify-center pointer-events-none">
+        <div class="shape-fit-credit">VOICEVOX:四国めたん</div>
+    </div>
+</div>
+
+<script src="games/002_shape_fit/js/game.js"></script>

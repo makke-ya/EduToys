@@ -35,6 +35,26 @@
       "nature_star",
       "nature_rainbow",
       "nature_sun"
+    ],
+    "002_shape_fit": [
+      "animals_rabbit",
+      "animals_cat",
+      "food_apple",
+      "food_cake",
+      "vehicles_car",
+      "vehicles_train",
+      "nature_star",
+      "nature_rainbow"
+    ],
+    "003_hiragana_suisui": [
+      "animals_rabbit",
+      "animals_cat",
+      "food_apple",
+      "food_icecream",
+      "vehicles_train",
+      "vehicles_airplane",
+      "nature_flower",
+      "nature_rainbow"
     ]
   }
 }
