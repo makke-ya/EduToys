@@ -10,7 +10,7 @@
         currentCount: 0,
         objects: [],
         backgroundLayer: null,
-        backgroundTexture: 'games/001_count_tap/images/background_meadow.svg',
+        backgroundTexture: 'games/001_count_tap/images/background_meadow.png',
         textures: ['games/001_count_tap/images/apple.svg', 'games/001_count_tap/images/car.svg', 'games/001_count_tap/images/star.svg']
     };
 
@@ -55,17 +55,6 @@
         selectedStickerId: null
     };
 
-    function drawCloud(layer, x, y, scale) {
-        const cloud = new window.PIXI.Graphics();
-        cloud.beginFill(0xffffff, 0.88);
-        cloud.drawEllipse(x, y, 42 * scale, 22 * scale);
-        cloud.drawCircle(x - (24 * scale), y, 18 * scale);
-        cloud.drawCircle(x, y - (12 * scale), 22 * scale);
-        cloud.drawCircle(x + (26 * scale), y - (2 * scale), 17 * scale);
-        cloud.endFill();
-        layer.addChild(cloud);
-    }
-
     function drawBackground() {
         const width = app.screen.width;
         const height = app.screen.height;
@@ -81,56 +70,6 @@
         backgroundSprite.width = width;
         backgroundSprite.height = height;
         layer.addChild(backgroundSprite);
-
-        const skyGlow = new window.PIXI.Graphics();
-        skyGlow.beginFill(0xfff6de, 0.2);
-        skyGlow.drawCircle(width * 0.82, height * 0.2, Math.min(width, height) * 0.18);
-        skyGlow.endFill();
-        layer.addChild(skyGlow);
-
-        const pinkGlow = new window.PIXI.Graphics();
-        pinkGlow.beginFill(0xf8bfd1, 0.22);
-        pinkGlow.drawCircle(width * 0.15, height * 0.18, Math.min(width, height) * 0.16);
-        pinkGlow.endFill();
-        layer.addChild(pinkGlow);
-
-        drawCloud(layer, width * 0.22, height * 0.2, 1);
-        drawCloud(layer, width * 0.72, height * 0.28, 0.92);
-        drawCloud(layer, width * 0.52, height * 0.14, 0.75);
-
-        const hillBack = new window.PIXI.Graphics();
-        hillBack.beginFill(0xd7efc7);
-        hillBack.drawEllipse(width * 0.2, height * 1.02, width * 0.34, height * 0.2);
-        hillBack.drawEllipse(width * 0.78, height * 1.01, width * 0.3, height * 0.19);
-        hillBack.endFill();
-        layer.addChild(hillBack);
-
-        const hillFront = new window.PIXI.Graphics();
-        hillFront.beginFill(0xbfe5a8);
-        hillFront.drawEllipse(width * 0.5, height * 1.03, width * 0.48, height * 0.22);
-        hillFront.endFill();
-        layer.addChild(hillFront);
-
-        const flowerColors = [0xffb74d, 0xf48fb1, 0x81c784, 0x64b5f6];
-        flowerColors.forEach((color, index) => {
-            const flower = new window.PIXI.Graphics();
-            const x = width * (0.14 + (index * 0.22));
-            const y = height * 0.86 + ((index % 2) * 12);
-            flower.lineStyle(4, 0x6fb06a, 1);
-            flower.moveTo(x, y);
-            flower.lineTo(x, y + 44);
-            flower.beginFill(color, 0.95);
-            flower.drawCircle(x, y, 10);
-            flower.drawCircle(x - 12, y + 6, 10);
-            flower.drawCircle(x + 12, y + 6, 10);
-            flower.drawCircle(x - 6, y - 10, 10);
-            flower.drawCircle(x + 6, y - 10, 10);
-            flower.endFill();
-            flower.beginFill(0xfff9c4, 1);
-            flower.drawCircle(x, y, 7);
-            flower.endFill();
-            layer.addChild(flower);
-        });
 
         app.stage.addChildAt(layer, 0);
         state.backgroundLayer = layer;
